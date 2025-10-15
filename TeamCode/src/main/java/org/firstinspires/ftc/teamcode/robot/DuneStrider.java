@@ -33,7 +33,7 @@ public class DuneStrider {
     // hubs
     public List<LynxModule> lynxModules;
 
-    // subsystems for ftclib
+    // subsystems for FTCLib
     public Hubs hubs;
     public CustomMecanumDrive drive;
 
@@ -58,7 +58,6 @@ public class DuneStrider {
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);
         shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.001);
-
         // Reverse one shooter motor so they spin the same way i think
         shooterRight.setInverted(true);
 

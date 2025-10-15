@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 import java.util.List;
@@ -36,8 +33,5 @@ public class Hubs extends SubsystemBase {
     @Override
     public void periodic() {
         clearCache();
-    }
-
-    public static class Configs {
     }
 }

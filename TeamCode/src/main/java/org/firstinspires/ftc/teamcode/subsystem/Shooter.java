@@ -24,13 +24,10 @@ public class Shooter extends SubsystemBase {
     public static double kP = 0.0;
     public static double kI = 0.0;
     public static double kD = 0.0;
+
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, kV);
 
-    private final InterpLUT shooterDistanceToVelocity = new InterpLUT();
-
     public Shooter() {
-        shooterDistanceToVelocity.add(0.0, 0.0);
-
     }
 
 

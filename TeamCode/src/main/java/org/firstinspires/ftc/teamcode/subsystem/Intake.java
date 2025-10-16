@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
@@ -33,19 +32,19 @@ public class Intake extends SubsystemBase {
 
         switch (mode) {
             case INGEST:
-                robot.intake.set(INGEST_MOTOR_SPEED);
+                robot.intakeTubing.set(INGEST_MOTOR_SPEED);
                 robot.leftTransferWheel.set(INGEST_SERVO_SPEED);
                 robot.rightTransferWheel.set(INGEST_SERVO_SPEED);
                 break;
 
             case DISCARD:
-                robot.intake.set(DISCARD_MOTOR_SPEED);
+                robot.intakeTubing.set(DISCARD_MOTOR_SPEED);
                 robot.leftTransferWheel.set(DISCARD_SERVO_SPEED);
                 robot.rightTransferWheel.set(DISCARD_SERVO_SPEED);
                 break;
 
             case OFF:
-                robot.intake.set(0.0);
+                robot.intakeTubing.set(0.0);
                 robot.leftTransferWheel.set(0.0);
                 robot.rightTransferWheel.set(0.0);
                 break;

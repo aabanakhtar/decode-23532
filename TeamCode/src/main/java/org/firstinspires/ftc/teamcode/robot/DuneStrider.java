@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -10,7 +12,10 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
-import org.firstinspires.ftc.teamcode.subsystem.CustomMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.MecanumDriveSubsystem;
+import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,18 +29,20 @@ public class DuneStrider {
     // alliance settings
     public static Alliance alliance = Alliance.RED;
 
-    // hardware
-    public MotorEx leftFront, leftBack, rightFront, rightBack;
+    // hardware (besides dt, managed by pedro)
     public MotorEx shooterLeft, shooterRight, shooterTurret;
-    public MotorEx intake;
+    public MotorEx intakeTubing;
     public CRServoEx leftTransferWheel, rightTransferWheel;
 
     // hubs
     public List<LynxModule> lynxModules;
+    public HardwareMap hardwareMap;
 
     // subsystems for FTCLib
     public Hubs hubs;
-    public CustomMecanumDrive drive;
+    public MecanumDriveSubsystem drive;
+    public Shooter shooter;
+    public Intake intake;
 
     public static DuneStrider get() {
         return inst;
@@ -45,16 +52,8 @@ public class DuneStrider {
 
     public DuneStrider() {}
 
-    public DuneStrider init(HardwareMap map, Telemetry t) {
-        // Drivetrain motors
-        leftFront = new MotorEx(map, "leftFront").setCachingTolerance(0.001);
-        rightFront = new MotorEx(map, "rightFront").setCachingTolerance(0.001);
-        leftBack = new MotorEx(map, "leftBack").setCachingTolerance(0.001);
-        rightBack = new MotorEx(map, "rightBack").setCachingTolerance(0.001);
-
-        rightFront.setInverted(true);
-        rightBack.setInverted(true);
-
+    public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
+        CommandScheduler.getInstance().reset();
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);
         shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.001);
@@ -66,11 +65,10 @@ public class DuneStrider {
         shooterTurret.stopAndResetEncoder();
 
         // Intake motor
-        intake = new MotorEx(map, "intake").setCachingTolerance(0.001);
+        intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
 
         // Apply common run modes
-        Arrays.asList(leftFront, rightFront, leftBack, rightBack,
-                        shooterLeft, shooterRight, shooterTurret, intake)
+        Arrays.asList(shooterLeft, shooterRight, shooterTurret, intakeTubing)
                 .forEach(x -> {
                     x.setRunMode(Motor.RunMode.RawPower);
                     x.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
@@ -94,11 +92,15 @@ public class DuneStrider {
         });
         lynxModules.forEach(LynxModule::clearBulkCache);
 
-        telemetry = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
+        telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
+        hardwareMap = map;
         // subsystem init
-        drive = new CustomMecanumDrive();
         hubs = new Hubs();
+        drive = new MecanumDriveSubsystem(pose);
+        intake = new Intake();
+        shooter = new Shooter();
+
         return inst;
     }
 

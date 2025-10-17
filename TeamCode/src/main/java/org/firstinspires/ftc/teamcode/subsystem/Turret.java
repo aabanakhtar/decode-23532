@@ -27,4 +27,8 @@ public class Turret extends SubsystemBase {
     public void periodic() {
         robot.shooterTurret.set(targetPower);
     }
+
+    public void calculateInterpolatedVelocity() {
+
+    }
 }

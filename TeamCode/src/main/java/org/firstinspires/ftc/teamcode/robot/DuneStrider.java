@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +44,7 @@ public class DuneStrider {
     public MecanumDriveSubsystem drive;
     public Shooter shooter;
     public Intake intake;
+    public Turret turret;
 
     public static DuneStrider get() {
         return inst;
@@ -100,7 +102,7 @@ public class DuneStrider {
         drive = new MecanumDriveSubsystem(pose);
         intake = new Intake();
         shooter = new Shooter();
-
+        turret = new Turret();
         return inst;
     }
 

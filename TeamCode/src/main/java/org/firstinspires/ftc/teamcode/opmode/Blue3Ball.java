@@ -20,11 +20,8 @@ public class Blue3Ball extends OpMode {
     public PathChain alignWithFirstBallRow;
     public PathChain returnToShootPosition;
 
-    public static Pose startPosition = new Pose(32.422, 134.799);
-    public static Pose shootPreload = new Pose(50.824, 93.323);
-    public static Pose lineUpControlPoint = new Pose(69.517, 83.245);
-    public static Pose lineUpEndPoint = new Pose(15.919, 83.684);
-    public static Pose returnToShootRow1 = new Pose(38.000, 105.000);
+    public static Pose startPosition = new Pose(24.5, 136.5);
+    public static Pose shootPreload = new Pose(40.23, 113.4);
 
     // Define poses
     private DuneStrider robot;
@@ -41,26 +38,9 @@ public class Blue3Ball extends OpMode {
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(145))
                 .build();
 
-        alignWithFirstBallRow = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierCurve(shootPreload, lineUpControlPoint, lineUpEndPoint)
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(145), Math.toRadians(180))
-                .build();
-
-        returnToShootPosition = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(lineUpEndPoint, returnToShootRow1)
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(145))
-                .build();
-
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                     new FollowPathCommand(robot.drive.follower, startToShootPreload),
-                    new FollowPathCommand(robot.drive.follower, alignWithFirstBallRow)
                 )
         );
     }

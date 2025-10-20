@@ -48,6 +48,7 @@ public class Intake extends SubsystemBase {
                 robot.leftTransferWheel.set(0.0);
                 robot.rightTransferWheel.set(0.0);
                 break;
+
             default:
                 break;
         }

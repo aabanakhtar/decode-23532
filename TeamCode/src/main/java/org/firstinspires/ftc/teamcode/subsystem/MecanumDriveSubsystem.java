@@ -9,7 +9,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 public class MecanumDriveSubsystem extends SubsystemBase {
-    private final Follower follower;
+    public Follower follower;
+    public static Pose pose;
 
     public MecanumDriveSubsystem(Pose startingPose) {
         this.follower = Constants.createFollower(DuneStrider.get().hardwareMap);
@@ -19,7 +20,7 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Pose pose = follower.getPose();
+        pose = follower.getPose();
         DuneStrider robot = DuneStrider.get();
         robot.telemetry.addData("X:", pose.getX());
         robot.telemetry.addData("Y:", pose.getY());

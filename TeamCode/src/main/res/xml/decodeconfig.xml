@@ -31,8 +31,8 @@
             <goBILDAPinpoint name="pinpoint" port="0" bus="3"/>
 
             <!--These are the Control Hub's servos. Change the ports and names of your servos.-->
-            <ContinousRotationServo name="leftTransferWheel" port="0"/>
-            <ContinousRotationServo name="rightTransferWheel" port="1"/>
+            <ContinuousRotationServo name="leftTransferWheel" port="0"/>
+            <ContinuousRotationServo name="rightTransferWheel" port="1"/>
 
             <!--This line signifies that the Control Hub configuration has ended.-->
         </LynxModule>

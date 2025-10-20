@@ -9,10 +9,8 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 @Configurable
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
-
-    public static bool tuning = false;
+    public static boolean tuning = false;
     public static double targetPower = 0.0;
-
     public static double kP = 0.0;
     public static double kI = 0.0;
     public static double kD = 0.0;
@@ -26,6 +24,9 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         robot.shooterTurret.set(targetPower);
+
+        robot.telemetry.addLine("==========TURRET===========");
+        robot.telemetry.addData("Encoder position", robot.shooterTurret.encoder.getPosition());
     }
 
     public void calculateInterpolatedVelocity() {

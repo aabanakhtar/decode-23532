@@ -4,17 +4,29 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.subsystem.Intake;
 
 @TeleOp(name = "TELEOP 🎮")
 @Configurable
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
+    private final GamepadEx gamepad1Ex = new GamepadEx(gamepad1);
 
     @Override
     public void init() {
         robot = DuneStrider.get().init(new Pose(), hardwareMap, telemetry);
+
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(
+                new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST))
+        ).whenReleased(
+                new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF))
+        );
+
     }
 
     @Override

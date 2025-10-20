@@ -5,6 +5,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.LUT;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
@@ -27,6 +28,15 @@ public class Shooter extends SubsystemBase {
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, kV);
 
+    public static final InterpLUT distToVeloLUT;
+
+    // initialize this thing to persist as is
+    static {
+        distToVeloLUT = new InterpLUT();
+        // to do: add
+        distToVeloLUT.createLUT();
+    }
+
     public Shooter() {
     }
 
@@ -45,6 +55,15 @@ public class Shooter extends SubsystemBase {
         }
     }
 
+    public double getOptimalVelocityForDist(double distance_ft) {
+        return distToVeloLUT.get(distance_ft);
+    }
+
+    public void setVelocity(double velo) {
+        mode = Mode.VELOCITY;
+        targetVelocityTicks = velo;
+    }
+
     private void velocityMode() {
         if (tuning) {
             flywheelVelocityPID.setPIDF(kP, kI, kD, kV);
@@ -60,6 +79,7 @@ public class Shooter extends SubsystemBase {
 
         // log useful info
         robot.telemetry.addLine("========SHOOTER========");
+        robot.telemetry.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
         robot.telemetry.addData("Flywheel Target velocity", targetVelocityTicks);
         robot.telemetry.addData("Flywheel Current velocity", currentVelocity);
         robot.telemetry.addData("Flywheel raw power output", output);

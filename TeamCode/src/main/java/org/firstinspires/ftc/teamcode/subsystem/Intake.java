@@ -10,20 +10,23 @@ public class Intake extends SubsystemBase {
     public enum Mode {
         INGEST,
         DISCARD,
-        //MAINTAIN, // maintain posses
         OFF
     }
 
     public static Mode mode = Mode.OFF;
 
-    public static double INGEST_MOTOR_SPEED = 0.0;
-    public static double INGEST_SERVO_SPEED = 0.0;
+    public static double INGEST_MOTOR_SPEED = 1.0;
+    public static double INGEST_SERVO_SPEED = 1.0;
 
-    public static double DISCARD_MOTOR_SPEED = 0.0;
-    public static double DISCARD_SERVO_SPEED = 0.0;
+    public static double DISCARD_MOTOR_SPEED = -1.0;
+    public static double DISCARD_SERVO_SPEED = -1.0;
 
     public Intake() {
 
+    }
+
+    public void setMode(Mode mode) {
+        Intake.mode = mode;
     }
 
     @Override

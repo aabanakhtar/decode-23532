@@ -40,7 +40,7 @@ public class Blue3Ball extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                    new FollowPathCommand(robot.drive.follower, startToShootPreload),
+                    new FollowPathCommand(robot.drive.follower, startToShootPreload)
                 )
         );
     }

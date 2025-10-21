@@ -16,8 +16,8 @@ public class Shooter extends SubsystemBase {
         VELOCITY
     }
 
-    public static Mode mode = Mode.RAW;
     public static boolean tuning = false;
+    public static Mode mode = Mode.RAW;
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
 

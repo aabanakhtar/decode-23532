@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subsystem;
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
-
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @Configurable
@@ -46,6 +45,10 @@ public class Turret extends SubsystemBase {
         robot.telemetry.addData("target angle", targetAngle);
         robot.telemetry.addData("target power:", targetPower);
 
+        if (tuning) {
+            controller.setPIDF(kP, 0, 0, 0);
+        }
+
         switch (mode) {
             case RAW:
                 robot.shooterTurret.set(targetPower);
@@ -71,7 +74,7 @@ public class Turret extends SubsystemBase {
     }
 
     public boolean isAtHome() {
-        return robot.shooterTurret.isOverCurrent();
+        return robot.shooterTurret.motorEx.isOverCurrent();
     }
 
     private double calculateAngleFromEncoder() {

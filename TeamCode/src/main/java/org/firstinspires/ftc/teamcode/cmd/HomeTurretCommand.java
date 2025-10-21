@@ -14,7 +14,7 @@ public class HomeTurretCommand extends CommandBase {
     }
 
     @Override
-    public void init() {
+    public void initialize() {
         robot.turret.setMode(Turret.Mode.HOMING);
     }
 

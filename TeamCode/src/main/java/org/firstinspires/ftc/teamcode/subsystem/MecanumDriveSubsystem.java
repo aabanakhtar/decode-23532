@@ -28,8 +28,12 @@ public class MecanumDriveSubsystem extends SubsystemBase {
         follower.update();
     }
 
+    public void resetHeading(double newHeading) {
+        follower.setPose(follower.getPose().setHeading(newHeading));
+    }
+
     public void setTeleOpDrive(double forward, double strafe, double rotation) {
-        follower.setTeleOpDrive(forward, strafe, rotation, false);
+        follower.setTeleOpDrive(forward, strafe, rotation, true);
     }
 
     /**

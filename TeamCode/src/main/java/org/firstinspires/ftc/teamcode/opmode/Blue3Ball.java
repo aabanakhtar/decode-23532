@@ -17,8 +17,6 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 @Configurable
 public class Blue3Ball extends OpMode {
     public PathChain startToShootPreload;
-    public PathChain alignWithFirstBallRow;
-    public PathChain returnToShootPosition;
 
     public static Pose startPosition = new Pose(24.5, 136.5);
     public static Pose shootPreload = new Pose(40.23, 113.4);

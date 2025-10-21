@@ -21,10 +21,17 @@ public class SinglePlayerDrive extends OpMode {
     public void init() {
         robot = DuneStrider.get().init(new Pose(), hardwareMap, telemetry);
 
+        /* INTAKE BINDING */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(
                 new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST))
         ).whenReleased(
                 new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF))
+        );
+
+
+        /* IMU RESET for Heading Control */
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
+                new InstantCommand(() -> robot.drive.resetHeading(0))
         );
 
     }

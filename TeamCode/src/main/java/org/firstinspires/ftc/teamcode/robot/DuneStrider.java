@@ -13,7 +13,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
-import org.firstinspires.ftc.teamcode.subsystem.MecanumDriveSubsystem;
+import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
@@ -41,7 +41,7 @@ public class DuneStrider {
 
     // subsystems for FTCLib
     public Hubs hubs;
-    public MecanumDriveSubsystem drive;
+    public MecanumDrive drive;
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
@@ -99,7 +99,7 @@ public class DuneStrider {
         hardwareMap = map;
         // subsystem init
         hubs = new Hubs();
-        drive = new MecanumDriveSubsystem(pose);
+        drive = new MecanumDrive(pose);
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();

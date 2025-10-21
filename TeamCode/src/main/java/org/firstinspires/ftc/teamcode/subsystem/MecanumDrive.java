@@ -8,11 +8,11 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
-public class MecanumDriveSubsystem extends SubsystemBase {
+public class MecanumDrive extends SubsystemBase {
     public Follower follower;
-    public static Pose pose;
+    public static Pose lastPose;
 
-    public MecanumDriveSubsystem(Pose startingPose) {
+    public MecanumDrive(Pose startingPose) {
         this.follower = Constants.createFollower(DuneStrider.get().hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
@@ -20,11 +20,11 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        pose = follower.getPose();
+        lastPose = follower.getPose();
         DuneStrider robot = DuneStrider.get();
-        robot.telemetry.addData("X:", pose.getX());
-        robot.telemetry.addData("Y:", pose.getY());
-        robot.telemetry.addData("Heading", Math.toDegrees(pose.getHeading()));
+        robot.telemetry.addData("X:", lastPose.getX());
+        robot.telemetry.addData("Y:", lastPose.getY());
+        robot.telemetry.addData("Heading", Math.toDegrees(lastPose.getHeading()));
         follower.update();
     }
 

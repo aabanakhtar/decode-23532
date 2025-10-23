@@ -83,22 +83,11 @@ public class DuneStrider {
                 .setRunMode(CRServoEx.RunMode.RawPower);
         rightTransferWheel.setInverted(true);
 
-        leftTransferWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        rightTransferWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
-
-        // lynx modules and bulk caching setup
-        lynxModules = map.getAll(LynxModule.class);
-        lynxModules.forEach(x -> {
-            x.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        });
-        lynxModules.forEach(LynxModule::clearBulkCache);
 
         telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
         hardwareMap = map;
         // subsystem init
-        hubs = new Hubs();
         drive = new MecanumDrive(pose);
         intake = new Intake();
         shooter = new Shooter();

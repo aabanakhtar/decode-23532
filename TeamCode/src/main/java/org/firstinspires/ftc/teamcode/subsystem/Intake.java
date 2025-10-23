@@ -15,10 +15,10 @@ public class Intake extends SubsystemBase {
 
     public static Mode mode = Mode.OFF;
 
-    public static double INGEST_MOTOR_SPEED = 1.0;
-    public static double INGEST_SERVO_SPEED = 1.0;
-    public static double DISCARD_MOTOR_SPEED = -1.0;
-    public static double DISCARD_SERVO_SPEED = -1.0;
+    public static double INGEST_MOTOR_SPEED = -1.0;
+    public static double INGEST_SERVO_SPEED = -1.0;
+    public static double DISCARD_MOTOR_SPEED = 1.0;
+    public static double DISCARD_SERVO_SPEED = 1.0;
 
     public Intake() {
 

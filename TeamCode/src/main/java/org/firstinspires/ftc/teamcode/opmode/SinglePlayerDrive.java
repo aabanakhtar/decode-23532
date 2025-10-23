@@ -15,11 +15,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 @Configurable
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
+    private GamepadEx gamepad1Ex;
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(new Pose(), hardwareMap, telemetry);
-        GamepadEx gamepad1Ex = new GamepadEx(gamepad1);
+        robot = DuneStrider.get().init(new Pose(0, 0), hardwareMap, telemetry);
+        gamepad1Ex = new GamepadEx(gamepad1);
 
         /* INTAKE BINDING */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(

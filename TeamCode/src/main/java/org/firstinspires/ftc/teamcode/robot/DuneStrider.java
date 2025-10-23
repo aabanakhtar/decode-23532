@@ -73,7 +73,6 @@ public class DuneStrider {
         Arrays.asList(shooterLeft, shooterRight, shooterTurret, intakeTubing)
                 .forEach(x -> {
                     x.setRunMode(Motor.RunMode.RawPower);
-                    x.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
                 });
 
         // Transfer wheels

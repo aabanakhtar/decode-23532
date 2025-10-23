@@ -5,13 +5,17 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.teamcode.cmd.SetShooter;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
-@TeleOp(name = "TELEOP 🎮")
+@TeleOp(name = "TELEOP 🎮", group = "manual")
 @Configurable
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
@@ -24,11 +28,23 @@ public class SinglePlayerDrive extends OpMode {
 
         /* INTAKE BINDING */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(
-                new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST))
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST)),
+                        new SetShooter(Shooter.Mode.RAW, -0.3)
+                )
         ).whenReleased(
-                new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF))
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF)),
+                        new SetShooter(Shooter.Mode.RAW, 0.0)
+                )
         );
 
+        // shooter
+        new Trigger(() -> gamepad1Ex.gamepad.right_trigger > 0.5f).whenActive(
+                new ParallelCommandGroup()
+        ).whenInactive(
+                new ParallelCommandGroup()
+        );
 
         /* IMU RESET for Heading Control */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(

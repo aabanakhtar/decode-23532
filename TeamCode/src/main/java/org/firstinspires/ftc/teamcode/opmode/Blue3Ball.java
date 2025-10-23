@@ -15,6 +15,7 @@ import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @Configurable
+@TeleOp(name = "Blue: 3 ball", group = "auto")
 public class Blue3Ball extends OpMode {
     public PathChain startToShootPreload;
 
@@ -26,7 +27,7 @@ public class Blue3Ball extends OpMode {
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(new Pose(), hardwareMap, telemetry);
+        robot = DuneStrider.get().init(startPosition.setHeading(180), hardwareMap, telemetry);
         Follower follower = robot.drive.follower;
         startToShootPreload = follower
                 .pathBuilder()

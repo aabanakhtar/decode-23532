@@ -25,7 +25,7 @@ public class Shooter extends SubsystemBase {
     public static double kP = 0.0;
     public static double kI = 0.0;
     public static double kD = 0.0;
-
+    public static double tolerance = 100.0;
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, kV);
 
     public static final InterpLUT distToVeloLUT;
@@ -40,6 +40,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Shooter() {
+        flywheelVelocityPID.setTolerance(tolerance);
     }
 
 
@@ -57,6 +58,10 @@ public class Shooter extends SubsystemBase {
         }
     }
 
+    public void setMode(Mode mode) {
+        Shooter.mode = mode;
+    }
+
     public double getOptimalVelocityForDist(double distance_ft) {
         return distToVeloLUT.get(distance_ft);
     }
@@ -66,9 +71,19 @@ public class Shooter extends SubsystemBase {
         targetVelocityTicks = velo;
     }
 
+    public void setPower(double pow) {
+        mode = Mode.RAW;
+        targetRawPower = pow;
+    }
+
+    public boolean isAtTargetVelocity() {
+        return flywheelVelocityPID.atSetPoint();
+    }
+
     private void velocityMode() {
         if (tuning) {
             flywheelVelocityPID.setPIDF(kP, kI, kD, kV);
+            flywheelVelocityPID.setTolerance(tolerance);
         }
 
         // set the target velocity

@@ -7,15 +7,20 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
 
+import org.firstinspires.ftc.teamcode.cmd.SetShooter;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @Configurable
-@TeleOp(name = "Blue: 3 ball", group = "auto")
+@TeleOp(name = "Blue Top Side 12 Ball", group = "auto")
 public class Blue3Ball extends OpMode {
     public PathChain startToShootPreload;
 
@@ -39,7 +44,14 @@ public class Blue3Ball extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                    new FollowPathCommand(robot.drive.follower, startToShootPreload)
+                    new FollowPathCommand(robot.drive.follower, startToShootPreload),
+                    new SetShooter(Shooter.Mode.RAW, 1.0),
+                    new ParallelCommandGroup(
+                        new WaitCommand(3000),
+                        new HoldPointCommand(robot.drive.follower, robot.drive.getPose(), true)
+                    ),
+                    new SetShooter(Shooter.Mode.RAW, 0.0),
+                    new HoldPointCommand(robot.drive.follower, robot.drive.getPose(), true)
                 )
         );
     }

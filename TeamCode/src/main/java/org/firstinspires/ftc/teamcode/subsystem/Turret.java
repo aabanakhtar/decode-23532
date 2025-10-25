@@ -31,7 +31,7 @@ public class Turret extends SubsystemBase {
     public static final double TURRET_HOME_OFFSET = TURRET_ENCODER_CPR * (TURRET_MAX_ANGLE / 360.0); // to set right to negative
 
     public static double homingPower = 0.0;
-    public static PIDFController controller = new PIDFController(kP, kI, kD, 0);
+    public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
 
     public Turret() {
 
@@ -46,7 +46,7 @@ public class Turret extends SubsystemBase {
         robot.telemetry.addData("target power:", targetPower);
 
         if (tuning) {
-            controller.setPIDF(kP, 0, 0, 0);
+            turretAnglePID.setPIDF(kP, 0, 0, 0);
         }
 
         switch (mode) {
@@ -56,7 +56,7 @@ public class Turret extends SubsystemBase {
             case AIMING:
                 // aim within hardware limits
                 double targetAngleFixed = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, targetAngle));
-                double power = controller.calculate(calculateAngleFromEncoder(), targetAngleFixed);
+                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), targetAngleFixed);
                 robot.shooterTurret.set(power);
                 break;
             case HOMING:

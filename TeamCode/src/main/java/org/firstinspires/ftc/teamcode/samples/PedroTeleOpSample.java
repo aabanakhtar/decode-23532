@@ -30,7 +30,7 @@ public class PedroTeleOpSample extends CommandOpMode {
         */
 
         // Field-Centric Drive
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
         telemetryData.addData("X", follower.getPose().getX());

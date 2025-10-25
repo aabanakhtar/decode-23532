@@ -23,27 +23,28 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(new Pose(0, 0), hardwareMap, telemetry);
+        robot = DuneStrider.get().init(new Pose(0, 0, 0), hardwareMap, telemetry);
         gamepad1Ex = new GamepadEx(gamepad1);
 
         /* INTAKE BINDING */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(
                 new ParallelCommandGroup(
-                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST)),
-                        new SetShooter(Shooter.Mode.RAW, -0.3)
+                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST))
                 )
         ).whenReleased(
                 new ParallelCommandGroup(
-                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF)),
-                        new SetShooter(Shooter.Mode.RAW, 0.0)
+                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF))
                 )
         );
 
-        // shooter
-        new Trigger(() -> gamepad1Ex.gamepad.right_trigger > 0.5f).whenActive(
-                new ParallelCommandGroup()
-        ).whenInactive(
-                new ParallelCommandGroup()
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+                new ParallelCommandGroup(
+                        new SetShooter(Shooter.Mode.RAW, -1.0)
+                )
+        ).whenReleased(
+                new ParallelCommandGroup(
+                        new SetShooter(Shooter.Mode.RAW, 0.0)
+                )
         );
 
         /* IMU RESET for Heading Control */
@@ -60,13 +61,8 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void loop() {
-        robot.drive.setTeleOpDrive(
-                -gamepad1.left_stick_y,
-                gamepad1.left_stick_x,
-                gamepad1.right_stick_x
-        );
-
         robot.endLoop();
+        robot.drive.setTeleOpDrive(gamepad1Ex.getLeftY() * -1, gamepad1Ex.getLeftX(), gamepad1Ex.getRightX());
     }
 
 }

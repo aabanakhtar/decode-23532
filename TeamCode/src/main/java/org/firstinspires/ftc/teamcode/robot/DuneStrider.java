@@ -56,6 +56,9 @@ public class DuneStrider {
 
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
+        hardwareMap = map;
+        lynxModules = map.getAll(LynxModule.class);
+
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);
         shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.001);
@@ -68,6 +71,7 @@ public class DuneStrider {
 
         // Intake motor
         intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
+        intakeTubing.setInverted(true);
 
         // Apply common run modes
         Arrays.asList(shooterLeft, shooterRight, shooterTurret, intakeTubing)
@@ -80,13 +84,14 @@ public class DuneStrider {
                 .setRunMode(CRServoEx.RunMode.RawPower);
         rightTransferWheel = new CRServoEx(map, "rightTransferWheel")
                 .setRunMode(CRServoEx.RunMode.RawPower);
-        rightTransferWheel.setInverted(true);
+        leftTransferWheel.setInverted(true);
 
 
         telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
         hardwareMap = map;
         // subsystem init
+        hubs = new Hubs();
         drive = new MecanumDrive(pose);
         intake = new Intake();
         shooter = new Shooter();

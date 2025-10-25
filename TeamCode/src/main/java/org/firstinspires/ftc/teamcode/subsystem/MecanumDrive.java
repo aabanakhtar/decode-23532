@@ -10,11 +10,11 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 public class MecanumDrive extends SubsystemBase {
     public Follower follower;
-    public static Pose lastPose;
+    public static Pose lastPose = new Pose(0, 0, 0);
 
     public MecanumDrive(Pose startingPose) {
         this.follower = Constants.createFollower(DuneStrider.get().hardwareMap);
-        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.setStartingPose(startingPose == null ? new Pose(0, 0, 0) : startingPose);
         follower.update();
     }
 

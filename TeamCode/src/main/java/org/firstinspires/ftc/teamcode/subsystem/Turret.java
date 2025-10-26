@@ -24,11 +24,11 @@ public class Turret extends SubsystemBase {
     public static double kI = 0.0;
     public static double kD = 0.0;
 
-    // 312 RPM Yellow Jacket with gearing 27t to 95t
+    // 1620 RPM Yellow Jacket with gearing 27t to 95t
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
-    public static final double TURRET_ENCODER_CPR = 537.7 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
+    public static final double TURRET_ENCODER_CPR = 103.8 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
     public static final double TURRET_MAX_ANGLE = 84.56;
-    public static final double TURRET_HOME_OFFSET = TURRET_ENCODER_CPR * (TURRET_MAX_ANGLE / 360.0); // to set right to negative
+    public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (TURRET_MAX_ANGLE / 360.0); // to set right to negative
 
     public static double homingPower = 0.0;
     public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);

@@ -24,6 +24,7 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void init() {
         robot = DuneStrider.get().init(new Pose(0, 0, 0), hardwareMap, telemetry);
+        robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
         /* INTAKE BINDING */
@@ -37,13 +38,21 @@ public class SinglePlayerDrive extends OpMode {
                 )
         );
 
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.X).whenPressed(
+                new InstantCommand(() -> robot.intake.setMode(Intake.Mode.DISCARD))
+        ).whenReleased(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> robot.intake.setMode(Intake.Mode.OFF))
+                )
+        );
+
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
                 new ParallelCommandGroup(
                         new SetShooter(Shooter.Mode.RAW, -1.0)
                 )
         ).whenReleased(
                 new ParallelCommandGroup(
-                        new SetShooter(Shooter.Mode.RAW, 0.0)
+                        new SetShooter(Shooter.Mode.RAW, 0.7)
                 )
         );
 
@@ -62,7 +71,7 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void loop() {
         robot.endLoop();
-        robot.drive.setTeleOpDrive(gamepad1Ex.getLeftY() * -1, gamepad1Ex.getLeftX(), gamepad1Ex.getRightX());
+        robot.drive.setTeleOpDrive(gamepad1Ex.getLeftY(), -gamepad1Ex.getLeftX(), -gamepad1Ex.getRightX());
     }
 
 }

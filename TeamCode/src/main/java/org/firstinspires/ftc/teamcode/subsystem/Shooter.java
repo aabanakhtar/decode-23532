@@ -43,7 +43,6 @@ public class Shooter extends SubsystemBase {
         flywheelVelocityPID.setTolerance(tolerance);
     }
 
-
     @Override
     public void periodic() {
         switch (mode) {
@@ -93,7 +92,6 @@ public class Shooter extends SubsystemBase {
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
-
         // log useful info
         robot.telemetry.addLine("========SHOOTER========");
         robot.telemetry.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());

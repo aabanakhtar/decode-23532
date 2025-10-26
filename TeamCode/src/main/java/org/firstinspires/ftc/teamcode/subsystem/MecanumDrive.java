@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystem;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -12,8 +13,8 @@ public class MecanumDrive extends SubsystemBase {
     public Follower follower;
     public static Pose lastPose = new Pose(0, 0, 0);
 
-    public MecanumDrive(Pose startingPose) {
-        this.follower = Constants.createFollower(DuneStrider.get().hardwareMap);
+    public MecanumDrive(HardwareMap map, Pose startingPose) {
+        this.follower = Constants.createFollower(map);
         follower.setStartingPose(startingPose == null ? new Pose(0, 0, 0) : startingPose);
         follower.update();
     }

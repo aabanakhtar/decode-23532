@@ -41,7 +41,7 @@ public class DuneStrider {
 
     // subsystems for FTCLib
     public Hubs hubs;
-    public MecanumDrive drive;
+    public MecanumDrive drive = null;
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
@@ -85,14 +85,11 @@ public class DuneStrider {
         rightTransferWheel = new CRServoEx(map, "rightTransferWheel")
                 .setRunMode(CRServoEx.RunMode.RawPower);
         leftTransferWheel.setInverted(true);
-
-
         telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
-        hardwareMap = map;
         // subsystem init
         hubs = new Hubs();
-        drive = new MecanumDrive(pose);
+        drive = new MecanumDrive(map, pose);
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();

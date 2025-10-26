@@ -46,7 +46,7 @@ public class Intake extends SubsystemBase {
                 break;
 
             case OFF:
-                robot.intakeTubing.set(0.0);
+                robot.intakeTubing.set(0.45);
                 robot.leftTransferWheel.set(0.0);
                 robot.rightTransferWheel.set(0.0);
                 break;

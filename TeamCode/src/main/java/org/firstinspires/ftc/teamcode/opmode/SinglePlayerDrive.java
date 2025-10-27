@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import org.firstinspires.ftc.teamcode.cmd.SetShooter;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @TeleOp(name = "TELEOP 🎮", group = "manual")
@@ -23,7 +24,7 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(new Pose(0, 0, 0), hardwareMap, telemetry);
+        robot = DuneStrider.get().init(MecanumDrive.lastPose, hardwareMap, telemetry);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 

@@ -54,6 +54,13 @@ public class DuneStrider {
 
     public DuneStrider() {}
 
+    public void reset() {
+        intake.setMode(Intake.Mode.OFF);
+        turret.setMode(Turret.Mode.HOMING);
+        shooter.setMode(Shooter.Mode.RAW);
+        shooter.setPower(0);
+    }
+
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
         hardwareMap = map;
@@ -93,6 +100,8 @@ public class DuneStrider {
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();
+
+        reset();
         return inst;
     }
 

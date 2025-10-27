@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.subsystem;
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.util.Timing;
+
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @Configurable
@@ -20,7 +22,7 @@ public class Turret extends SubsystemBase {
     public static boolean tuning = false;
     public static double targetPower = 0.0;
     public static double targetAngle = 0.0;
-    public static double kP = 0.0;
+    public static double kP = 0.009;
     public static double kI = 0.0;
     public static double kD = 0.0;
 
@@ -30,7 +32,7 @@ public class Turret extends SubsystemBase {
     public static final double TURRET_MAX_ANGLE = 84.56;
     public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (TURRET_MAX_ANGLE / 360.0); // to set right to negative
 
-    public static double homingPower = 0.0;
+    public static double homingPower = -0.2;
     public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
 
     public Turret() {
@@ -44,9 +46,10 @@ public class Turret extends SubsystemBase {
         robot.telemetry.addData("angle", calculateAngleFromEncoder());
         robot.telemetry.addData("target angle", targetAngle);
         robot.telemetry.addData("target power:", targetPower);
+        robot.telemetry.addData("is at home:", isAtHome());
 
         if (tuning) {
-            turretAnglePID.setPIDF(kP, 0, 0, 0);
+            turretAnglePID.setPIDF(kP, 0, kD, 0);
         }
 
         switch (mode) {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.cmd;
 
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;

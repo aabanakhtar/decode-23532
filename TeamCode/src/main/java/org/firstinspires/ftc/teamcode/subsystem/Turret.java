@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
+
     public enum Mode {
         HOMING,
         AIMING,
@@ -36,7 +37,6 @@ public class Turret extends SubsystemBase {
     public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
 
     public Turret() {
-
     }
 
     @Override
@@ -58,7 +58,17 @@ public class Turret extends SubsystemBase {
                 break;
             case AIMING:
                 // aim within hardware limits
-                double targetAngleFixed = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, targetAngle));
+                double encoderAngle = calculateAngleFromEncoder();
+                // the location of the goal
+                double goalHeading = robot.drive.getShooterPositionPinpointRel().heading;
+                double robotHeading = Math.toDegrees(robot.drive.getPose().getHeading());
+                // the location of the turret with respect to robot and field
+                // turret heading is a range between around +- 85 degrees and is facing out the back of the bot, hence the 180 degrees
+                double turretHeading = robotHeading + 180.0 + encoderAngle;
+                double targetChange = normalizeAngle(goalHeading - turretHeading);
+                double target = encoderAngle + targetChange;
+                // clip the range to a suitable maximum (hardstops, maximize travel while we can)
+                double targetAngleFixed = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, target));
                 double power = turretAnglePID.calculate(calculateAngleFromEncoder(), targetAngleFixed);
                 robot.shooterTurret.set(power);
                 break;
@@ -76,15 +86,35 @@ public class Turret extends SubsystemBase {
         mode = amode;
     }
 
+    public void setTarget(double angle) {
+        mode = Mode.AIMING;
+        targetAngle = angle;
+    }
+
     public boolean isAtHome() {
         return robot.shooterTurret.motorEx.isOverCurrent();
     }
 
+    public boolean isAtTarget() {
+        return turretAnglePID.atSetPoint();
+    }
+
     private double calculateAngleFromEncoder() {
-        // right = negative in standard mathematics ( i think )
+        // results in 90 <---- 0 -----> -90
         double encoderPos = TURRET_HOME_OFFSET + robot.shooterTurret.encoder.getPosition();
         double angle = (encoderPos / TURRET_ENCODER_CPR) * 360.0;
         angle = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, angle));
         return angle;
+    }
+
+    private double normalizeAngle(double angleDegrees) {
+        double angle_rad = Math.toRadians(angleDegrees);
+        while (angle_rad > Math.PI) {
+            angle_rad -= 2 * Math.PI;
+        }
+        while (angle_rad < -Math.PI) {
+            angle_rad += 2 * Math.PI;
+        }
+        return Math.toDegrees(angle_rad);
     }
 }

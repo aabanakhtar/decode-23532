@@ -28,7 +28,7 @@ public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
 
     // alliance settings
-    public static Alliance alliance = Alliance.RED;
+    public static Alliance alliance = Alliance.BLUE;
 
     // hardware (besides dt, managed by pedro)
     public MotorEx shooterLeft, shooterRight, shooterTurret;
@@ -107,6 +107,7 @@ public class DuneStrider {
 
 
     public void endLoop() {
+        telemetry.addData("ALLIANCE", alliance.toString());
         CommandScheduler.getInstance().run();
         telemetry.update();
     }

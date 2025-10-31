@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 public class Shooter extends SubsystemBase {
     public enum Mode {
         RAW,
-        VELOCITY
+        VELOCITY,
     }
 
     public static boolean tuning = false;
@@ -45,6 +45,8 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
+        DuneStrider robot = DuneStrider.get();
+
         switch (mode) {
             case RAW:
                 rawMode();
@@ -55,6 +57,12 @@ public class Shooter extends SubsystemBase {
             default:
                 break;
         }
+
+        robot.telemetry.addLine("========SHOOTER========");
+        robot.telemetry.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
+        robot.telemetry.addData("Flywheel Target velocity", targetVelocityTicks);
+        robot.telemetry.addData("Flywheel Current velocity", robot.shooterLeft.encoder.getCorrectedVelocity());
+        robot.telemetry.addData("Flywheel raw power output", robot.shooterLeft.get());
     }
 
     public void setMode(Mode mode) {
@@ -92,12 +100,6 @@ public class Shooter extends SubsystemBase {
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
-        // log useful info
-        robot.telemetry.addLine("========SHOOTER========");
-        robot.telemetry.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
-        robot.telemetry.addData("Flywheel Target velocity", targetVelocityTicks);
-        robot.telemetry.addData("Flywheel Current velocity", currentVelocity);
-        robot.telemetry.addData("Flywheel raw power output", output);
     }
 
     private void rawMode() {

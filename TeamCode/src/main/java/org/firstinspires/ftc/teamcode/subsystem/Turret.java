@@ -15,7 +15,8 @@ public class Turret extends SubsystemBase {
     public enum Mode {
         HOMING,
         AIMING,
-        RAW
+        RAW,
+        FIXED
     }
 
     public static Mode mode = Mode.RAW;
@@ -56,7 +57,7 @@ public class Turret extends SubsystemBase {
             case RAW:
                 robot.shooterTurret.set(targetPower);
                 break;
-            case AIMING:
+            case AIMING: {
                 // aim within hardware limits
                 double encoderAngle = calculateAngleFromEncoder();
                 // the location of the goal
@@ -72,13 +73,22 @@ public class Turret extends SubsystemBase {
                 double power = turretAnglePID.calculate(calculateAngleFromEncoder(), targetAngleFixed);
                 robot.shooterTurret.set(power);
                 break;
-            case HOMING:
+            }
+            case HOMING: {
                 robot.shooterTurret.set(homingPower);
                 if (isAtHome()) {
-                    mode = Mode.AIMING;
+                    mode = Mode.FIXED;
+                    targetAngle = 0;
                     robot.shooterTurret.stopAndResetEncoder();
                 }
                 break;
+            }
+            case FIXED: {
+                double targetAngleFixed = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, targetAngle));
+                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), targetAngleFixed);
+                robot.shooterTurret.set(power);
+                break;
+            }
         }
     }
 

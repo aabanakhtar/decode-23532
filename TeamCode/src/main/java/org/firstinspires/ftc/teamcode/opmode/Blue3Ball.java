@@ -75,7 +75,8 @@ public class Blue3Ball extends OpMode {
                         new WaitCommand(1000),
                         new FollowPathCommand(follower, lineUpRow1),
                         new InstantCommand(() -> robot.intake.setMode(Intake.Mode.INGEST)),
-                        new FollowPathCommand(follower, intakeRow1, 0.1),
+                        new FollowPathCommand(follower, intakeRow1 ),
+                        new WaitCommand(1000),
                         new FollowPathCommand(follower, scoreRow1)
                 )
         );

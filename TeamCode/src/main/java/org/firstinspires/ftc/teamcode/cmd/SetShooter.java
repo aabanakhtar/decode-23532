@@ -4,19 +4,22 @@ import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 public class SetShooter extends CommandBase {
     private final DuneStrider robot = DuneStrider.get();
     private final Shooter.Mode mode;
-    private final double target;
+    private double target;
+    private boolean autoCalculateDistance = false;
 
-    // value = distance for VELOCITY
+    // value = distance for VELOCITY in FEET 🦶
     // value = power for RAW
-    public SetShooter(Shooter.Mode mode, double value) {
+    public SetShooter(Shooter.Mode mode, double value, boolean autoCalculateDistance) {
         addRequirements(robot.shooter);
         this.mode = mode;
         this.target = value;
+        this.autoCalculateDistance = autoCalculateDistance;
     }
 
     @Override
@@ -31,7 +34,15 @@ public class SetShooter extends CommandBase {
                 robot.shooter.setPower(target);
                 break;
             case VELOCITY: {
-                double targetVeloTicks = robot.shooter.getOptimalVelocityForDist(target);
+                double targetVeloTicks;
+                if (autoCalculateDistance) {
+                    MecanumDrive.AimAtTarget aimAt = robot.drive.getShooterPositionPinpointRel();
+                    // the function uses pinpoint inches so we have to convert
+                    targetVeloTicks = robot.shooter.getOptimalVelocityForDist(aimAt.distance / 12.0); // convert to ft
+                } else {
+                    targetVeloTicks = robot.shooter.getOptimalVelocityForDist(target);
+                }
+
                 robot.shooter.setVelocity(targetVeloTicks);
                 break;
             }

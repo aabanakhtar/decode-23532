@@ -50,6 +50,7 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
+    implementation 'io.github.skeleton-army.marrow:core:0.1.2'
     // SolversLib
     implementation "org.solverslib:core:0.3.3" // core
     implementation "org.solverslib:pedroPathing:0.3.3" // pedroPathing

@@ -32,6 +32,7 @@ public class SinglePlayerDrive extends OpMode {
 
         // initialization
         CommandScheduler.getInstance().schedule(new HomeTurretCommand());
+
         /* INTAKE BINDING */
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.A).whenPressed(
                 new ParallelCommandGroup(
@@ -53,11 +54,11 @@ public class SinglePlayerDrive extends OpMode {
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
                 new ParallelCommandGroup(
-                        new SetShooter(Shooter.Mode.RAW, -1.0)
+                        new SetShooter(Shooter.Mode.RAW, -1.0, false)
                 )
         ).whenReleased(
                 new ParallelCommandGroup(
-                        new SetShooter(Shooter.Mode.RAW, 0.7)
+                        new SetShooter(Shooter.Mode.RAW, 0.7, false)
                 )
         );
 
@@ -66,11 +67,6 @@ public class SinglePlayerDrive extends OpMode {
                 new InstantCommand(() -> robot.drive.resetHeading(0))
         );
 
-    }
-
-    @Override
-    public void init_loop() {
-        robot.endLoop();
     }
 
     @Override

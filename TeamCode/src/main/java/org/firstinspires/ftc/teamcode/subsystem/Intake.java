@@ -16,9 +16,7 @@ public class Intake extends SubsystemBase {
     public static Mode mode = Mode.OFF;
 
     public static double INGEST_MOTOR_SPEED = 1.0;
-    public static double INGEST_SERVO_SPEED = 1.0;
     public static double DISCARD_MOTOR_SPEED = -1.0;
-    public static double DISCARD_SERVO_SPEED = -1.0;
 
     public Intake() {
 
@@ -35,20 +33,14 @@ public class Intake extends SubsystemBase {
         switch (mode) {
             case INGEST:
                 robot.intakeTubing.set(INGEST_MOTOR_SPEED);
-                robot.leftTransferWheel.set(INGEST_SERVO_SPEED);
-                robot.rightTransferWheel.set(INGEST_SERVO_SPEED);
                 break;
 
             case DISCARD:
                 robot.intakeTubing.set(DISCARD_MOTOR_SPEED);
-                robot.leftTransferWheel.set(DISCARD_SERVO_SPEED);
-                robot.rightTransferWheel.set(DISCARD_SERVO_SPEED);
                 break;
 
             case OFF:
-                robot.intakeTubing.set(0.45);
-                robot.leftTransferWheel.set(0.0);
-                robot.rightTransferWheel.set(0.0);
+                robot.intakeTubing.set(0.0);
                 break;
 
             default:

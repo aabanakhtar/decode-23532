@@ -33,7 +33,6 @@ public class DuneStrider {
     // hardware (besides dt, managed by pedro)
     public MotorEx shooterLeft, shooterRight, shooterTurret;
     public MotorEx intakeTubing;
-    public CRServoEx leftTransferWheel, rightTransferWheel;
 
     // hubs
     public List<LynxModule> lynxModules;
@@ -87,11 +86,6 @@ public class DuneStrider {
                 });
 
         // Transfer wheels
-        leftTransferWheel = new CRServoEx(map, "leftTransferWheel")
-                .setRunMode(CRServoEx.RunMode.RawPower);
-        rightTransferWheel = new CRServoEx(map, "rightTransferWheel")
-                .setRunMode(CRServoEx.RunMode.RawPower);
-        leftTransferWheel.setInverted(true);
         telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
         // subsystem init

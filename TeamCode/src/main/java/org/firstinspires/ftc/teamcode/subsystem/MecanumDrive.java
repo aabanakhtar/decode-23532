@@ -48,7 +48,7 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public void setTeleOpDrive(double forward, double strafe, double rotation) {
-        follower.setTeleOpDrive(forward, strafe, rotation, true);
+        follower.setTeleOpDrive(forward, strafe, rotation, false);
     }
 
     /**

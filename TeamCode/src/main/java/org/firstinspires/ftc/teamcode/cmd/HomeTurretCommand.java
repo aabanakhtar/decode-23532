@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HomeTurretCommand extends CommandBase {
     private final DuneStrider robot = DuneStrider.get();
-    private final Timing.Timer timer = new Timing.Timer(2, TimeUnit.SECONDS);
+    private final Timing.Timer timer = new Timing.Timer(3, TimeUnit.SECONDS);
 
     public HomeTurretCommand() {
         addRequirements(DuneStrider.get().turret);

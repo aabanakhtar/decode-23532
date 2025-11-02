@@ -29,6 +29,10 @@ public class Commandlet {
         return new FollowPathCommand(follower, p, maxPow);
     }
 
+    public static Command run(Runnable r) {
+        return new InstantCommand(r);
+    })
+
     public static Command seq(Command... commands) {
         return new SequentialCommandGroup(commands);
     }

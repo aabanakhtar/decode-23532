@@ -90,21 +90,6 @@ public class Autonomous extends OpMode {
                                 execRow3(),
                                 nothing(),
                                 () -> nRows >= 3
-                        ),
-                        // intake row 1
-                        new ConditionalCommand (
-                                new SequentialCommandGroup(
-
-                                        waitFor(1000),
-                                        new FollowPathCommand(follower, lineUpRow3),
-                                        new FollowPathCommand(follower, intakeRow3),
-                                        waitFor(1000),
-                                        new FollowPathCommand(follower, scoreRow3),
-                                        waitFor(1000),
-                                        new FollowPathCommand(follower, park)
-                                ),
-                                nothing(),
-                                () -> true
                         )
                 )
         );

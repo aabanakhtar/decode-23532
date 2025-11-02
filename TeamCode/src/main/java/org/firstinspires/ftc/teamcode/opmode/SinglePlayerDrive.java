@@ -18,10 +18,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
+// World class teleop design
 @TeleOp(name = "TELEOP 🎮", group = "manual")
 @Configurable
 public class SinglePlayerDrive extends OpMode {
-    private DuneStrider robot;
+    private DuneStrider robot
+;
     private GamepadEx gamepad1Ex;
 
     @Override

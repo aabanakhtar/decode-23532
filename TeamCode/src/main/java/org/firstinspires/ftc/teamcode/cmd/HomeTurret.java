@@ -8,11 +8,11 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 import java.util.concurrent.TimeUnit;
 
-public class HomeTurretCommand extends CommandBase {
+public class HomeTurret extends CommandBase {
     private final DuneStrider robot = DuneStrider.get();
     private final Timing.Timer timer = new Timing.Timer(3, TimeUnit.SECONDS);
 
-    public HomeTurretCommand() {
+    public HomeTurret() {
         addRequirements(DuneStrider.get().turret);
     }
 

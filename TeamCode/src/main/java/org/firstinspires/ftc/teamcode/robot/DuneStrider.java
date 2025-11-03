@@ -10,6 +10,8 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
@@ -33,6 +35,7 @@ public class DuneStrider {
     // hardware (besides dt, managed by pedro)
     public MotorEx shooterLeft, shooterRight, shooterTurret;
     public MotorEx intakeTubing;
+    public ServoEx latchServo;
 
     // hubs
     public List<LynxModule> lynxModules;
@@ -78,6 +81,8 @@ public class DuneStrider {
         // Intake motor
         intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
         intakeTubing.setInverted(true);
+
+        latchServo = new ServoEx(map, "latch").setCachingTolerance(0.001);
 
         // Apply common run modes
         Arrays.asList(shooterLeft, shooterRight, shooterTurret, intakeTubing)

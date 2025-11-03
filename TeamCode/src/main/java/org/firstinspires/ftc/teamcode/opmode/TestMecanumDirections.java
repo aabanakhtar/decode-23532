@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -27,6 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  * reversal for driving will be handled in your actual drive code, not here.
  */
 @TeleOp(name = "Test Individual Motors", group = "Diagnostics")
+@Disabled
 public class TestMecanumDirections extends LinearOpMode {
 
     // Declare motor objects

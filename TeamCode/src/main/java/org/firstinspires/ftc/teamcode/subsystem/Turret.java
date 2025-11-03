@@ -32,12 +32,14 @@ public class Turret extends SubsystemBase {
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
     public static final double TURRET_ENCODER_CPR = 103.8 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
     public static final double TURRET_MAX_ANGLE = 84.56;
+    public static final double TURRET_PID_TOLERANCE = 4.0;
     public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (TURRET_MAX_ANGLE / 360.0); // to set right to negative
 
     public static double homingPower = -0.2;
     public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
 
     public Turret() {
+        turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
     }
 
     @Override

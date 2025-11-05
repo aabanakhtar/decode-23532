@@ -70,7 +70,7 @@ public class Turret extends SubsystemBase {
                 double turretHeading = robotHeading + 180.0 + encoderAngle;
                 double targetChange = normalizeAngle(goalHeading - turretHeading);
                 double target = encoderAngle + targetChange;
-                // clip the range to a suitable maximum (hardstops, maximize travel while we can)
+                // clip the range to a suitable maximum (hard stops, maximize travel while we can)
                 double targetAngleFixed = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, target));
                 double power = turretAnglePID.calculate(calculateAngleFromEncoder(), targetAngleFixed);
                 robot.shooterTurret.set(power);

@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @TeleOp(name = "⚙️ Pre-Match Configure robot")
 public class ConfigureRobot extends OpMode {
-
     private Prompter prompter;
 
     @Override

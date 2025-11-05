@@ -5,6 +5,7 @@ import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -32,12 +33,22 @@ public class Commandlet {
         return new InstantCommand(r);
     }
 
-    public static Command seq(Command... commands) {
-        return new SequentialCommandGroup(commands);
-    }
-
     public static Command intakeSet(Intake.Mode mode) {
         return run(() -> dunestrider.intake.setMode(mode));
+    }
+
+    public static Command shoot(long transfer_delay) {
+        return new SequentialCommandGroup(
+                run(() -> dunestrider.intake.openLatch())
+                        .alongWith(waitFor((long) Intake.INTAKE_LATCH_DELAY)),
+                intakeSet(Intake.Mode.INGEST),
+                waitFor(transfer_delay),
+                intakeSet(Intake.Mode.OFF)
+        );
+    }
+
+    public static Command fork(Command a, Command b) {
+        return new ParallelCommandGroup(a, b);
     }
 
     public static Command homeTurret() {

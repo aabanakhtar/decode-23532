@@ -21,11 +21,11 @@ public class Shooter extends SubsystemBase {
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
 
-    public static double kV = 0.0;
-    public static double kP = 0.0;
+    public static double kV = 0.00045;
+    public static double kP = 0.00505;
     public static double kI = 0.0;
     public static double kD = 0.0;
-    public static double tolerance = 100.0;
+    public static double tolerance = 30.0;
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, kV);
 
     public static final InterpLUT distToVeloLUT;

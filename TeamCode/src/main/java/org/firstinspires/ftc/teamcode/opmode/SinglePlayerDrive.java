@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.opmode;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
-import static org.firstinspires.ftc.teamcode.cmd.Commandlet.seq;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
+import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.INGEST;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
@@ -41,21 +42,22 @@ public class SinglePlayerDrive extends OpMode {
 
         // intake bindings
         bind(GamepadKeys.Button.A,
-                seq(
-                        // close the latch and run the intake
-                        run(() -> robot.intake.closeLatch()).alongWith(waitFor((long)Intake.INTAKE_LATCH_DELAY)),
-                        intakeSet(Intake.Mode.INGEST)),
-                intakeSet(Intake.Mode.OFF));
+                new SequentialCommandGroup(
+                    // close the latch and run the intake
+                    intakeSet(INGEST)
+                ),
+                intakeSet(Intake.Mode.OFF)
+        );
 
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
 
-        // shooter bindings
         bind(GamepadKeys.Button.RIGHT_BUMPER,
-            seq(
+            new SequentialCommandGroup(
                     run(() -> robot.intake.openLatch()).alongWith(waitFor((long)Intake.INTAKE_LATCH_DELAY)),
                     new SetShooter(Shooter.Mode.RAW, -1.0, false)
             ),
             new SetShooter(Shooter.Mode.RAW, 0.7, false)
+                    .alongWith(run(() -> robot.intake.closeLatch()))
         );
 
         // reset localizer bindings
@@ -74,7 +76,7 @@ public class SinglePlayerDrive extends OpMode {
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {
-        gamepad1Ex.getGamepadButton(button).whenPressed(pressedCmd).whenReleased(releasedCmd);
+        gamepad1Ex.getGamepadButton(button).whenPressed(pressedCmd).whenInactive(releasedCmd);
     }
 }
 

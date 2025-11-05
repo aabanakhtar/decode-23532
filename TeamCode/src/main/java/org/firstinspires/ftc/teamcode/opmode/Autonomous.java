@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.If;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.fork;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.go;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
-import static org.firstinspires.ftc.teamcode.cmd.Commandlet.seq;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW1;
 import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW2;
@@ -29,6 +31,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
@@ -37,6 +40,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 @TeleOp(name = "Global Goal Autonomous", group = "auto")
 public class Autonomous extends OpMode {
     public static double INTAKE_RECOLLECT_DELAY = 500.0;
+    public static double TRANSFER_DELAY = 2250;
 
     private DuneStrider robot;
     public PathChain shootPreload;
@@ -44,40 +48,22 @@ public class Autonomous extends OpMode {
     public PathChain intakeRow1, intakeRow2, intakeRow3;
     public PathChain scoreRow1, scoreRow2, scoreRow3;
     public PathChain park;
-
     public static int nRows = 3;
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(START_PRELOAD.setHeading(
-            DuneStrider.alliance == DuneStrider.Alliance.BLUE ? 0 : heading(180)
-        ), hardwareMap, telemetry);
+        robot = DuneStrider.get().init(START_PRELOAD.setHeading(0), hardwareMap, telemetry);
         Follower follower = robot.drive.follower;
 
-        if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) {
-            buildPathChains(follower);
-        } else {
-            buildPathChainsRed(follower);
-        }
+        if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
+        else buildPathChainsRed(follower);
 
         CommandScheduler.getInstance().schedule(
-                seq(
+                new SequentialCommandGroup(
                         execPreload(),
-                        If(
-                                execRow1(),
-                                nothing(),
-                                () -> nRows >= 1
-                        ),
-                        If(
-                                execRow2(),
-                                nothing(),
-                                () -> nRows >= 2
-                        ),
-                        If(
-                                execRow3(),
-                                nothing(),
-                                () -> nRows >= 3
-                        )
+                        If(execRow1(), nothing(), () -> nRows >= 1),
+                        If(execRow2(), nothing(), () -> nRows >= 2),
+                        If(execRow3(), nothing(), () -> nRows >= 3)
                 )
         );
     }
@@ -94,42 +80,75 @@ public class Autonomous extends OpMode {
     public void loop() {
         robot.endLoop();
     }
+
     private Command execPreload() {
-        return go(robot.drive.follower, shootPreload, 1.0);
+        return new SequentialCommandGroup(
+                go(robot.drive.follower, shootPreload, 1.0),
+                shoot((long) TRANSFER_DELAY)
+        );
     }
 
     private Command execRow1() {
-        return seq(
+        return new SequentialCommandGroup(
                 // RUN INTAKE WITH ALIGN
-                go(robot.drive.follower, lineUpRow1, 1.0).
-                        alongWith(intakeSet(Intake.Mode.INGEST)),
-                go(robot.drive.follower, intakeRow1, 0.6),
-                waitFor((long)INTAKE_RECOLLECT_DELAY),
-                go(robot.drive.follower, scoreRow1, 1.0)
-                        .alongWith(intakeSet(Intake.Mode.OFF))
+                fork(
+                        run(() -> robot.intake.closeLatch()),
+                        go(robot.drive.follower, lineUpRow1, 0.3)
+                ),
+
+                // eat the balls
+                intakeSet(Intake.Mode.INGEST),
+                go(robot.drive.follower, intakeRow1, 0.1),
+
+                // recollect for a bit
+                waitFor((long) INTAKE_RECOLLECT_DELAY),
+                intakeSet(Intake.Mode.OFF),
+
+                // go home and score
+                go(robot.drive.follower, scoreRow1, 0.3),
+                shoot((long) TRANSFER_DELAY)
         );
     }
 
     private Command execRow2() {
-        return seq(
-            go(robot.drive.follower, lineUpRow2, 1.0)
-                    .alongWith(intakeSet(Intake.Mode.INGEST)),
-            go(robot.drive.follower, intakeRow2, 0.6),
-            waitFor((long)INTAKE_RECOLLECT_DELAY),
-            go(robot.drive.follower, scoreRow2, 1.0)
-                    .alongWith(intakeSet(Intake.Mode.OFF))
+        return new SequentialCommandGroup(
+                fork(
+                        go(robot.drive.follower, lineUpRow2, 1.0),
+                        run(() -> robot.intake.closeLatch())
+                ),
+
+                // turn on the intake and eat up the balls
+                intakeSet(Intake.Mode.INGEST),
+                go(robot.drive.follower, intakeRow2, 0.1),
+
+                // hold for a delay
+                waitFor((long) INTAKE_RECOLLECT_DELAY),
+                intakeSet(Intake.Mode.OFF),
+
+                // go home and score
+                go(robot.drive.follower, scoreRow2, 1.0),
+                shoot((long) TRANSFER_DELAY)
         );
     }
 
     private Command execRow3() {
-        return seq(
-                // RUN INTAKE WITH ALIGN
-                go(robot.drive.follower, lineUpRow3, 1.0).
-                        alongWith(intakeSet(Intake.Mode.INGEST)),
-                go(robot.drive.follower, intakeRow3, 0.6),
-                waitFor((long)INTAKE_RECOLLECT_DELAY),
-                go(robot.drive.follower, scoreRow3, 1.0)
-                        .alongWith(intakeSet(Intake.Mode.OFF))
+        return new SequentialCommandGroup(
+                fork(
+                        go(robot.drive.follower, lineUpRow3, 1.0),
+                        run(() -> robot.intake.closeLatch())
+                ),
+
+                // turn on the intake and eat up the balls
+                intakeSet(Intake.Mode.INGEST),
+                go(robot.drive.follower, intakeRow3, 0.1),
+
+                // hold for a delay
+                waitFor((long) INTAKE_RECOLLECT_DELAY),
+                intakeSet(Intake.Mode.OFF),
+
+                // go home and score
+                go(robot.drive.follower, scoreRow3, 1.0),
+                shoot((long) TRANSFER_DELAY)
         );
     }
 

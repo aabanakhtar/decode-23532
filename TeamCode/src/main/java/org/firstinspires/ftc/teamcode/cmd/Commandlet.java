@@ -12,6 +12,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 import java.util.function.BooleanSupplier;
 
@@ -39,11 +40,14 @@ public class Commandlet {
 
     public static Command shoot(long transfer_delay) {
         return new SequentialCommandGroup(
-                run(() -> dunestrider.intake.openLatch())
-                        .alongWith(waitFor((long) Intake.INTAKE_LATCH_DELAY)),
+                run(() -> dunestrider.shooter.setVelocity(-1200)),
+                waitFor((long)Intake.INTAKE_LATCH_DELAY),
+                run(() -> dunestrider.intake.openLatch()),
                 intakeSet(Intake.Mode.INGEST),
                 waitFor(transfer_delay),
-                intakeSet(Intake.Mode.OFF)
+                intakeSet(Intake.Mode.OFF),
+                run(() -> dunestrider.intake.closeLatch()),
+                run(() -> dunestrider.shooter.setVelocity(-300))
         );
     }
 
@@ -52,7 +56,7 @@ public class Commandlet {
     }
 
     public static Command homeTurret() {
-        return new HomeTurret();
+        return new HomeTurret(3);
     }
 
 

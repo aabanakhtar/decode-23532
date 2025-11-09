@@ -10,10 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 public class HomeTurret extends CommandBase {
     private final DuneStrider robot = DuneStrider.get();
-    private final Timing.Timer timer = new Timing.Timer(3, TimeUnit.SECONDS);
+    private final Timing.Timer timer ;
 
-    public HomeTurret() {
+    public HomeTurret(double time) {
         addRequirements(DuneStrider.get().turret);
+        timer = new Timing.Timer((long) time, TimeUnit.SECONDS);
     }
 
     @Override
@@ -24,6 +25,12 @@ public class HomeTurret extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return robot.turret.isAtHome() || timer.done();
+        boolean cond = timer.done();
+        if (cond) {
+            robot.shooterTurret.stopAndResetEncoder();
+            robot.turret.setMode(Turret.Mode.FIXED);
+        }
+
+        return cond;
     }
 }

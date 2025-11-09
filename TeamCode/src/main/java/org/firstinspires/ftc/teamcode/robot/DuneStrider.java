@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystem.MegaTagDetector;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
@@ -99,7 +101,6 @@ public class DuneStrider {
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();
-
         reset();
         return inst;
     }

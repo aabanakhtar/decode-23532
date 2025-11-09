@@ -18,7 +18,6 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
-import org.firstinspires.ftc.teamcode.cmd.SetShooter;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
@@ -33,12 +32,12 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(MecanumDrive.lastPose, hardwareMap, telemetry);
+        robot = DuneStrider.get().init(new Pose(72, 72, 0), hardwareMap, telemetry);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
         // initialization
-        CommandScheduler.getInstance().schedule(new HomeTurret());
+        CommandScheduler.getInstance().schedule(new HomeTurret(3));
 
         // intake bindings
         bind(GamepadKeys.Button.A,
@@ -52,20 +51,21 @@ public class SinglePlayerDrive extends OpMode {
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
 
         bind(GamepadKeys.Button.RIGHT_BUMPER,
-            new SequentialCommandGroup(
-                    run(() -> robot.intake.openLatch()).alongWith(waitFor((long)Intake.INTAKE_LATCH_DELAY)),
-                    new SetShooter(Shooter.Mode.RAW, -1.0, false)
-            ),
-            new SetShooter(Shooter.Mode.RAW, 0.7, false)
-                    .alongWith(run(() -> robot.intake.closeLatch()))
+                    new SequentialCommandGroup(
+                            run(() -> robot.shooter.setVelocity(-1100)),
+                            waitFor((long)Intake.INTAKE_LATCH_DELAY),
+                            run(() -> robot.intake.openLatch())
+                    ),
+            run(() -> robot.intake.closeLatch())
+                    .alongWith(run(() -> robot.shooter.setVelocity(-600)))
         );
 
         // reset localizer bindings
         bind(GamepadKeys.Button.START, run(() -> robot.drive.resetHeading(0)), nothing());
-        bind(GamepadKeys.Button.SHARE, run(() -> robot.drive.follower.setPose(new Pose(7,7,0))), nothing());
+        bind(GamepadKeys.Button.SHARE, new HomeTurret(2), nothing());
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
-                new InstantCommand(() -> robot.drive.resetHeading(0))
+                new InstantCommand(() -> robot.drive.follower.setPose(new Pose(72, 72, 0)))
         );
     }
 

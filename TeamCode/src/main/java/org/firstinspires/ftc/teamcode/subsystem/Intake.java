@@ -20,7 +20,7 @@ public class Intake extends SubsystemBase {
     public static double INTAKE_LATCH_OPEN_POSITION = 0.4;
     public static double INTAKE_LATCH_CLOSE_POSITON = 0.67;
     public static double intakeLatchTargetPos = INTAKE_LATCH_OPEN_POSITION;
-    public static double INTAKE_LATCH_DELAY = 300.0;
+    public static double INTAKE_LATCH_DELAY = 1300.0;
 
     public Intake() {
 

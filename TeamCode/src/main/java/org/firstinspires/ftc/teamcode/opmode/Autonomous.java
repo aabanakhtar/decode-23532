@@ -33,6 +33,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
+import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 
@@ -60,6 +61,7 @@ public class Autonomous extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
+                        new HomeTurret(1),
                         execPreload(),
                         If(execRow1(), nothing(), () -> nRows >= 1),
                         If(execRow2(), nothing(), () -> nRows >= 2),

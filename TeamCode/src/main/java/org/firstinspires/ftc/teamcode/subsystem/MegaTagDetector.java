@@ -12,10 +12,11 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 public class MegaTagDetector extends SubsystemBase {
     private final Limelight3A limelight;
-    Pose lastPose = null;
+    LLResult lastResult = null;
 
     public MegaTagDetector(Limelight3A limelight) {
         this.limelight = limelight;
+        limelight.setPollRateHz(100);
         limelight.pipelineSwitch(0);
         limelight.start();
     }
@@ -24,30 +25,24 @@ public class MegaTagDetector extends SubsystemBase {
     public void periodic() {
         double robotHeading = Math.toDegrees(DuneStrider.get().drive.getPose().getHeading());
         limelight.updateRobotOrientation(robotHeading);
+
         // Fetch the latest data
-        LLResult latestResult = limelight.getLatestResult();
-        if (latestResult == null) {
+        lastResult = limelight.getLatestResult();
+        if (lastResult == null) {
             return;
         }
 
-        double xPos = 0, yPos = 0;
-        if (latestResult.isValid()) {
-            Pose3D mtPose = latestResult.getBotpose_MT2();
-            if (mtPose != null) {
-                xPos = mtPose.getPosition().x + 72.0;
-                yPos = mtPose.getPosition().y + 72.0;
-                lastPose = new Pose(xPos, yPos, Math.toRadians(robotHeading));
-            }
+        if (!lastResult.isValid()) {
+            lastResult = null;
+            return;
         }
 
         Telemetry t = DuneStrider.get().telemetry;
-        t.addLine("=======MT2 Detector=======");
-        t.addData("Latest Pose X:", xPos);
-        t.addData("Latest Pose Y:", yPos);
+        t.addData("TAG X OFFSET DEGREES", lastResult.getTx());
     }
 
-    // returns the last detected pose from the pose estimator
-    public Pose getDetectedPose() {
-        return lastPose;
+    public LLResult getLastResult() {
+        return lastResult;
     }
+
 }

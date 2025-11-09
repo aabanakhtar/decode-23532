@@ -19,13 +19,13 @@ public class GlobalAutonomousPoses {
 
         // ROW 2
         public static Pose END_LINEUP_START_INTAKE = new Pose(48.190, 89.904);
-        public static Pose END_INTAKE_START_SCORE = new Pose(12.360, 83.451);
+        public static Pose END_INTAKE_START_SCORE = new Pose(20, 83.451);
         // score row 1 bezier control points
         public static Pose CONTROL1_SCORE_ROW1 = new Pose(52.726, 78.235);
 
         // ROW 2
         public static Pose END_LINEUP_START_INTAKE2 = new Pose(53.377, 60.020);
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(5, 64);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(10, 64);
         public static Pose CONTROL1_SCORE_ROW2 = new Pose(74.965, 60.731);
 
         // ROW 3

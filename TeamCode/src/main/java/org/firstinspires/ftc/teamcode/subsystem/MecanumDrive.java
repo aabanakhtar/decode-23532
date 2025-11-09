@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import android.util.Range;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
@@ -12,7 +14,7 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import java.util.Objects;
 
 public class MecanumDrive extends SubsystemBase {
-    public class AimAtTarget {
+    public static class AimAtTarget {
         public double distance;
         public double heading;
 
@@ -22,10 +24,11 @@ public class MecanumDrive extends SubsystemBase {
         }
     }
 
+    public AimAtTarget lastAimTarget = new AimAtTarget(0, 0);
+
     public Follower follower;
     public static Pose lastPose = new Pose(0, 0, 0);
     public static Pose blueGoalPose = new Pose(13, 134);
-    public static Pose redGoalPose = blueGoalPose.mirror();
 
     public MecanumDrive(HardwareMap map, Pose startingPose) {
         this.follower = Constants.createFollower(map);
@@ -37,6 +40,11 @@ public class MecanumDrive extends SubsystemBase {
     public void periodic() {
         lastPose = follower.getPose();
         DuneStrider robot = DuneStrider.get();
+
+        lastAimTarget = getShooterPositionPinpointRel2();
+        robot.telemetry.addData("goal heading", lastAimTarget.heading);
+        robot.telemetry.addData("goal distance", lastAimTarget.distance);
+
         robot.telemetry.addData("X:", lastPose.getX());
         robot.telemetry.addData("Y:", lastPose.getY());
         robot.telemetry.addData("Heading", Math.toDegrees(lastPose.getHeading()));
@@ -65,17 +73,45 @@ public class MecanumDrive extends SubsystemBase {
         return follower.getVelocity();
     }
 
-    public AimAtTarget getShooterPositionPinpointRel() {
-        Pose targetPose;
-        if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) {
-            targetPose = blueGoalPose;
-        } else {
-            targetPose = redGoalPose;
+    public AimAtTarget getAimTarget() {
+        return lastAimTarget;
+    }
+
+    private AimAtTarget getShooterPositionPinpointRel() {
+        double distance = blueGoalPose.distanceFrom(follower.getPose()) / 12.0;
+        double angle = Math.atan2(
+            blueGoalPose.getY() - getPose().getY(), blueGoalPose.getX() - getPose().getX()
+        );
+
+        return new AimAtTarget(distance, Math.toDegrees(angle));
+    }
+
+
+    private AimAtTarget getShooterPositionPinpointRel2() {
+        double distance = blueGoalPose.distanceFrom(follower.getPose()) / 12.0;
+
+        double absAngleToTarget = Math.atan2(
+                blueGoalPose.getY() - getPose().getY(),
+                blueGoalPose.getX() - getPose().getX()
+        );
+
+        double robotHeading = getPose().getHeading(); // rad
+        double turretRelativeAngleRad = absAngleToTarget - (robotHeading + Math.PI);
+
+        // do normalization
+        while (turretRelativeAngleRad <= -Math.PI) {
+            turretRelativeAngleRad += 2 * Math.PI;
+        }
+        while (turretRelativeAngleRad > Math.PI) {
+            turretRelativeAngleRad -= 2 * Math.PI;
         }
 
-        Pose currentPose = getPose();
-        double targetAngle = Math.toDegrees(Math.atan2(targetPose.getY() - currentPose.getY(), targetPose.getX() - currentPose.getX()));
-        double distance = Math.sqrt(Math.pow(targetPose.getX() - currentPose.getX(), 2) + Math.pow(targetPose.getY() - currentPose.getY(), 2));
-        return new AimAtTarget(distance, targetAngle);
+        double turretRelativeAngleDeg = Math.toDegrees(turretRelativeAngleRad);
+
+        double minAngle = -Turret.TURRET_MAX_ANGLE;
+        double maxAngle = Turret.TURRET_MAX_ANGLE;
+        double constrainedAngleDeg = Math.max(minAngle, Math.min(maxAngle, turretRelativeAngleDeg));
+        return new AimAtTarget(distance, constrainedAngleDeg);
     }
+
 }

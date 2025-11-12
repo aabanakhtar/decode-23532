@@ -28,7 +28,7 @@ public class HomeTurret extends CommandBase {
         boolean cond = timer.done();
         if (cond) {
             robot.shooterTurret.stopAndResetEncoder();
-            robot.turret.setMode(Turret.Mode.FIXED);
+            robot.turret.setMode(Turret.Mode.DYNAMIC);
         }
 
         return cond;

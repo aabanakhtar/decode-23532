@@ -44,11 +44,12 @@ public class Autonomous extends OpMode {
     public static double TRANSFER_DELAY = 2250;
 
     private DuneStrider robot;
-    public PathChain shootPreload;
-    public PathChain lineUpRow1, lineUpRow2, lineUpRow3;
-    public PathChain intakeRow1, intakeRow2, intakeRow3;
-    public PathChain scoreRow1, scoreRow2, scoreRow3;
-    public PathChain park;
+    private PathChain shootPreload;
+    private PathChain lineUpRow1, lineUpRow2, lineUpRow3;
+    private PathChain intakeRow1, intakeRow2, intakeRow3;
+    private PathChain scoreRow1, scoreRow2, scoreRow3;
+    private PathChain nudgeGate;
+    private PathChain park;
     public static int nRows = 3;
 
     @Override
@@ -240,7 +241,7 @@ public class Autonomous extends OpMode {
         park = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(UNIVERSAL_SCORE_TARGET, new Pose(53.614, 100))
+                        new BezierLine(UNIVERSAL_SCORE_TARGET, new Pose(72, 72))
                 )
                 .setLinearHeadingInterpolation(heading(-45), heading(0))
                 .build();

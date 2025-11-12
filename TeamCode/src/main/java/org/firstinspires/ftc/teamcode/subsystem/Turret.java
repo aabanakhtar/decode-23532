@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @Configurable
@@ -16,6 +15,7 @@ public class Turret extends SubsystemBase {
     public enum Mode {
         HOMING,
         RAW,
+        DYNAMIC,
         FIXED
     }
 
@@ -61,16 +61,23 @@ public class Turret extends SubsystemBase {
             case RAW:
                 robot.shooterTurret.set(targetPower);
                 break;
+
             case HOMING: {
                 robot.shooterTurret.set(homingPower);
                 if (isAtHome()) {
-                    mode = Mode.FIXED;
+                    mode = Mode.DYNAMIC;
                     robot.shooterTurret.stopAndResetEncoder();
                 }
                 break;
             }
+            case DYNAMIC: {
+                double target = robot.drive.getAimTarget().heading;
+                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), target);
+                robot.shooterTurret.set(power);
+                break;
+            }
             case FIXED: {
-                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), robot.drive.getAimTarget().heading);
+                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), 0);
                 robot.shooterTurret.set(power);
                 break;
             }
@@ -81,8 +88,13 @@ public class Turret extends SubsystemBase {
         mode = amode;
     }
 
+    public Mode getMode() {
+        return mode;
+    }
+
     public boolean isAtHome() {
-        return robot.shooterTurret.motorEx.isOverCurrent();
+        // TODO: tune
+        return robot.shooterTurret.motorEx.getCurrent(CurrentUnit.AMPS) > 100000.0;
     }
 
     public boolean isAtTarget() {

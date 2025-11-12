@@ -28,7 +28,8 @@ public class MecanumDrive extends SubsystemBase {
 
     public Follower follower;
     public static Pose lastPose = new Pose(0, 0, 0);
-    public static Pose blueGoalPose = new Pose(13, 134);
+    public static final Pose blueGoalPose = new Pose(13, 134);
+    public static final Pose redGoalPose = blueGoalPose.mirror();
 
     public MecanumDrive(HardwareMap map, Pose startingPose) {
         this.follower = Constants.createFollower(map);
@@ -88,11 +89,12 @@ public class MecanumDrive extends SubsystemBase {
 
 
     private AimAtTarget getShooterPositionPinpointRel2() {
-        double distance = blueGoalPose.distanceFrom(follower.getPose()) / 12.0;
+        Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
+        double distance = chosenPose.distanceFrom(follower.getPose()) / 12.0;
 
         double absAngleToTarget = Math.atan2(
-                blueGoalPose.getY() - getPose().getY(),
-                blueGoalPose.getX() - getPose().getX()
+                chosenPose.getY() - getPose().getY(),
+                chosenPose.getX() - getPose().getX()
         );
 
         double robotHeading = getPose().getHeading(); // rad

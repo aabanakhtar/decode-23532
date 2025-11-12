@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.If;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
-import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.INGEST;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -12,16 +12,17 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.gamepad.ToggleButtonReader;
 
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 // World class teleop design
 @TeleOp(name = "Field Centric TeleOp 🎮", group = "manual")
@@ -29,12 +30,18 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
     private GamepadEx gamepad1Ex;
+    ToggleButtonReader shooterToggle;
+    ToggleButtonReader aimbotFallbackToggle;
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(new Pose(72, 72, 0), hardwareMap, telemetry);
+        robot = DuneStrider.get().init(MecanumDrive.lastPose, hardwareMap, telemetry);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
+
+        // our light switches
+        shooterToggle = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.DPAD_UP);
+        aimbotFallbackToggle = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.LEFT_BUMPER);
 
         // initialization
         CommandScheduler.getInstance().schedule(new HomeTurret(3));
@@ -49,15 +56,9 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
-
         bind(GamepadKeys.Button.RIGHT_BUMPER,
-                    new SequentialCommandGroup(
-                            run(() -> robot.shooter.setVelocity(-1100)),
-                            waitFor((long)Intake.INTAKE_LATCH_DELAY),
-                            run(() -> robot.intake.openLatch())
-                    ),
+            run(() -> robot.intake.openLatch()),
             run(() -> robot.intake.closeLatch())
-                    .alongWith(run(() -> robot.shooter.setVelocity(-600)))
         );
 
         // reset localizer bindings
@@ -65,14 +66,34 @@ public class SinglePlayerDrive extends OpMode {
         bind(GamepadKeys.Button.SHARE, new HomeTurret(2), nothing());
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
-                new InstantCommand(() -> robot.drive.follower.setPose(new Pose(72, 72, 0)))
+                If(
+                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, 0))),
+                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, 180))),
+                        () -> DuneStrider.alliance == DuneStrider.Alliance.RED
+                )
         );
     }
 
     @Override
     public void loop() {
         robot.endLoop();
-        robot.drive.setTeleOpDrive(gamepad1Ex.getLeftY(), -gamepad1Ex.getLeftX(), -gamepad1Ex.getRightX());
+
+        shooterToggle.readValue();
+        if (shooterToggle.getState()) {
+            robot.shooter.setMode(Shooter.Mode.DYNAMIC);
+        } else {
+            robot.shooter.setIdle();
+        }
+
+        aimbotFallbackToggle.readValue();
+        // the mode check prevents us from inadvertently interrupting commands
+        if (aimbotFallbackToggle.getState() && robot.turret.getMode() != Turret.Mode.HOMING) {
+            robot.turret.setMode(Turret.Mode.DYNAMIC);
+        } else if (robot.turret.getMode() != Turret.Mode.HOMING) {
+            robot.turret.setMode(Turret.Mode.FIXED);
+        }
+
+        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY(), gamepad1Ex.getLeftX(), gamepad1Ex.getRightX());
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {

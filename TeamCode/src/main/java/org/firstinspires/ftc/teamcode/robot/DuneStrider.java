@@ -61,7 +61,7 @@ public class DuneStrider {
     public void reset() {
         intake.setMode(Intake.Mode.OFF);
         turret.setMode(Turret.Mode.HOMING);
-        shooter.setMode(Shooter.Mode.RAW);
+        shooter.setIdle();
         shooter.setPower(0);
     }
 

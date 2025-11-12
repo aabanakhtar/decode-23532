@@ -6,6 +6,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -39,26 +40,32 @@ public class Commandlet {
     }
 
     public static Command shoot(long transfer_delay) {
+        // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
-                run(() -> dunestrider.shooter.setVelocity(-1200)),
-                waitFor((long)Intake.INTAKE_LATCH_DELAY),
-                run(() -> dunestrider.intake.openLatch()),
-                intakeSet(Intake.Mode.INGEST),
-                waitFor(transfer_delay),
+                new ParallelCommandGroup(
+                    new ParallelRaceGroup(
+                            new AutoSetShooter(),
+                            waitFor(2500)
+                    ),
+                    // open the latch
+                    waitFor((long)Intake.INTAKE_LATCH_DELAY),
+                    run(() -> dunestrider.intake.openLatch())
+                ),
+                // run the intake
+                new ParallelCommandGroup(
+                    intakeSet(Intake.Mode.INGEST),
+                    waitFor(transfer_delay)
+                ),
+                // turn off after doing everything
                 intakeSet(Intake.Mode.OFF),
                 run(() -> dunestrider.intake.closeLatch()),
-                run(() -> dunestrider.shooter.setVelocity(-300))
+                run(() -> dunestrider.shooter.setIdle())
         );
     }
 
     public static Command fork(Command a, Command b) {
         return new ParallelCommandGroup(a, b);
     }
-
-    public static Command homeTurret() {
-        return new HomeTurret(3);
-    }
-
 
     public static Command waitFor(long duration_ms) {
         return new WaitCommand(duration_ms);

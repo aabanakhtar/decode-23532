@@ -44,21 +44,24 @@ public class SinglePlayerDrive extends OpMode {
         aimbotFallbackToggle = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.LEFT_BUMPER);
 
         // initialization
-        CommandScheduler.getInstance().schedule(new HomeTurret(3));
+        CommandScheduler.getInstance().schedule(new HomeTurret(2));
 
         // intake bindings
         bind(GamepadKeys.Button.A,
-                new SequentialCommandGroup(
-                    // close the latch and run the intake
-                    intakeSet(INGEST)
-                ),
+                intakeSet(INGEST),
                 intakeSet(Intake.Mode.OFF)
         );
-
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
+        // gate
         bind(GamepadKeys.Button.RIGHT_BUMPER,
-            run(() -> robot.intake.openLatch()),
-            run(() -> robot.intake.closeLatch())
+                run(() -> {
+                    robot.intake.openLatch();
+                    robot.shooter.setMode(Shooter.Mode.DYNAMIC); // auto on
+                }),
+                run(() -> {
+                    robot.intake.closeLatch();
+                    robot.shooter.setIdle(); // auto off
+                })
         );
 
         // reset localizer bindings
@@ -68,7 +71,7 @@ public class SinglePlayerDrive extends OpMode {
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
                 If(
                         run(() -> robot.drive.follower.setPose(new Pose(72, 72, 0))),
-                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, 180))),
+                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, Math.toRadians(180)))),
                         () -> DuneStrider.alliance == DuneStrider.Alliance.RED
                 )
         );
@@ -78,22 +81,15 @@ public class SinglePlayerDrive extends OpMode {
     public void loop() {
         robot.endLoop();
 
-        shooterToggle.readValue();
-        if (shooterToggle.getState()) {
-            robot.shooter.setMode(Shooter.Mode.DYNAMIC);
-        } else {
-            robot.shooter.setIdle();
-        }
-
         aimbotFallbackToggle.readValue();
         // the mode check prevents us from inadvertently interrupting commands
         if (aimbotFallbackToggle.getState() && robot.turret.getMode() != Turret.Mode.HOMING) {
-            robot.turret.setMode(Turret.Mode.DYNAMIC);
-        } else if (robot.turret.getMode() != Turret.Mode.HOMING) {
             robot.turret.setMode(Turret.Mode.FIXED);
+        } else if (robot.turret.getMode() != Turret.Mode.HOMING) {
+            robot.turret.setMode(Turret.Mode.DYNAMIC);
         }
 
-        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY(), gamepad1Ex.getLeftX(), gamepad1Ex.getRightX());
+        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY(), gamepad1Ex.getLeftX(), -gamepad1Ex.getRightX());
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {

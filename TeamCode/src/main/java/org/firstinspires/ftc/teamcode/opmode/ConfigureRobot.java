@@ -20,7 +20,7 @@ public class ConfigureRobot extends OpMode {
 
         prompter.onComplete(() -> {
             DuneStrider.alliance = prompter.get("alliance");
-            Autonomous.nRows = prompter.get("rows");
+            GoalAuto.nRows = prompter.get("rows");
             telemetry.addLine("Done configuring!");
         });
 

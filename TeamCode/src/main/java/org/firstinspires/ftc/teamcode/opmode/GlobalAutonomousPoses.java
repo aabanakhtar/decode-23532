@@ -13,7 +13,7 @@ public class GlobalAutonomousPoses {
     @Configurable
     public static class GoalSidePoses {
         // The global scoring location
-        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(53.179, 93.882);
+        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(43.179, 105.882);
         // preload points
         public static Pose START_PRELOAD = new Pose(31.636, 136.515);
 

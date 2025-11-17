@@ -42,11 +42,8 @@ public class Commandlet {
     public static Command shoot(long transfer_delay) {
         // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
+                waitFor(500),
                 new ParallelCommandGroup(
-                    new ParallelRaceGroup(
-                            new AutoSetShooter(),
-                            waitFor(2500)
-                    ),
                     // open the latch
                     waitFor((long)Intake.INTAKE_LATCH_DELAY),
                     run(() -> dunestrider.intake.openLatch())
@@ -57,9 +54,9 @@ public class Commandlet {
                     waitFor(transfer_delay)
                 ),
                 // turn off after doing everything
+                run(() -> DuneStrider.get().shooter.setIdle()),
                 intakeSet(Intake.Mode.OFF),
-                run(() -> dunestrider.intake.closeLatch()),
-                run(() -> dunestrider.shooter.setIdle())
+                run(() -> dunestrider.intake.closeLatch())
         );
     }
 

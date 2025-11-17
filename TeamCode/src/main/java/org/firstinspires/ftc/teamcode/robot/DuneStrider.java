@@ -8,7 +8,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
@@ -17,7 +16,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subsystem.MegaTagDetector;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
@@ -38,6 +36,7 @@ public class DuneStrider {
     public MotorEx shooterLeft, shooterRight, shooterTurret;
     public MotorEx intakeTubing;
     public ServoEx latchServo;
+    public Limelight3A limelight;
 
     // hubs
     public List<LynxModule> lynxModules;
@@ -63,12 +62,18 @@ public class DuneStrider {
         turret.setMode(Turret.Mode.HOMING);
         shooter.setIdle();
         shooter.setPower(0);
+
+        limelight.pipelineSwitch(0);
+        // check TODO
+        limelight.start();
     }
 
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);

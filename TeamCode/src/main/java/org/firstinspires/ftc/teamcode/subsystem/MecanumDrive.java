@@ -91,10 +91,13 @@ public class MecanumDrive extends SubsystemBase {
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         double distance = chosenPose.distanceFrom(follower.getPose()) / 12.0;
+        double turretOffset = 4.5;
+        double turretXOffset = turretOffset * Math.cos(getPose().getHeading() + Math.PI);
+        double turretYOffset = turretOffset * Math.cos(getPose().getHeading() + Math.PI);
 
         double absAngleToTarget = Math.atan2(
-                chosenPose.getY() - getPose().getY(),
-                chosenPose.getX() - getPose().getX()
+                chosenPose.getY() - (getPose().getY() + turretYOffset),
+                chosenPose.getX() - (getPose().getX() + turretXOffset)
         );
 
         double robotHeading = getPose().getHeading(); // rad

@@ -28,7 +28,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -36,12 +35,13 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @Configurable
-@TeleOp(name = "Global Goal Autonomous", group = "auto")
-public class Autonomous extends OpMode {
-    public static double INTAKE_RECOLLECT_DELAY = 500.0;
-    public static double TRANSFER_DELAY = 2250;
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto")
+public class GoalAuto extends OpMode {
+    public static double INTAKE_RECOLLECT_DELAY = 300.0;
+    public static double TRANSFER_DELAY = 1000;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -54,6 +54,8 @@ public class Autonomous extends OpMode {
 
     @Override
     public void init() {
+        Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(0) : START_PRELOAD.setHeading(180) ;
+
         robot = DuneStrider.get().init(START_PRELOAD.setHeading(0), hardwareMap, telemetry);
         Follower follower = robot.drive.follower;
 
@@ -66,7 +68,8 @@ public class Autonomous extends OpMode {
                         execPreload(),
                         If(execRow1(), nothing(), () -> nRows >= 1),
                         If(execRow2(), nothing(), () -> nRows >= 2),
-                        If(execRow3(), nothing(), () -> nRows >= 3)
+                        If(execRow3(), nothing(), () -> nRows >= 3),
+                        run(() -> robot.shooter.setVelocity(0))
                 )
         );
     }
@@ -86,6 +89,8 @@ public class Autonomous extends OpMode {
 
     private Command execPreload() {
         return new SequentialCommandGroup(
+                run(() -> robot.intake.openLatch()),
+                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                 go(robot.drive.follower, shootPreload, 1.0),
                 shoot((long) TRANSFER_DELAY)
         );
@@ -96,19 +101,20 @@ public class Autonomous extends OpMode {
                 // RUN INTAKE WITH ALIGN
                 fork(
                         run(() -> robot.intake.closeLatch()),
-                        go(robot.drive.follower, lineUpRow1, 0.3)
+                        go(robot.drive.follower, lineUpRow1, 1.0)
                 ),
 
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeRow1, 0.1),
+                go(robot.drive.follower, intakeRow1, 1.0),
 
                 // recollect for a bit
                 waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score
-                go(robot.drive.follower, scoreRow1, 0.3),
+                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                go(robot.drive.follower, scoreRow1, 1.0),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -122,14 +128,15 @@ public class Autonomous extends OpMode {
 
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeRow2, 0.1),
+                go(robot.drive.follower, intakeRow2, 1),
 
                 // hold for a delay
                 waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score
-                go(robot.drive.follower, scoreRow2, 1.0),
+                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                go(robot.drive.follower, scoreRow2, 1),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -143,14 +150,15 @@ public class Autonomous extends OpMode {
 
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeRow3, 0.1),
+                go(robot.drive.follower, intakeRow3, 1),
 
                 // hold for a delay
                 waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score
-                go(robot.drive.follower, scoreRow3, 1.0),
+                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                go(robot.drive.follower, scoreRow3, 1),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -176,7 +184,7 @@ public class Autonomous extends OpMode {
 
         scoreRow1 = follower
                 .pathBuilder()
-                .addPath(new BezierCurve(END_INTAKE_START_SCORE, CONTROL1_SCORE_ROW1, UNIVERSAL_SCORE_TARGET))
+                .addPath(new BezierLine(END_INTAKE_START_SCORE, UNIVERSAL_SCORE_TARGET))
                 .setLinearHeadingInterpolation(heading(180), heading(-45))
                 .build();
 
@@ -228,9 +236,8 @@ public class Autonomous extends OpMode {
         scoreRow3 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(
+                        new BezierLine(
                                 END_INTAKE_START_SCORE3,
-                                CONTROL1_SCORE_ROW3,
                                 UNIVERSAL_SCORE_TARGET
 
                         )

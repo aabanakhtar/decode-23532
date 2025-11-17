@@ -36,8 +36,7 @@ public class Turret extends SubsystemBase {
     public static final double TURRET_MAX_ANGLE = 74.56;
     public static final double TURRET_PID_TOLERANCE = 3.0;
     public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (84.56 / 360.0); // to set right to negative
-
-    public static double homingPower = -0.2;
+    public static double homingPower = -0.35;
     public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
 
     public Turret() {
@@ -83,6 +82,7 @@ public class Turret extends SubsystemBase {
             }
         }
     }
+
 
     public void setMode(Mode amode) {
         mode = amode;

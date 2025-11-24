@@ -42,7 +42,7 @@ public class Commandlet {
     public static Command shoot(long transfer_delay) {
         // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
-                waitFor(500),
+                waitFor(300),
                 new ParallelCommandGroup(
                     // open the latch
                     waitFor((long)Intake.INTAKE_LATCH_DELAY),

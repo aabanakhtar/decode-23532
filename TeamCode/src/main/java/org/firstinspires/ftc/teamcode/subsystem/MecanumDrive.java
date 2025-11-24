@@ -28,7 +28,7 @@ public class MecanumDrive extends SubsystemBase {
 
     public Follower follower;
     public static Pose lastPose = new Pose(0, 0, 0);
-    public static final Pose blueGoalPose = new Pose(13, 134);
+    public static final Pose blueGoalPose = new Pose(5, 139);
     public static final Pose redGoalPose = blueGoalPose.mirror();
 
     public MecanumDrive(HardwareMap map, Pose startingPose) {
@@ -91,9 +91,9 @@ public class MecanumDrive extends SubsystemBase {
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         double distance = chosenPose.distanceFrom(follower.getPose()) / 12.0;
-        double turretOffset = 4.5;
+        double turretOffset = 2.0599;
         double turretXOffset = turretOffset * Math.cos(getPose().getHeading() + Math.PI);
-        double turretYOffset = turretOffset * Math.cos(getPose().getHeading() + Math.PI);
+        double turretYOffset = turretOffset * Math.sin(getPose().getHeading() + Math.PI);
 
         double absAngleToTarget = Math.atan2(
                 chosenPose.getY() - (getPose().getY() + turretYOffset),

@@ -89,7 +89,12 @@ public class SinglePlayerDrive extends OpMode {
             robot.turret.setMode(Turret.Mode.DYNAMIC);
         }
 
-        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY(), gamepad1Ex.getLeftX(), -gamepad1Ex.getRightX());
+        double multiplier = 1.0;
+        if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
+            multiplier = -1.0;
+        }
+
+        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * multiplier, gamepad1Ex.getLeftX() * multiplier,  -gamepad1Ex.getRightX());
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {

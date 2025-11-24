@@ -36,15 +36,14 @@ public class Shooter extends SubsystemBase {
     static {
         distToVeloLUT = new InterpLUT();
         distToVeloLUT.add(-100, 0);
-        distToVeloLUT.add(0, -1000);
-        distToVeloLUT.add(2, -1100);
-        distToVeloLUT.add(3, -1115);
-        distToVeloLUT.add(4, -1160);
-        distToVeloLUT.add(5, -1175);
-        distToVeloLUT.add(6, -1230);
-        distToVeloLUT.add(10, -1500);
-        distToVeloLUT.add(13, -1550);
-        distToVeloLUT.add(100, -1550);
+        distToVeloLUT.add(0, -970);
+        distToVeloLUT.add(2, -990);
+        distToVeloLUT.add(3, -1000);
+        distToVeloLUT.add(4, -1050);
+        distToVeloLUT.add(5, -1050);
+        distToVeloLUT.add(6, -1130);
+        distToVeloLUT.add(7, -1210);
+        distToVeloLUT.add(100, -1380);
         // to do: add
         distToVeloLUT.createLUT();
     }

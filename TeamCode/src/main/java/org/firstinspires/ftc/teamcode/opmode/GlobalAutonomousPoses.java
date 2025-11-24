@@ -25,12 +25,12 @@ public class GlobalAutonomousPoses {
 
         // ROW 2
         public static Pose END_LINEUP_START_INTAKE2 = new Pose(53.377, 60.020);
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(10, 64);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(11, 64);
         public static Pose CONTROL1_SCORE_ROW2 = new Pose(74.965, 60.731);
 
         // ROW 3
         public static Pose END_LINEUP_START_INTAKE3 = new Pose(53.140, 36.534);
-        public static Pose END_INTAKE_START_SCORE3 = new Pose(5.183, 39.059);
+        public static Pose END_INTAKE_START_SCORE3 = new Pose(11, 39.059);
         public static Pose CONTROL1_SCORE_ROW3 =  new Pose(80.659, 31.789);
 
     }

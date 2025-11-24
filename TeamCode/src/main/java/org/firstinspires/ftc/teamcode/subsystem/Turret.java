@@ -24,9 +24,9 @@ public class Turret extends SubsystemBase {
     public static boolean tuning = false;
     public static double targetPower = 0.0;
     public static final double targetAngle = 0.0;
-    public static double kP = 0.015;
+    public static double kP = 0.04;
     public static double kI = 0.0;
-    public static double kD = 0.003;
+    public static double kD = 0.001;
     public static double tagKP = 0.0;
     public static double tagKD = 0.0;
 

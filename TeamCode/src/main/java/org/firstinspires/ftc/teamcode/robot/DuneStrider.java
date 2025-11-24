@@ -63,9 +63,6 @@ public class DuneStrider {
         shooter.setIdle();
         shooter.setPower(0);
 
-        limelight.pipelineSwitch(0);
-        // check TODO
-        limelight.start();
     }
 
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
@@ -73,7 +70,6 @@ public class DuneStrider {
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
 
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);

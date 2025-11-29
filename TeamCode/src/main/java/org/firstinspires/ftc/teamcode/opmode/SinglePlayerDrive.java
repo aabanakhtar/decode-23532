@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.gamepad.ToggleButtonReader;
@@ -25,13 +26,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 // World class teleop design
-@TeleOp(name = "Field Centric TeleOp 🎮", group = "manual")
+@TeleOp(name = "TeleOp", group = "manual")
 @Configurable
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
     private GamepadEx gamepad1Ex;
-    ToggleButtonReader shooterToggle;
-    ToggleButtonReader aimbotFallbackToggle;
+    private double teleOpMultiplier = 1.0;
 
     @Override
     public void init() {
@@ -39,12 +39,19 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        // our light switches
-        shooterToggle = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.DPAD_UP);
-        aimbotFallbackToggle = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.LEFT_BUMPER);
+        teleOpMultiplier = 1.0;
+        if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
+            teleOpMultiplier = -1.0;
+        }
 
         // initialization
-        CommandScheduler.getInstance().schedule(new HomeTurret(2));
+
+        // home the turret at the beginning and at the 1 min mark
+        CommandScheduler.getInstance().schedule(new SequentialCommandGroup(
+                new HomeTurret(1.5)/*,
+                new WaitCommand(60000),
+                new HomeTurret(1.5)*/
+        ));
 
         // intake bindings
         bind(GamepadKeys.Button.A,
@@ -80,21 +87,7 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void loop() {
         robot.endLoop();
-
-        aimbotFallbackToggle.readValue();
-        // the mode check prevents us from inadvertently interrupting commands
-        if (aimbotFallbackToggle.getState() && robot.turret.getMode() != Turret.Mode.HOMING) {
-            robot.turret.setMode(Turret.Mode.FIXED);
-        } else if (robot.turret.getMode() != Turret.Mode.HOMING) {
-            robot.turret.setMode(Turret.Mode.DYNAMIC);
-        }
-
-        double multiplier = 1.0;
-        if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
-            multiplier = -1.0;
-        }
-
-        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * multiplier, gamepad1Ex.getLeftX() * multiplier,  -gamepad1Ex.getRightX());
+        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * teleOpMultiplier, gamepad1Ex.getLeftX() * teleOpMultiplier,  -gamepad1Ex.getRightX());
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {

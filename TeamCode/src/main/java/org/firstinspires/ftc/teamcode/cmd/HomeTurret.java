@@ -14,7 +14,7 @@ public class HomeTurret extends CommandBase {
 
     public HomeTurret(double time) {
         addRequirements(DuneStrider.get().turret);
-        timer = new Timing.Timer((long) time, TimeUnit.SECONDS);
+        timer = new Timing.Timer((long)(1000.0 * time), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class HomeTurret extends CommandBase {
         boolean cond = timer.done();
         if (cond) {
             robot.shooterTurret.stopAndResetEncoder();
-            robot.turret.setMode(Turret.Mode.DYNAMIC);
+            robot.turret.setMode(Turret.Mode.PINPOINT);
         }
 
         return cond;

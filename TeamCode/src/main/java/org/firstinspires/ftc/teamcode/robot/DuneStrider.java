@@ -6,7 +6,9 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
@@ -14,6 +16,7 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
+import org.firstinspires.ftc.teamcode.subsystem.HugeEyes;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
@@ -23,11 +26,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DuneStrider {
+    private static final DuneStrider inst = new DuneStrider();
+    public final static double IDEAL_VOLTAGE = 13.0;
+
     public enum Alliance {
         RED, BLUE
     }
-
-    private static final DuneStrider inst = new DuneStrider();
 
     // alliance settings
     public static Alliance alliance = Alliance.BLUE;
@@ -36,7 +40,13 @@ public class DuneStrider {
     public MotorEx shooterLeft, shooterRight, shooterTurret;
     public MotorEx intakeTubing;
     public ServoEx latchServo;
+
+    // sensors
     public Limelight3A limelight;
+    public VoltageSensor batterySensor;
+    public DigitalChannel ball0Sensor;
+    public DigitalChannel ball1Sensor;
+    public DigitalChannel ball2Sensor;
 
     // hubs
     public List<LynxModule> lynxModules;
@@ -48,12 +58,17 @@ public class DuneStrider {
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
+    public HugeEyes eyes;
+
+    // for writing logs
+    public MultipleTelemetry flightRecorder;
+
+    // for feedforward
+    private double lastMeasuredVoltage = IDEAL_VOLTAGE;
 
     public static DuneStrider get() {
         return inst;
     }
-
-    public MultipleTelemetry telemetry;
 
     public DuneStrider() {}
 
@@ -63,6 +78,8 @@ public class DuneStrider {
         shooter.setIdle();
         shooter.setPower(0);
 
+        limelight.pipelineSwitch(0);
+        limelight.start();
     }
 
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
@@ -70,6 +87,11 @@ public class DuneStrider {
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
 
+        // sensors
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        batterySensor = hardwareMap.getAll(VoltageSensor.class)
+                .iterator()
+                .next();
 
         // Shooter motors
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);
@@ -94,7 +116,7 @@ public class DuneStrider {
                 });
 
         // Transfer wheels
-        telemetry = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
+        flightRecorder = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
 
         // subsystem init
         hubs = new Hubs();
@@ -102,14 +124,26 @@ public class DuneStrider {
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();
+        eyes = new HugeEyes();
         reset();
         return inst;
     }
 
 
+    public double getVoltageFeedforwardConstant() {
+        // 11.0 is just we don't place unnecessary strain if somehow the battery drops to something like 4v.
+        double safeVoltage = Math.max(lastMeasuredVoltage, 9.0);
+        return IDEAL_VOLTAGE / safeVoltage;
+    }
+
     public void endLoop() {
-        telemetry.addData("ALLIANCE", alliance.toString());
+        flightRecorder.addData("ALLIANCE", alliance.toString());
+        // sensor update
+        lastMeasuredVoltage = batterySensor.getVoltage();
+        flightRecorder.addData("BATTERY STATE", lastMeasuredVoltage);
+
         CommandScheduler.getInstance().run();
-        telemetry.update();
+        flightRecorder.update();
+
     }
 }

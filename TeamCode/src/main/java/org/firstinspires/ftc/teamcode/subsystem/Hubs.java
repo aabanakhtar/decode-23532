@@ -24,7 +24,7 @@ public class Hubs extends SubsystemBase {
         double dt = timer.seconds();
         if (dt > 0) {
             // send info to ftc dash and phone
-            DuneStrider.get().telemetry.addData("Loop Time, (HZ)", 1.0 / dt);
+            DuneStrider.get().flightRecorder.addData("Loop Time, (HZ)", 1.0 / dt);
         }
 
         timer.reset();

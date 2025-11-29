@@ -18,15 +18,18 @@ public class Shooter extends SubsystemBase {
 
     public static boolean tuning = false;
     public static Mode mode = Mode.RAW;
+
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
+
     public static double IDLE_VELOCITY = -600.0;
     public static double kV = 0.00045;
     public static double kP = 0.00505;
     public static double kI = 0.0;
     public static double kD = 0.0;
-    public static double tolerance = 40.0;
-    private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, kV);
+    public static double VELOCITY_TOLERANCE = 40.0;
+
+    private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
 
     public static final InterpLUT distToVeloLUT;
 
@@ -49,7 +52,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Shooter() {
-        flywheelVelocityPID.setTolerance(tolerance);
+        flywheelVelocityPID.setTolerance(VELOCITY_TOLERANCE);
     }
 
     @Override
@@ -68,11 +71,7 @@ public class Shooter extends SubsystemBase {
                 break;
         }
 
-        robot.telemetry.addLine("========SHOOTER========");
-        robot.telemetry.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
-        robot.telemetry.addData("Flywheel Target velocity", targetVelocityTicks);
-        robot.telemetry.addData("Flywheel Current velocity", robot.shooterLeft.encoder.getCorrectedVelocity());
-        robot.telemetry.addData("Flywheel raw power output", robot.shooterLeft.get());
+        logData();
     }
 
     public void setMode(Mode mode) {
@@ -99,12 +98,14 @@ public class Shooter extends SubsystemBase {
 
     private void velocityMode() {
         if (tuning) {
-            flywheelVelocityPID.setPIDF(kP, kI, kD, kV);
-            flywheelVelocityPID.setTolerance(tolerance);
+            flywheelVelocityPID.setPIDF(kP, kI, kD, 0);
+            flywheelVelocityPID.setTolerance(VELOCITY_TOLERANCE);
         }
 
         double currentVelocity = robot.shooterLeft.getCorrectedVelocity();
-        double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks);
+        // voltage comp is necessary to prevent the bot from tweaking towards the end of the match
+        double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks) +
+                kV * targetVelocityTicks * robot.getVoltageFeedforwardConstant();
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
@@ -115,16 +116,24 @@ public class Shooter extends SubsystemBase {
         // clip to a distance
         double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 12.0);
         double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal);
-        double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist);
+        double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist)
+                + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
     }
 
     private void rawMode() {
-        DuneStrider robot = DuneStrider.get();
         robot.shooterLeft.set(targetRawPower);
         robot.shooterRight.set(targetRawPower);
+    }
+
+    private void logData() {
+        robot.flightRecorder.addLine("========SHOOTER========");
+        robot.flightRecorder.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
+        robot.flightRecorder.addData("Flywheel Target velocity", targetVelocityTicks);
+        robot.flightRecorder.addData("Flywheel Current velocity", robot.shooterLeft.encoder.getCorrectedVelocity());
+        robot.flightRecorder.addData("Flywheel raw power output", robot.shooterLeft.get());
     }
 
     public boolean isAtTargetVelo() {

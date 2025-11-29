@@ -7,19 +7,16 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
-import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW1;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW2;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW3;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE2;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE3;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE2;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE3;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.GoalSidePoses.UNIVERSAL_SCORE_TARGET;
-import static org.firstinspires.ftc.teamcode.opmode.GlobalAutonomousPoses.heading;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW2;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE2;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE3;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE2;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE3;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.UNIVERSAL_SCORE_TARGET;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.heading;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
@@ -38,10 +35,9 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @Configurable
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
-    public static double INTAKE_RECOLLECT_DELAY = 300.0;
-    public static double TRANSFER_DELAY = 700.0;
+    public static double TRANSFER_DELAY = 500.0;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -106,8 +102,6 @@ public class GoalAuto extends OpMode {
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow1, 1.0),
 
-                // recollect for a bit
-                waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score
@@ -128,8 +122,6 @@ public class GoalAuto extends OpMode {
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow2, 1),
 
-                // hold for a delay
-                waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score
@@ -150,8 +142,6 @@ public class GoalAuto extends OpMode {
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow3, 1),
 
-                // hold for a delay
-                waitFor((long) INTAKE_RECOLLECT_DELAY),
                 intakeSet(Intake.Mode.OFF),
 
                 // go home and score

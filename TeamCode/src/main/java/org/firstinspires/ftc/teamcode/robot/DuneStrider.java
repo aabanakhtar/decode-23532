@@ -15,10 +15,12 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.device.SwyftRanger;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.HugeEyes;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystem.SensorStack;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
@@ -44,9 +46,9 @@ public class DuneStrider {
     // sensors
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
-    public DigitalChannel ball0Sensor;
-    public DigitalChannel ball1Sensor;
-    public DigitalChannel ball2Sensor;
+
+    public SwyftRanger ranger0;
+    public SwyftRanger ranger1;
 
     // hubs
     public List<LynxModule> lynxModules;
@@ -54,11 +56,11 @@ public class DuneStrider {
 
     // subsystems for FTCLib
     public Hubs hubs;
-    public MecanumDrive drive = null;
+    public MecanumDrive drive;
+    public SensorStack sensors;
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
-    public HugeEyes eyes;
 
     // for writing logs
     public MultipleTelemetry flightRecorder;
@@ -77,18 +79,17 @@ public class DuneStrider {
         turret.setMode(Turret.Mode.HOMING);
         shooter.setIdle();
         shooter.setPower(0);
-
-        limelight.pipelineSwitch(0);
-        limelight.start();
     }
 
     public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
+        ranger0 = new SwyftRanger(hardwareMap, "ranger0");
+        ranger1 = new SwyftRanger(hardwareMap, "ranger1");
+
 
         // sensors
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         batterySensor = hardwareMap.getAll(VoltageSensor.class)
                 .iterator()
                 .next();
@@ -105,7 +106,7 @@ public class DuneStrider {
 
         // Intake motor
         intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
-        intakeTubing.setInverted(true);
+        intakeTubing.setInverted(false);
 
         latchServo = new ServoEx(map, "latch").setCachingTolerance(0.001);
 
@@ -124,7 +125,7 @@ public class DuneStrider {
         intake = new Intake();
         shooter = new Shooter();
         turret = new Turret();
-        eyes = new HugeEyes();
+        sensors = new SensorStack();
         reset();
         return inst;
     }

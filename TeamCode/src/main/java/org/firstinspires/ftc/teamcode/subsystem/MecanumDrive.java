@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import android.util.Range;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
@@ -8,6 +10,8 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+
+import java.util.Objects;
 
 public class MecanumDrive extends SubsystemBase {
     public static class AimAtTarget {
@@ -19,8 +23,6 @@ public class MecanumDrive extends SubsystemBase {
             this.heading = heading;
         }
     }
-
-    private DuneStrider robot = DuneStrider.get();
 
     public AimAtTarget lastAimTarget = new AimAtTarget(0, 0);
 
@@ -38,10 +40,16 @@ public class MecanumDrive extends SubsystemBase {
     @Override
     public void periodic() {
         lastPose = follower.getPose();
-        lastAimTarget = getShooterPositionsUsingPinpoint();
-        // updates
+        DuneStrider robot = DuneStrider.get();
+
+        lastAimTarget = getShooterPositionPinpointRel2();
+        robot.flightRecorder.addData("goal heading", lastAimTarget.heading);
+        robot.flightRecorder.addData("goal distance", lastAimTarget.distance);
+
+        robot.flightRecorder.addData("X:", lastPose.getX());
+        robot.flightRecorder.addData("Y:", lastPose.getY());
+        robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
         follower.update();
-        logData();
     }
 
     public void resetHeading(double newHeading) {
@@ -70,7 +78,17 @@ public class MecanumDrive extends SubsystemBase {
         return lastAimTarget;
     }
 
-    private AimAtTarget getShooterPositionsUsingPinpoint() {
+    private AimAtTarget getShooterPositionPinpointRel() {
+        double distance = blueGoalPose.distanceFrom(follower.getPose()) / 12.0;
+        double angle = Math.atan2(
+                blueGoalPose.getY() - getPose().getY(), blueGoalPose.getX() - getPose().getX()
+        );
+
+        return new AimAtTarget(distance, Math.toDegrees(angle));
+    }
+
+
+    private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         double distance = chosenPose.distanceFrom(follower.getPose()) / 12.0;
         double turretOffset = 2.0599;
@@ -94,19 +112,10 @@ public class MecanumDrive extends SubsystemBase {
         }
 
         double turretRelativeAngleDeg = Math.toDegrees(turretRelativeAngleRad);
-
+        DuneStrider.get().flightRecorder.addData("HEHEHEHEHEHEH", turretRelativeAngleDeg);
         double minAngle = -Turret.TURRET_MAX_ANGLE;
         double maxAngle = Turret.TURRET_MAX_ANGLE;
         double constrainedAngleDeg = Math.max(minAngle, Math.min(maxAngle, turretRelativeAngleDeg));
         return new AimAtTarget(distance, constrainedAngleDeg);
     }
-
-    private void logData() {
-        robot.flightRecorder.addData("goal heading", lastAimTarget.heading);
-        robot.flightRecorder.addData("goal distance", lastAimTarget.distance);
-        robot.flightRecorder.addData("X:", lastPose.getX());
-        robot.flightRecorder.addData("Y:", lastPose.getY());
-        robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
-    }
-
 }

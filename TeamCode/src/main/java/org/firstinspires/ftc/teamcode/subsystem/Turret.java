@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.controller.Controller;
 import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.controller.SquIDFController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -30,9 +32,9 @@ public class Turret extends SubsystemBase {
     public static final double targetAngle = 0.0;
 
     // turret gains
-    public static double kP = 0.04;
+    public static double kP = 0.045;
     public static double kI = 0.0;
-    public static double kD = 0.001;
+    public static double kD = 0.000;
 
     // limelight gains
     public static double LIMELIGHT_FAR_kP = -0.013;
@@ -55,7 +57,7 @@ public class Turret extends SubsystemBase {
     }
 
     // PIDs
-    public static PIDFController turretAnglePID = new PIDFController(kP, kI, kD, 0);
+    public static Controller turretAnglePID = new SquIDFController(kP, kI, kD, 0);
     // we have two for different sizes of error
     public static PIDFController limelightLargeErrorPID = new PIDFController(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
     public static PIDFController limelightSmallErrorPID = new PIDFController(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
@@ -83,14 +85,9 @@ public class Turret extends SubsystemBase {
         robot.flightRecorder.addData("is at home:", isAtHome());
 
         if (tuning) {
-            turretAnglePID.setPIDF(kP, 0, kD, 0);
+            ((SquIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
             limelightLargeErrorPID.setPIDF(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
             limelightSmallErrorPID.setPIDF(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
-        }
-
-        Double lastTx = robot.eyes.getLastTx();
-        if (lastTx != null) {
-            robot.flightRecorder.addData("adjusted tx", adjustTx(lastTx));
         }
 
         // update the queued mode
@@ -117,38 +114,32 @@ public class Turret extends SubsystemBase {
                     turretAnglePID.reset();
                 }
 
-                if (robot.eyes.getLastTx() != null) {
-                    pendingMode = Mode.LIMELIGHT;
+                double target = robot.drive.getAimTarget().heading;
+                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), target);
+                robot.flightRecorder.addData("pinpoint target", target);
+
+                if (Math.abs(calculateAngleFromEncoder() - target) < 1.5) {
+                    robot.shooterTurret.set(0.0);
                     break;
                 }
 
-                double target = robot.drive.getAimTarget().heading;
-                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), target);
                 robot.shooterTurret.set(power);
                 break;
             }
 
             // Option B: Use limelight smart cam to aim turret
             case LIMELIGHT: {
-                Double tx = robot.eyes.getLastTx();
-                if (tx == null) {
-                    pendingMode = Mode.PINPOINT;
-                    break;
-                }
 
                 if (lastMode != Mode.LIMELIGHT) {
                     limelightLargeErrorPID.reset();
                     limelightSmallErrorPID.reset();
                 }
-
+                double tx = 0;
                 // use gain scheduling to make the controller better
                 double error = adjustTx(tx);
-                PIDFController scheduledController =
-                        Math.abs(error) > LIMELIGHT_SMALL_GAINS_THRESHOLD ?
-                                limelightLargeErrorPID : limelightSmallErrorPID;
+                PIDFController scheduledController = limelightSmallErrorPID;
                 double power = scheduledController.calculate(error, 0);
-                double interpolatedPGain = limelightPGains.get(error);
-                //double power = interpolatedPGain * error;
+                robot.flightRecorder.addData("LimelightPower", power);
 
                 robot.shooterTurret.set(power);
                 break;

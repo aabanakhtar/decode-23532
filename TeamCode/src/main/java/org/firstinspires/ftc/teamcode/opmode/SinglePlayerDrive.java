@@ -58,6 +58,12 @@ public class SinglePlayerDrive extends OpMode {
                 intakeSet(INGEST),
                 intakeSet(Intake.Mode.OFF)
         );
+
+        bind(GamepadKeys.Button.B,
+            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+            run(() -> Intake.INGEST_MOTOR_SPEED = 1.0)
+        );
+
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
         // gate
         bind(GamepadKeys.Button.RIGHT_BUMPER,

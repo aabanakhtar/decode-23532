@@ -48,7 +48,7 @@ public class SinglePlayerDrive extends OpMode {
 
         // home the turret at the beginning and at the 1 min mark
         CommandScheduler.getInstance().schedule(new SequentialCommandGroup(
-                new HomeTurret(1.5)/*,
+                new HomeTurret(1.0)/*,
                 new WaitCommand(60000),
                 new HomeTurret(1.5)*/
         ));
@@ -60,7 +60,7 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         bind(GamepadKeys.Button.B,
-            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+            run(() -> Intake.INGEST_MOTOR_SPEED = 0.7),
             run(() -> Intake.INGEST_MOTOR_SPEED = 1.0)
         );
 

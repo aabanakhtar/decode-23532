@@ -24,7 +24,7 @@ public class Shooter extends SubsystemBase {
 
     public static double IDLE_VELOCITY = -600.0;
     public static double kV = 0.00045;
-    public static double kP = 0.00505;
+    public static double kP = 0.007;
     public static double kI = 0.0;
     public static double kD = 0.0;
     public static double VELOCITY_TOLERANCE = 40.0;
@@ -46,8 +46,9 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.add(5, -1050);
         distToVeloLUT.add(6, -1260);
         distToVeloLUT.add(7, -1275);
-        distToVeloLUT.add(11, -1530);
-        distToVeloLUT.add(100, -1580);
+        distToVeloLUT.add(9, -1480);
+        distToVeloLUT.add(11, -1510);
+        distToVeloLUT.add(100, -1550);
         // to do: add
         distToVeloLUT.createLUT();
     }

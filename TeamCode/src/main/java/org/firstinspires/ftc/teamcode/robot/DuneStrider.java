@@ -101,8 +101,9 @@ public class DuneStrider {
         shooterRight.setInverted(true);
 
         // Turret motor
-        shooterTurret = new MotorEx(map, "shooterTurret").setCachingTolerance(0.001);
+        shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.001);
         shooterTurret.stopAndResetEncoder();
+        shooterTurret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // Intake motor
         intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
@@ -111,7 +112,7 @@ public class DuneStrider {
         latchServo = new ServoEx(map, "latch").setCachingTolerance(0.001);
 
         // Apply common run modes
-        Arrays.asList(shooterLeft, shooterRight, shooterTurret, intakeTubing)
+        Arrays.asList(shooterLeft, shooterRight, intakeTubing)
                 .forEach(x -> {
                     x.setRunMode(Motor.RunMode.RawPower);
                 });

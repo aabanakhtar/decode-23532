@@ -9,6 +9,9 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
+import org.firstinspires.ftc.teamcode.utilities.IdentityFilter;
+import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 
 @Configurable
 public class Turret extends SubsystemBase {
@@ -32,43 +35,38 @@ public class Turret extends SubsystemBase {
     public static final double targetAngle = 0.0;
 
     // turret gains
-    public static double kP = 0.045;
+    public static double kP = 0.075;
     public static double kI = 0.0;
-    public static double kD = 0.000;
+    public static double kD = 0.003;
+
+    public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 6;
+    public BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
 
     // limelight gains
-    public static double LIMELIGHT_FAR_kP = -0.013;
+    public static double LIMELIGHT_FAR_kP = 0.0;
     public static double LIMELIGHT_FAR_kD = 0.0;
 
-    public static double LIMELIGHT_CLOSE_kP = -0.03;
+    public static double LIMELIGHT_CLOSE_kP = 0.0;
     public static double LIMELIGHT_CLOSE_kD = 0;
 
     public static double LIMELIGHT_SMALL_GAINS_THRESHOLD = 11.0;  /* degrees */
     public static double LIMELIGHT_TRANSITION_GAINS_THRESHOLD = 20.0;
     public static double LIMELIGHT_LOWER_TRANSITION_GAINS_THRESHOLD = 10.0;
 
-    public static InterpLUT limelightPGains = new InterpLUT();
-
-    static {
-        limelightPGains.add(0, LIMELIGHT_CLOSE_kP);
-        limelightPGains.add(LIMELIGHT_LOWER_TRANSITION_GAINS_THRESHOLD, LIMELIGHT_CLOSE_kP);
-        limelightPGains.add(LIMELIGHT_TRANSITION_GAINS_THRESHOLD, LIMELIGHT_FAR_kP);
-        limelightPGains.add(180, LIMELIGHT_FAR_kP);
-    }
 
     // PIDs
-    public static Controller turretAnglePID = new SquIDFController(kP, kI, kD, 0);
+    public static Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
     // we have two for different sizes of error
     public static PIDFController limelightLargeErrorPID = new PIDFController(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
     public static PIDFController limelightSmallErrorPID = new PIDFController(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
 
-    // 1620 RPM Yellow Jacket with gearing 27t to 95t
+    // 312 RPM Yellow Jacket with gearing 27t to 95t
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
-    public static final double TURRET_ENCODER_CPR = 103.8 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
+    public static final double TURRET_ENCODER_CPR = 537.7 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
     public static final double TURRET_MAX_ANGLE = 74.56;
     public static final double TURRET_PID_TOLERANCE = 1.0;
     public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (84.56 / 360.0); // to set right to negative
-    public static final double HOME_POWER = -0.35;
+    public static final double HOME_POWER = -0.1;
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
@@ -76,16 +74,17 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
+        final double encoderAngle = calculateAngleFromEncoder();
         robot.flightRecorder.addLine("==========TURRET===========");
         robot.flightRecorder.addData("Mode", mode.toString());
         robot.flightRecorder.addData("Encoder position", robot.shooterTurret.encoder.getPosition());
-        robot.flightRecorder.addData("angle", calculateAngleFromEncoder());
+        robot.flightRecorder.addData("angle", encoderAngle);
         robot.flightRecorder.addData("target angle", targetAngle);
         robot.flightRecorder.addData("target power:", targetPower);
         robot.flightRecorder.addData("is at home:", isAtHome());
 
         if (tuning) {
-            ((SquIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
+            ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
             limelightLargeErrorPID.setPIDF(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
             limelightSmallErrorPID.setPIDF(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
         }
@@ -112,13 +111,17 @@ public class Turret extends SubsystemBase {
             case PINPOINT: {
                 if (lastMode != Mode.PINPOINT) {
                     turretAnglePID.reset();
+                    setpointFilter.reset();
                 }
 
-                double target = robot.drive.getAimTarget().heading;
-                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), target);
-                robot.flightRecorder.addData("pinpoint target", target);
+                double rawTarget = robot.drive.getAimTarget().heading;
+                setpointFilter.updateValue(rawTarget);
 
-                if (Math.abs(calculateAngleFromEncoder() - target) < 1.5) {
+                double filteredTarget = setpointFilter.getFilteredOutput();
+                double power = turretAnglePID.calculate(encoderAngle, filteredTarget);
+
+                robot.flightRecorder.addData("pinpoint target", filteredTarget);
+                if (isAtTarget()) {
                     robot.shooterTurret.set(0.0);
                     break;
                 }
@@ -129,7 +132,6 @@ public class Turret extends SubsystemBase {
 
             // Option B: Use limelight smart cam to aim turret
             case LIMELIGHT: {
-
                 if (lastMode != Mode.LIMELIGHT) {
                     limelightLargeErrorPID.reset();
                     limelightSmallErrorPID.reset();
@@ -140,14 +142,13 @@ public class Turret extends SubsystemBase {
                 PIDFController scheduledController = limelightSmallErrorPID;
                 double power = scheduledController.calculate(error, 0);
                 robot.flightRecorder.addData("LimelightPower", power);
-
                 robot.shooterTurret.set(power);
                 break;
             }
 
             // Debug purposes only
             case DEBUG: {
-                double power = turretAnglePID.calculate(calculateAngleFromEncoder(), 0);
+                double power = turretAnglePID.calculate(encoderAngle, 0);
                 robot.shooterTurret.set(power);
                 break;
             }
@@ -166,7 +167,7 @@ public class Turret extends SubsystemBase {
     }
 
     public boolean isAtHome() {
-        return robot.shooterTurret.motorEx.getCurrent(CurrentUnit.AMPS) > 100000000;
+        return false;
     }
 
     public boolean isAtTarget() {

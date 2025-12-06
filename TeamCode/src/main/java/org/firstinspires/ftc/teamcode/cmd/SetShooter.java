@@ -20,6 +20,6 @@ public class SetShooter extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return robot.shooter.isAtTargetVelo();
+        return robot.shooter.isAtTargetVelocity();
     }
 }

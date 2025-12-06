@@ -37,6 +37,14 @@ public class GlobalAutonomousPoses {
 
     @Configurable
     public static class AudienceSidePoses {
+        public static Pose AUNIVERSAL_SCORE_TARGET = new Pose(63, 14);
 
+        // row 3
+        public static Pose ACONTROL1_LINEUP_ROW3 = new Pose(68.203, 35.635);
+        public static Pose ALINEUP_ROW3_END = new Pose(39.140, 35.635);
+
+        public static Pose AEND_INTAKE_ROW3 = new Pose(5, 35);
+        // score row 3
+        public static Pose ACONTROL1_SCORE_ROW3 = new Pose(66,  39);
     }
 }

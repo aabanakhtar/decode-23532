@@ -31,13 +31,14 @@ public class Turret extends SubsystemBase {
     public static Mode lastMode = Mode.RAW;
 
     public static boolean tuning = false;
+    public static double autonomousEncoderOffset = 0.0;
     public static double targetPower = 0.0;
     public static final double targetAngle = 0.0;
 
     // turret gains
     public static double kP = 0.075;
     public static double kI = 0.0;
-    public static double kD = 0.003;
+    public static double kD = 0.001;
 
     public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 6;
     public BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
@@ -66,7 +67,7 @@ public class Turret extends SubsystemBase {
     public static final double TURRET_MAX_ANGLE = 74.56;
     public static final double TURRET_PID_TOLERANCE = 1.0;
     public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (84.56 / 360.0); // to set right to negative
-    public static final double HOME_POWER = -0.1;
+    public static final double HOME_POWER = -0.3;
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);

@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
     public static double kP = 0.007;
     public static double kI = 0.0;
     public static double kD = 0.0;
-    public static double VELOCITY_TOLERANCE = 40.0;
+    public static double VELOCITY_TOLERANCE = 50.0;
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
 
@@ -44,11 +44,12 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.add(3, -1000);
         distToVeloLUT.add(4, -1050);
         distToVeloLUT.add(5, -1050);
-        distToVeloLUT.add(6, -1260);
-        distToVeloLUT.add(7, -1275);
-        distToVeloLUT.add(9, -1480);
-        distToVeloLUT.add(11, -1510);
-        distToVeloLUT.add(100, -1550);
+        distToVeloLUT.add(6, -1240);
+        distToVeloLUT.add(7, -1260);
+        distToVeloLUT.add(9, -1440);
+        distToVeloLUT.add(11, -1490);
+        distToVeloLUT.add(12, -1525);
+        distToVeloLUT.add(100, -1580);
         // to do: add
         distToVeloLUT.createLUT();
     }
@@ -132,13 +133,12 @@ public class Shooter extends SubsystemBase {
 
     private void logData() {
         robot.flightRecorder.addLine("========SHOOTER========");
-        robot.flightRecorder.addData("Raw encoder:", robot.shooterLeft.encoder.getPosition());
         robot.flightRecorder.addData("Flywheel Target velocity", targetVelocityTicks);
         robot.flightRecorder.addData("Flywheel Current velocity", robot.shooterLeft.encoder.getCorrectedVelocity());
         robot.flightRecorder.addData("Flywheel raw power output", robot.shooterLeft.get());
     }
 
-    public boolean isAtTargetVelo() {
+    public boolean isAtTargetVelocity() {
         return flywheelVelocityPID.atSetPoint();
     }
 }

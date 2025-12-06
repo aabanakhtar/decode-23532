@@ -23,6 +23,8 @@ import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.SensorStack;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
+import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
+import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,12 +33,18 @@ public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 13.0;
 
+    public enum Mode {
+        AUTO,
+        TELEOP
+    }
+
     public enum Alliance {
         RED, BLUE
     }
 
     // alliance settings
     public static Alliance alliance = Alliance.BLUE;
+    public static Mode mode = Mode.AUTO;
 
     // hardware (besides dt, managed by pedro)
     public MotorEx shooterLeft, shooterRight, shooterTurret;
@@ -46,6 +54,7 @@ public class DuneStrider {
     // sensors
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
+    private BasicFilter batteryFilter = new RunningAverageFilter(10);
 
     public SwyftRanger ranger0;
     public SwyftRanger ranger1;
@@ -81,8 +90,11 @@ public class DuneStrider {
         shooter.setPower(0);
     }
 
-    public DuneStrider init(Pose pose, HardwareMap map, Telemetry t) {
+    public DuneStrider init(Mode mode, Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
+        batteryFilter.reset();
+
+        DuneStrider.mode = mode;
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
         ranger0 = new SwyftRanger(hardwareMap, "ranger0");
@@ -135,7 +147,8 @@ public class DuneStrider {
     public double getVoltageFeedforwardConstant() {
         // 11.0 is just we don't place unnecessary strain if somehow the battery drops to something like 4v.
         double safeVoltage = Math.max(lastMeasuredVoltage, 9.0);
-        return IDEAL_VOLTAGE / safeVoltage;
+        batteryFilter.updateValue(IDEAL_VOLTAGE / safeVoltage);
+        return batteryFilter.getFilteredOutput();
     }
 
     public void endLoop() {

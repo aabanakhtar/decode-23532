@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.cmd;
 
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
@@ -21,6 +19,6 @@ public class AutoSetShooter extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return robot.shooter.isAtTargetVelo();
+        return robot.shooter.isAtTargetVelocity();
     }
 }

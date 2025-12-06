@@ -33,11 +33,12 @@ import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Configurable
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
-    public static double TRANSFER_DELAY = 500.0;
+    public static double TRANSFER_DELAY = 800.0;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -50,7 +51,7 @@ public class GoalAuto extends OpMode {
     public void init() {
         Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(0) : START_PRELOAD.mirror().setHeading(heading(180));
 
-        robot = DuneStrider.get().init(startPose, hardwareMap, telemetry);
+        robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         Follower follower = robot.drive.follower;
 
         if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
@@ -325,6 +326,11 @@ public class GoalAuto extends OpMode {
                         mirrorHeading(heading(-90))
                 )
                 .build();
+    }
+
+    @Override
+    public void stop() {
+        Turret.autonomousEncoderOffset = robot.shooterTurret.getCurrentPosition();
     }
 
     private double mirrorHeading(double heading) {

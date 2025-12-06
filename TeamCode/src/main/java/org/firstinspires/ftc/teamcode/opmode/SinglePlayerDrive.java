@@ -35,7 +35,7 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init() {
-        robot = DuneStrider.get().init(MecanumDrive.lastPose, hardwareMap, telemetry);
+        robot = DuneStrider.get().init(DuneStrider.Mode.TELEOP, MecanumDrive.lastPose, hardwareMap, telemetry);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
@@ -44,13 +44,11 @@ public class SinglePlayerDrive extends OpMode {
             teleOpMultiplier = -1.0;
         }
 
-        // initialization
 
         // home the turret at the beginning and at the 1 min mark
         CommandScheduler.getInstance().schedule(new SequentialCommandGroup(
-                new HomeTurret(1.0)/*,
-                new WaitCommand(60000),
-                new HomeTurret(1.5)*/
+                run(() -> robot.shooter.setIdle()),
+                new HomeTurret(3.0)
         ));
 
         // intake bindings
@@ -60,7 +58,7 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         bind(GamepadKeys.Button.B,
-            run(() -> Intake.INGEST_MOTOR_SPEED = 0.7),
+            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
             run(() -> Intake.INGEST_MOTOR_SPEED = 1.0)
         );
 
@@ -78,10 +76,9 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         // reset localizer bindings
-        bind(GamepadKeys.Button.START, run(() -> robot.drive.resetHeading(0)), nothing());
-        bind(GamepadKeys.Button.SHARE, new HomeTurret(2), nothing());
+        bind(GamepadKeys.Button.START, new HomeTurret(2), nothing());
 
-        gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
                 If(
                         run(() -> robot.drive.follower.setPose(new Pose(72, 72, 0))),
                         run(() -> robot.drive.follower.setPose(new Pose(72, 72, Math.toRadians(180)))),

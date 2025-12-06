@@ -14,6 +14,9 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import java.util.Objects;
 
 public class MecanumDrive extends SubsystemBase {
+    private double TURRET_OFFSET = 2.0599;
+
+
     public static class AimAtTarget {
         public double distance;
         public double heading;
@@ -67,33 +70,31 @@ public class MecanumDrive extends SubsystemBase {
         return follower.getPose();
     }
 
-    /**
-     * Get the current robot velocity
-     */
+    public Vector predictNextPose() {
+        return getVelocity().plus(getPose().getAsVector());
+    }
+
     public Vector getVelocity() {
         return follower.getVelocity();
+    }
+
+    public double getAngularVelocity() {
+        return follower.getAngularVelocity();
+    }
+
+    public Vector getAcceleration() {
+        return follower.getAcceleration();
     }
 
     public AimAtTarget getAimTarget() {
         return lastAimTarget;
     }
 
-    private AimAtTarget getShooterPositionPinpointRel() {
-        double distance = blueGoalPose.distanceFrom(follower.getPose()) / 12.0;
-        double angle = Math.atan2(
-                blueGoalPose.getY() - getPose().getY(), blueGoalPose.getX() - getPose().getX()
-        );
-
-        return new AimAtTarget(distance, Math.toDegrees(angle));
-    }
-
-
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         double distance = chosenPose.distanceFrom(follower.getPose()) / 12.0;
-        double turretOffset = 2.0599;
-        double turretXOffset = turretOffset * Math.cos(getPose().getHeading() + Math.PI);
-        double turretYOffset = turretOffset * Math.sin(getPose().getHeading() + Math.PI);
+        double turretXOffset = TURRET_OFFSET * Math.cos(getPose().getHeading() + Math.PI);
+        double turretYOffset = TURRET_OFFSET * Math.sin(getPose().getHeading() + Math.PI);
 
         double absAngleToTarget = Math.atan2(
                 chosenPose.getY() - (getPose().getY() + turretYOffset),
@@ -112,7 +113,6 @@ public class MecanumDrive extends SubsystemBase {
         }
 
         double turretRelativeAngleDeg = Math.toDegrees(turretRelativeAngleRad);
-        DuneStrider.get().flightRecorder.addData("HEHEHEHEHEHEH", turretRelativeAngleDeg);
         double minAngle = -Turret.TURRET_MAX_ANGLE;
         double maxAngle = Turret.TURRET_MAX_ANGLE;
         double constrainedAngleDeg = Math.max(minAngle, Math.min(maxAngle, turretRelativeAngleDeg));

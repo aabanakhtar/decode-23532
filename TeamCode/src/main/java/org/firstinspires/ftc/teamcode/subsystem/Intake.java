@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
@@ -17,13 +18,12 @@ public class Intake extends SubsystemBase {
     public static double INGEST_MOTOR_SPEED = 1.0;
     public static double DISCARD_MOTOR_SPEED = -1.0;
 
-    public static double INTAKE_LATCH_OPEN_POSITION = 0.4;
-    public static double INTAKE_LATCH_CLOSE_POSITON = 0.67;
+    public static double INTAKE_LATCH_OPEN_POSITION = 0.35;
+    public static double INTAKE_LATCH_CLOSE_POSITON = 0.6;
     public static double intakeLatchTargetPos = INTAKE_LATCH_OPEN_POSITION;
     public static double INTAKE_LATCH_DELAY = 100.0;
 
     public Intake() {
-
     }
 
     public void setMode(Mode mode) {
@@ -38,11 +38,11 @@ public class Intake extends SubsystemBase {
 
         switch (mode) {
             case INGEST:
-                robot.intakeTubing.set(INGEST_MOTOR_SPEED);
+                robot.intakeTubing.set(INGEST_MOTOR_SPEED * robot.getVoltageFeedforwardConstant());
                 break;
 
             case DISCARD:
-                robot.intakeTubing.set(DISCARD_MOTOR_SPEED);
+                robot.intakeTubing.set(DISCARD_MOTOR_SPEED * robot.getVoltageFeedforwardConstant());
                 break;
 
             case OFF:

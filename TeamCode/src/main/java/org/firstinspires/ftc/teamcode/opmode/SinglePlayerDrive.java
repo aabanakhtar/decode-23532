@@ -5,28 +5,26 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.INGEST;
+import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.OFF;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.gamepad.ToggleButtonReader;
 
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
+import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
-import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 // World class teleop design
-@TeleOp(name = "TeleOp", group = "manual")
+@TeleOp(name = "TeleOp")
 @Configurable
 public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
@@ -48,6 +46,7 @@ public class SinglePlayerDrive extends OpMode {
         // home the turret at the beginning and at the 1 min mark
         CommandScheduler.getInstance().schedule(new SequentialCommandGroup(
                 run(() -> robot.shooter.setIdle()),
+                run(() -> robot.intake.closeLatch()),
                 new HomeTurret(3.0)
         ));
 
@@ -58,8 +57,8 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         bind(GamepadKeys.Button.B,
-            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
-            run(() -> Intake.INGEST_MOTOR_SPEED = 1.0)
+            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6).alongWith(intakeSet(INGEST)),
+            run(() -> Intake.INGEST_MOTOR_SPEED = 1.0).alongWith(intakeSet(OFF))
         );
 
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
@@ -80,9 +79,9 @@ public class SinglePlayerDrive extends OpMode {
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
                 If(
-                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, 0))),
-                        run(() -> robot.drive.follower.setPose(new Pose(72, 72, Math.toRadians(180)))),
-                        () -> DuneStrider.alliance == DuneStrider.Alliance.RED
+                        run(() -> robot.drive.follower.setPose(GlobalAutonomousPoses.BLUE_RELOCALIZE)),
+                        run(() -> robot.drive.follower.setPose(GlobalAutonomousPoses.RED_RELOCALIZE)),
+                        () -> DuneStrider.alliance == DuneStrider.Alliance.BLUE
                 )
         );
     }

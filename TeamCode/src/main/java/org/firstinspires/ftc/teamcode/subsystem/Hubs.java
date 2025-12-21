@@ -11,6 +11,7 @@ import java.util.List;
 public class Hubs extends SubsystemBase {
     private final List<LynxModule> modules;
     private final ElapsedTime timer;
+    double dt = 0;
 
     public Hubs() {
         modules = DuneStrider.get().lynxModules;
@@ -21,7 +22,7 @@ public class Hubs extends SubsystemBase {
     public void clearCache() {
         modules.forEach(LynxModule::clearBulkCache);
 
-        double dt = timer.seconds();
+        dt = timer.seconds();
         if (dt > 0) {
             // send info to ftc dash and phone
             DuneStrider.get().flightRecorder.addData("Loop Time, (HZ)", 1.0 / dt);
@@ -33,5 +34,9 @@ public class Hubs extends SubsystemBase {
     @Override
     public void periodic() {
         clearCache();
+    }
+
+    public double getDeltaTime() {
+        return dt;
     }
 }

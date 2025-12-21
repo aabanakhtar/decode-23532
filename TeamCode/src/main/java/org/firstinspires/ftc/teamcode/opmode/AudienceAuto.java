@@ -1,18 +1,17 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.fork;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.go;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ACONTROL1_LINEUP_ROW3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ACONTROL1_SCORE_ROW3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.AEND_INTAKE_ROW3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ALINEUP_ROW3_END;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.AUNIVERSAL_SCORE_TARGET;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.UNIVERSAL_SCORE_TARGET;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.heading;
-
-import androidx.loader.content.Loader;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -21,16 +20,16 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.teamcode.cmd.AutoSetShooter;
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @Autonomous(name = "Global Audience Auto", group = "auto")
@@ -52,15 +51,58 @@ public class AudienceAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                    new HomeTurret(1),
-                    new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                    new FollowPathCommand(follower, shootPreload),
-                    waitFor(1000),
-                    run(() -> robot.intakeTubing.set(0.5)),
-                    waitFor((long)3000),
-                    run(() -> robot.intakeTubing.set(0))
+                    new HomeTurret(0.5),
+                    execPreload(follower), execRow3())
+        );
+    }
 
-                )
+    public Command execPreload(Follower follower) {
+        return new SequentialCommandGroup(
+            // prepare our intake for world class domination
+            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+            run(() -> robot.intake.closeLatch()),
+
+            // prep shooter
+            new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+
+            // drive up
+            new FollowPathCommand(follower, shootPreload),
+            waitFor((long)1000),
+
+            // shoot
+            intakeSet(Intake.Mode.INGEST),
+            run(() -> robot.intake.openLatch()),
+            waitFor((long)2500),
+
+            // de prepare
+            run(() -> robot.intakeTubing.set(0)),
+            run(() -> robot.shooter.setIdle())
+        );
+    }
+
+    private Command execRow3() {
+        return new SequentialCommandGroup(
+                fork(
+                        go(robot.drive.follower, lineUpRow3, 1.0),
+                        run(() -> robot.intake.closeLatch())
+                ),
+
+                // turn on the intake and eat up the balls
+                intakeSet(Intake.Mode.INGEST),
+                go(robot.drive.follower, intakeRow3, 1),
+
+                new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                intakeSet(Intake.Mode.OFF),
+                // go home and score
+                go(robot.drive.follower, scoreRow3, 1),
+                // shoot
+                intakeSet(Intake.Mode.INGEST),
+                run(() -> robot.intake.openLatch()),
+                waitFor((long)2500),
+
+                // de prepare
+                run(() -> robot.intakeTubing.set(0)),
+                run(() -> robot.shooter.setIdle())
         );
     }
 

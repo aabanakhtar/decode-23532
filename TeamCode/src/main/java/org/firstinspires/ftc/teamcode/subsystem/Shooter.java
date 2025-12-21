@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDFController;
@@ -8,7 +11,7 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
-@Configurable
+@Config
 public class Shooter extends SubsystemBase {
     public enum Mode {
         RAW,
@@ -23,33 +26,52 @@ public class Shooter extends SubsystemBase {
     public static double targetRawPower = 0.0;
 
     public static double IDLE_VELOCITY = -600.0;
-    public static double kV = 0.00045;
-    public static double kP = 0.007;
+    public static double kV = 0.0005118;
+    public static double kP = 0.014;
     public static double kI = 0.0;
     public static double kD = 0.0;
-    public static double VELOCITY_TOLERANCE = 50.0;
-
+    public static double VELOCITY_TOLERANCE = 40.0;
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
-
-    public static final InterpLUT distToVeloLUT;
 
     DuneStrider robot = DuneStrider.get();
 
+    public static double REGRESSION_A = 0.0116667;
+    public static double REGRESSION_B = 0.0505952;
+    public static double REGRESSION_C = 0.0989881;
+
+    public static double shooterTimeRegression(double shotDistance) {
+        if (shotDistance < 4.0 || shotDistance > 8.0) {
+            return 0.0;
+        }
+
+        return REGRESSION_A * shotDistance * shotDistance
+                + REGRESSION_B * shotDistance
+                + REGRESSION_C;
+    }
+
     // initialize this thing to persist as is
+    public static final InterpLUT distToVeloLUT;
     static {
         distToVeloLUT = new InterpLUT();
-        distToVeloLUT.add(-100, 0);
-        distToVeloLUT.add(0, -970);
-        distToVeloLUT.add(2, -990);
-        distToVeloLUT.add(3, -1000);
-        distToVeloLUT.add(4, -1050);
-        distToVeloLUT.add(5, -1050);
-        distToVeloLUT.add(6, -1240);
-        distToVeloLUT.add(7, -1260);
-        distToVeloLUT.add(9, -1440);
-        distToVeloLUT.add(11, -1490);
-        distToVeloLUT.add(12, -1525);
-        distToVeloLUT.add(100, -1580);
+
+        distToVeloLUT.add(-100, -1000);
+        distToVeloLUT.add(4, -1000);
+        distToVeloLUT.add(4.5, -1040);
+        distToVeloLUT.add(5, -1060);
+        distToVeloLUT.add(5.5, -1060);
+        distToVeloLUT.add(6, -1080);
+        distToVeloLUT.add(6.5, -1130);
+        distToVeloLUT.add(7, -1145);
+        distToVeloLUT.add(7.5, -1220);
+        distToVeloLUT.add(8, -1260);
+        distToVeloLUT.add(8.5, -1280);
+        distToVeloLUT.add(9, -1325);
+        distToVeloLUT.add(9.5, -1370);
+        distToVeloLUT.add(11.12, -1455);
+        distToVeloLUT.add(11.5, -1480);
+        distToVeloLUT.add(12, -1490);
+        distToVeloLUT.add(12.4, -1510);
+        distToVeloLUT.add(100, -1510);
         // to do: add
         distToVeloLUT.createLUT();
     }
@@ -73,6 +95,11 @@ public class Shooter extends SubsystemBase {
             default:
                 break;
         }
+
+        TelemetryManager p = PanelsTelemetry.INSTANCE.getTelemetry();
+        p.addData("Target Velocity", targetVelocityTicks);
+        p.addData("Current Velocity", robot.shooterLeft.getCorrectedVelocity());
+        p.update();
 
         logData();
     }
@@ -107,7 +134,7 @@ public class Shooter extends SubsystemBase {
 
         double currentVelocity = robot.shooterLeft.getCorrectedVelocity();
         // voltage comp is necessary to prevent the bot from tweaking towards the end of the match
-        double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks) +
+        double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks) * robot.getVoltageFeedforwardConstant() +
                 kV * targetVelocityTicks * robot.getVoltageFeedforwardConstant();
 
         robot.shooterLeft.set(output);
@@ -119,7 +146,7 @@ public class Shooter extends SubsystemBase {
         // clip to a distance
         double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 12.0);
         double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal);
-        double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist)
+        double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
                 + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 
         robot.shooterLeft.set(output);
@@ -141,4 +168,5 @@ public class Shooter extends SubsystemBase {
     public boolean isAtTargetVelocity() {
         return flywheelVelocityPID.atSetPoint();
     }
+
 }

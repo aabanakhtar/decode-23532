@@ -54,7 +54,7 @@ public class DuneStrider {
     // sensors
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
-    private BasicFilter batteryFilter = new RunningAverageFilter(10);
+    private final BasicFilter batteryFilter = new RunningAverageFilter(10);
 
     public SwyftRanger ranger0;
     public SwyftRanger ranger1;
@@ -130,7 +130,7 @@ public class DuneStrider {
                 });
 
         // Transfer wheels
-        flightRecorder = new MultipleTelemetry(t, PanelsTelemetry.INSTANCE.getFtcTelemetry(), FtcDashboard.getInstance().getTelemetry());
+        flightRecorder = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
 
         // subsystem init
         hubs = new Hubs();

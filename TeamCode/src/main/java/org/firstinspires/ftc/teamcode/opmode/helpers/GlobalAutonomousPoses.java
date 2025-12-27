@@ -21,27 +21,32 @@ public class GlobalAutonomousPoses {
         // preload points
         public static Pose START_PRELOAD = new Pose(31.636, 136.515 - 0.833);
 
-        // ROW 2
+        // ROW 1
         public static Pose END_LINEUP_START_INTAKE = new Pose(48.190, 89.904);
-        public static Pose END_INTAKE_START_SCORE = new Pose(20, 83.451);
+        public static Pose INTAKE_CONTROL_POINT = new Pose(55, 85);
+        public static Pose END_INTAKE_START_SCORE = new Pose(24, 89);
         // ROW 2
         public static Pose END_LINEUP_START_INTAKE2 = new Pose(49, 60.020);
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(11, 64);
-        public static Pose CONTROL1_SCORE_ROW2 = new Pose(74.965, 60.731);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(20, 65.5);
+        public static Pose INTAKE_CONTROL_POINT2 = new Pose(62, 60);
+        public static Pose CONTROL1_SCORE_ROW2 = new Pose(64.965, 60.731);
 
         // JIAR Sync Auto related
         public static Pose OPEN_GATE_START = new Pose(8, 59.455);
         public static Pose OPEN_GATE_SWING = new Pose(24, 59);
         public static Pose OPEN_GATE_CTRL = new Pose(30, 67);
-        public static Pose OPEN_GATE_OPEN = new Pose(17, 69);
+        public static Pose OPEN_GATE_OPEN = new Pose(20, 69);
 
         // ROW 3
         public static Pose END_LINEUP_START_INTAKE3 = new Pose(49, 36.534);
-        public static Pose END_INTAKE_START_SCORE3 = new Pose(11, 39.059);
+        public static Pose INTAKE_CONTROL_POINT3 = new Pose(72, 34);
+        public static Pose SCORE_CONTROL_POINT3 = new Pose(40, 46);
+        public static Pose END_INTAKE_START_SCORE3 = new Pose(18, 39.059);
 
         // ROW 4 comin soon
-        public static Pose END_LINEUP_START_INTAKE_HP_ZONE = new Pose(9, 36);
-        public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(9, 11);
+        public static Pose END_LINEUP_START_INTAKE_HP_ZONE = new Pose(13, 36);
+        public static Pose INTAKE_CONTROL_POINT4 = new Pose(51, 25);
+        public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(13, 11);
     }
 
     @Configurable

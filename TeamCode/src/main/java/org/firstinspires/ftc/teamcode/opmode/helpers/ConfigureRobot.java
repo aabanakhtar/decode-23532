@@ -17,7 +17,7 @@ public class ConfigureRobot extends OpMode {
     public void init() {
         prompter = new Prompter(this);
         prompter.prompt("alliance", new OptionPrompt<>("Alliance select", DuneStrider.Alliance.RED, DuneStrider.Alliance.BLUE));
-        prompter.prompt("rows", new ValuePrompt("Rows select", 0.0, 3.0, 0.0, 1.0));
+        prompter.prompt("rows", new ValuePrompt("Rows select", 0.0, 4.0, 0.0, 1.0));
 
         prompter.onComplete(() -> {
             DuneStrider.alliance = prompter.get("alliance");

@@ -42,7 +42,7 @@ public class AudienceAuto extends OpMode {
     @Override
     public void init() {
         Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ?
-        START_POSE.setHeading(heading(90)) : START_POSE.mirror().setHeading(heading(90));
+                START_POSE.setHeading(heading(90)) : START_POSE.mirror().setHeading(heading(90));
         robot.init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
 
         Follower follower = robot.drive.follower;
@@ -51,32 +51,32 @@ public class AudienceAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                    new HomeTurret(0.5),
-                    execPreload(follower), execRow3())
+                        new HomeTurret(0.5),
+                        execPreload(follower), execRow3())
         );
     }
 
     public Command execPreload(Follower follower) {
         return new SequentialCommandGroup(
-            // prepare our intake for world class domination
-            run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
-            run(() -> robot.intake.closeLatch()),
+                // prepare our intake for world class domination
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+                run(() -> robot.intake.closeLatch()),
 
-            // prep shooter
-            new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                // prep shooter
+                new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
 
-            // drive up
-            new FollowPathCommand(follower, shootPreload),
-            waitFor((long)1000),
+                // drive up
+                new FollowPathCommand(follower, shootPreload),
+                waitFor((long)1000),
 
-            // shoot
-            intakeSet(Intake.Mode.INGEST),
-            run(() -> robot.intake.openLatch()),
-            waitFor((long)2500),
+                // shoot
+                intakeSet(Intake.Mode.INGEST),
+                run(() -> robot.intake.openLatch()),
+                waitFor((long)2500),
 
-            // de prepare
-            run(() -> robot.intakeTubing.set(0)),
-            run(() -> robot.shooter.setIdle())
+                // de prepare
+                run(() -> robot.intakeTubing.set(0)),
+                run(() -> robot.shooter.setIdle())
         );
     }
 

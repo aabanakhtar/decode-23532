@@ -7,19 +7,16 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.CONTROL1_SCORE_ROW2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE_HP_ZONE;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE2;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE3;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_LINEUP_START_INTAKE_HP_ZONE;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.OPEN_GATE_CTRL;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT2;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT3;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT4;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.OPEN_GATE_OPEN;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.OPEN_GATE_START;
-import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.OPEN_GATE_SWING;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.SCORE_CONTROL_POINT3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.UNIVERSAL_SCORE_TARGET;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.heading;
@@ -48,12 +45,10 @@ public class GoalAuto extends OpMode {
 
     private DuneStrider robot;
     private PathChain shootPreload;
-    private PathChain lineUpRow1, lineUpRow2, lineUpRow3;
-    private PathChain openGate;
     private PathChain intakeRow1, intakeRow2, intakeRow3;
     private PathChain scoreRow1, scoreRow2, scoreRow3;
-    private PathChain lineUpHPZone, intakeHPZone, scoreHPZone;
-    public static int nRows = 3;
+    private PathChain intakeHPZone, scoreHPZone;
+    public static int nRows = 4;
 
     @Override
     public void init() {
@@ -67,12 +62,12 @@ public class GoalAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        new HomeTurret(1),
+                        new HomeTurret(0.1),
                         execPreload(),
                         If(execRow1(), nothing(), () -> nRows >= 1),
                         If(execRow2(), nothing(), () -> nRows >= 2),
                         If(execRow3(), nothing(), () -> nRows >= 3),
-                        execHPZone(),
+                        If(execHPZone(), nothing(), () -> nRows >= 4),
                         run(() -> robot.shooter.setVelocity(0))
 
                 )
@@ -104,11 +99,7 @@ public class GoalAuto extends OpMode {
     private Command execRow1() {
         return new SequentialCommandGroup(
                 // RUN INTAKE WITH ALIGN
-                fork(
-                        run(() -> robot.intake.closeLatch()),
-                        go(robot.drive.follower, lineUpRow1, 1.0)
-                ),
-
+                run(() -> robot.intake.closeLatch()),
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow1, 1.0),
@@ -123,16 +114,11 @@ public class GoalAuto extends OpMode {
 
     private Command execRow2() {
         return new SequentialCommandGroup(
-                fork(
-                        go(robot.drive.follower, lineUpRow2, 1.0),
-                        run(() -> robot.intake.closeLatch())
-                ),
-
+                run(() -> robot.intake.closeLatch()),
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow2, 1),
                 intakeSet(Intake.Mode.OFF),
-                go(robot.drive.follower, openGate, 1),
 
                 // go home and score
                 run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
@@ -143,10 +129,7 @@ public class GoalAuto extends OpMode {
 
     private Command execRow3() {
         return new SequentialCommandGroup(
-                fork(
-                        go(robot.drive.follower, lineUpRow3, 1.0),
-                        run(() -> robot.intake.closeLatch())
-                ),
+                run(() -> robot.intake.closeLatch()),
 
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
@@ -164,12 +147,11 @@ public class GoalAuto extends OpMode {
     private Command execHPZone() {
         return new SequentialCommandGroup(
                 fork(
-                        go(robot.drive.follower, lineUpHPZone, 1.0),
-                        run(() -> robot.intake.closeLatch())
+                        run(() -> robot.intake.closeLatch()),
+                        // turn on the intake and eat up the balls
+                        intakeSet(Intake.Mode.INGEST)
                 ),
 
-                // turn on the intake and eat up the balls
-                intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeHPZone, 1),
 
                 intakeSet(Intake.Mode.OFF),
@@ -188,32 +170,13 @@ public class GoalAuto extends OpMode {
                 .setLinearHeadingInterpolation(0, heading(-90))
                 .build();
 
-        lineUpRow1 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET, END_LINEUP_START_INTAKE))
-                .setLinearHeadingInterpolation(heading(-90), heading(180))
-                .build();
-
         intakeRow1 = follower
                 .pathBuilder()
-                .addPath(new BezierLine(END_LINEUP_START_INTAKE, END_INTAKE_START_SCORE))
+                .addPath(new BezierCurve(
+                        UNIVERSAL_SCORE_TARGET,
+                        INTAKE_CONTROL_POINT,
+                        END_INTAKE_START_SCORE))
                 .setTangentHeadingInterpolation()
-                .build();
-
-        openGate = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(OPEN_GATE_START, OPEN_GATE_SWING)
-                )
-                .setConstantHeadingInterpolation(heading(180))
-                .addPath(
-                        new BezierCurve(
-                                OPEN_GATE_SWING,
-                                OPEN_GATE_CTRL,
-                                OPEN_GATE_OPEN
-                        )
-                )
-                .setConstantHeadingInterpolation(heading(180))
                 .build();
 
         scoreRow1 = follower
@@ -222,46 +185,37 @@ public class GoalAuto extends OpMode {
                 .setLinearHeadingInterpolation(heading(180), heading(-90))
                 .build();
 
-        lineUpRow2 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(UNIVERSAL_SCORE_TARGET, END_LINEUP_START_INTAKE2)
-                )
-                .setLinearHeadingInterpolation(heading(-90), heading(180))
-                .build();
-
         intakeRow2 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(END_LINEUP_START_INTAKE2, END_INTAKE_START_SCORE2)
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET,
+                                INTAKE_CONTROL_POINT2,
+                                END_INTAKE_START_SCORE2
+                        )
                 )
-                .setLinearHeadingInterpolation(heading(180), heading(180))
+                .setTangentHeadingInterpolation()
                 .build();
 
         scoreRow2 = follower
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                END_INTAKE_START_SCORE2,
-                                CONTROL1_SCORE_ROW2,
+                                OPEN_GATE_OPEN,
+                                new Pose(58, 73),
                                 UNIVERSAL_SCORE_TARGET
                         )
                 )
-                .setLinearHeadingInterpolation(heading(180), heading(-90))
-                .build();
-
-        lineUpRow3 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(UNIVERSAL_SCORE_TARGET, END_LINEUP_START_INTAKE3)
-                )
-                .setLinearHeadingInterpolation(heading(-90), heading(180))
+                .setTangentHeadingInterpolation()
+                .setReversed()
                 .build();
 
         intakeRow3 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(END_LINEUP_START_INTAKE3, END_INTAKE_START_SCORE3)
+                        new BezierCurve(UNIVERSAL_SCORE_TARGET,
+                                INTAKE_CONTROL_POINT3,
+                                END_INTAKE_START_SCORE3)
                 )
                 .setTangentHeadingInterpolation()
                 .build();
@@ -269,184 +223,43 @@ public class GoalAuto extends OpMode {
         scoreRow3 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(
+                        new BezierCurve(
                                 END_INTAKE_START_SCORE3,
+                                SCORE_CONTROL_POINT3,
                                 UNIVERSAL_SCORE_TARGET
                         )
                 )
-                .setLinearHeadingInterpolation(heading(180), heading(-90))
+                .setTangentHeadingInterpolation()
+                .setReversed()
                 .build();
 
-        lineUpHPZone = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                UNIVERSAL_SCORE_TARGET,
-                                END_LINEUP_START_INTAKE_HP_ZONE
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(-90), heading(-90))
-                .build();
 
         intakeHPZone = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(
-                                END_LINEUP_START_INTAKE_HP_ZONE,
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET,
+                                INTAKE_CONTROL_POINT4,
                                 END_INTAKE_START_SCORE_HP_ZONE
                         )
                 )
-                .setLinearHeadingInterpolation(heading(-90), heading(-90))
+                .setTangentHeadingInterpolation()
                 .build();
 
         scoreHPZone = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(
-                                END_LINEUP_START_INTAKE_HP_ZONE,
+                        new BezierCurve(
+                                END_INTAKE_START_SCORE_HP_ZONE,
+                                INTAKE_CONTROL_POINT4,
                                 UNIVERSAL_SCORE_TARGET
                         )
                 )
-                .setConstantHeadingInterpolation(heading(-90))
+                .setTangentHeadingInterpolation()
+                .setReversed()
                 .build();
     }
 
     private void buildPathChainsRed(Follower follower) {
-        shootPreload = follower
-                .pathBuilder()
-                .addPath(new BezierLine(START_PRELOAD.mirror(), UNIVERSAL_SCORE_TARGET.mirror()))
-                .setLinearHeadingInterpolation(mirrorHeading(0), mirrorHeading(heading(-90)))
-                .build();
-
-        lineUpRow1 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET.mirror(), END_LINEUP_START_INTAKE.mirror()))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(-90)),
-                        mirrorHeading(heading(180))
-                )
-                .build();
-
-        intakeRow1 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(END_LINEUP_START_INTAKE.mirror(), END_INTAKE_START_SCORE.mirror()))
-                .setTangentHeadingInterpolation()
-                .build();
-
-
-        scoreRow1 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(OPEN_GATE_OPEN.mirror(), UNIVERSAL_SCORE_TARGET.mirror()))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(180)),
-                        mirrorHeading(heading(-90))
-                )
-                .build();
-
-
-        lineUpRow2 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET.mirror(), END_LINEUP_START_INTAKE2.mirror()))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(-90)),
-                        mirrorHeading(heading(180))
-                )
-                .build();
-
-        intakeRow2 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(END_LINEUP_START_INTAKE2.mirror(), END_INTAKE_START_SCORE2.mirror()))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(180)),
-                        mirrorHeading(heading(180))
-                )
-                .build();
-
-        openGate = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(OPEN_GATE_START.mirror(), OPEN_GATE_SWING.mirror())
-                )
-                .addPath(
-                        new BezierCurve(
-                                OPEN_GATE_SWING.mirror(),
-                                OPEN_GATE_CTRL.mirror(),
-                                OPEN_GATE_OPEN.mirror()
-                        )
-                )
-                .setConstantHeadingInterpolation(mirrorHeading(heading(180)))
-                .build();
-
-        scoreRow2 = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                END_INTAKE_START_SCORE2.mirror(),
-                                CONTROL1_SCORE_ROW2.mirror(),
-                                UNIVERSAL_SCORE_TARGET.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(180)),
-                        mirrorHeading(heading(-90))
-                )
-                .build();
-
-        lineUpRow3 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET.mirror(), END_LINEUP_START_INTAKE3.mirror()))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(-90)),
-                        mirrorHeading(heading(180))
-                )
-                .build();
-
-        intakeRow3 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(END_LINEUP_START_INTAKE3.mirror(), END_INTAKE_START_SCORE3.mirror()))
-                .setTangentHeadingInterpolation()
-                .build();
-
-        scoreRow3 = follower
-                .pathBuilder()
-                .addPath(new BezierLine(
-                        END_INTAKE_START_SCORE3.mirror(),
-                        UNIVERSAL_SCORE_TARGET.mirror()
-                ))
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(180)),
-                        mirrorHeading(heading(-90))
-                )
-                .build();
-
-        lineUpHPZone = follower
-                .pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                UNIVERSAL_SCORE_TARGET.mirror(),
-                                END_LINEUP_START_INTAKE_HP_ZONE.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(mirrorHeading(heading(-90)), mirrorHeading(heading(-90)))
-                .build();
-
-        intakeHPZone = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                END_LINEUP_START_INTAKE_HP_ZONE.mirror(),
-                                END_INTAKE_START_SCORE_HP_ZONE.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(-90), heading(-90))
-                .build();
-
-        scoreHPZone = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                END_LINEUP_START_INTAKE_HP_ZONE.mirror(),
-                                UNIVERSAL_SCORE_TARGET.mirror()
-                        )
-                )
-                .setConstantHeadingInterpolation(mirrorHeading(heading(-90)))
-                .build();
+        // TODO: fill
     }
 
     @Override

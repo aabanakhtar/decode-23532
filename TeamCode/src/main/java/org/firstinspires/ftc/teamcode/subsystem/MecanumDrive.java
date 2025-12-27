@@ -77,11 +77,10 @@ public class MecanumDrive extends SubsystemBase {
         double shotTime = Shooter.shooterTimeRegression(getPose().distanceFrom(goalPose) / 12.0);
 
         Vector predictedPosition = currentPose
-                .plus(getVelocity().times(shotTime))
-                .plus(getAcceleration().times(0.5 * Math.pow(shotTime, 2)));
+                .plus(getVelocity().times(shotTime * robot.getVoltageFeedforwardConstant()));
 
         double angle = getPose().getHeading();
-        double angularVelocity = getAngularVelocity() * shotTime;
+        double angularVelocity = getAngularVelocity() * shotTime * robot.getVoltageFeedforwardConstant();
         double predictedAngle = angle + angularVelocity;
 
         return new Pose(predictedPosition.getXComponent(), predictedPosition.getYComponent(), predictedAngle);
@@ -106,7 +105,7 @@ public class MecanumDrive extends SubsystemBase {
 
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
-        Pose currPose = predictNextPose(chosenPose);
+        Pose currPose = getPose();
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading() + Math.PI);
         double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading() + Math.PI);

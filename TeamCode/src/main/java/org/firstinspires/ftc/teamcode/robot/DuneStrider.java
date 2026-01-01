@@ -70,6 +70,7 @@ public class DuneStrider {
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
+    public HugeEyes eyes;
 
     // for writing logs
     public MultipleTelemetry flightRecorder;
@@ -88,6 +89,9 @@ public class DuneStrider {
         turret.setMode(Turret.Mode.HOMING);
         shooter.setIdle();
         shooter.setPower(0);
+
+        limelight.pipelineSwitch(2);
+        limelight.start();
     }
 
     public DuneStrider init(Mode mode, Pose pose, HardwareMap map, Telemetry t) {
@@ -129,7 +133,8 @@ public class DuneStrider {
                     x.setRunMode(Motor.RunMode.RawPower);
                 });
 
-        // Transfer wheels
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
         flightRecorder = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
 
         // subsystem init
@@ -139,6 +144,7 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
+        eyes = new HugeEyes();
         reset();
         return inst;
     }

@@ -34,6 +34,7 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void init() {
         robot = DuneStrider.get().init(DuneStrider.Mode.TELEOP, MecanumDrive.lastPose, hardwareMap, telemetry);
+        robot.eyes.setEnabled(true);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 

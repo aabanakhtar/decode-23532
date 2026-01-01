@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE3;
@@ -15,6 +16,8 @@ import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPose
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT4;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT4_0;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_SCORE_R2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.OPEN_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.SCORE_CONTROL_POINT3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
@@ -41,13 +44,17 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @Configurable
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
-    public static double TRANSFER_DELAY = 800.0;
+    public static double TRANSFER_DELAY = 700.0;
+    public static double INTAKE_DELAY_R1 = 300.0;
+    public static double INTAKE_DELAY = 150.0;
+    public static double INTAKE_LUCKY_CHARM = 400.0;
 
     private DuneStrider robot;
     private PathChain shootPreload;
     private PathChain intakeRow1, intakeRow2, intakeRow3;
     private PathChain scoreRow1, scoreRow2, scoreRow3;
     private PathChain intakeHPZone, scoreHPZone;
+    private PathChain parkRP;
     public static int nRows = 4;
 
     @Override
@@ -55,6 +62,7 @@ public class GoalAuto extends OpMode {
         Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(0) : START_PRELOAD.mirror().setHeading(heading(180));
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
+        robot.eyes.setEnabled(false);
         Follower follower = robot.drive.follower;
 
         if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
@@ -62,12 +70,13 @@ public class GoalAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        new HomeTurret(0.1),
+                        new HomeTurret(0.15),
                         execPreload(),
                         If(execRow1(), nothing(), () -> nRows >= 1),
                         If(execRow2(), nothing(), () -> nRows >= 2),
                         If(execRow3(), nothing(), () -> nRows >= 3),
                         If(execHPZone(), nothing(), () -> nRows >= 4),
+                        go(follower, parkRP, 1),
                         run(() -> robot.shooter.setVelocity(0))
 
                 )
@@ -92,6 +101,7 @@ public class GoalAuto extends OpMode {
                 run(() -> robot.intake.openLatch()),
                 run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                 go(robot.drive.follower, shootPreload, 1.0),
+                waitFor(300),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -103,11 +113,21 @@ public class GoalAuto extends OpMode {
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow1, 1.0),
+                waitFor((long)INTAKE_DELAY_R1),
 
-                intakeSet(Intake.Mode.OFF),
+                // let the intake regen
+                fork (
+                        new SequentialCommandGroup(
+                                waitFor((long)INTAKE_LUCKY_CHARM),
+                                intakeSet(Intake.Mode.OFF)
+                        ),
+                        new SequentialCommandGroup(
+                                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                                go(robot.drive.follower, scoreRow1, 1.0)
+                        )
+                ),
+
                 // go home and score
-                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                go(robot.drive.follower, scoreRow1, 1.0),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -118,11 +138,20 @@ public class GoalAuto extends OpMode {
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow2, 1),
-                intakeSet(Intake.Mode.OFF),
+                waitFor((long)INTAKE_DELAY),
+
+                fork(
+                        new SequentialCommandGroup(
+                                waitFor((long)INTAKE_LUCKY_CHARM),
+                                intakeSet(Intake.Mode.OFF)
+                        ),
+                        new SequentialCommandGroup(
+                                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                                go(robot.drive.follower, scoreRow2, 1)
+                        )
+                ),
 
                 // go home and score
-                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                go(robot.drive.follower, scoreRow2, 1),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -135,11 +164,20 @@ public class GoalAuto extends OpMode {
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow3, 1),
 
-                intakeSet(Intake.Mode.OFF),
+                waitFor((long)INTAKE_DELAY),
+
+                fork(
+                    new SequentialCommandGroup(
+                            waitFor((long)TRANSFER_DELAY),
+                            intakeSet(Intake.Mode.OFF)
+                    ),
+                    new SequentialCommandGroup(
+                            run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                            go(robot.drive.follower, scoreRow3, 1)
+                    )
+                ),
 
                 // go home and score
-                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                go(robot.drive.follower, scoreRow3, 1),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -153,12 +191,20 @@ public class GoalAuto extends OpMode {
                 ),
 
                 go(robot.drive.follower, intakeHPZone, 1),
+                waitFor((long)INTAKE_DELAY + 400),
 
-                intakeSet(Intake.Mode.OFF),
+                fork(
+                        new SequentialCommandGroup(
+                                waitFor((long)INTAKE_LUCKY_CHARM + 300),
+                                intakeSet(Intake.Mode.OFF)
+                        ),
+                        new SequentialCommandGroup(
+                                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                                go(robot.drive.follower, scoreHPZone, 1)
+                        )
+                ),
 
                 // go home and score
-                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                go(robot.drive.follower, scoreHPZone, 1),
                 shoot((long) TRANSFER_DELAY)
         );
     }
@@ -166,22 +212,25 @@ public class GoalAuto extends OpMode {
     private void buildPathChains(Follower follower) {
         shootPreload = follower
                 .pathBuilder()
-                .addPath(new BezierLine(START_PRELOAD, UNIVERSAL_SCORE_TARGET))
-                .setLinearHeadingInterpolation(0, heading(-90))
+                .addPath(new BezierCurve(START_PRELOAD, new Pose(49, 113), UNIVERSAL_SCORE_TARGET))
+                .setTangentHeadingInterpolation()
                 .build();
 
         intakeRow1 = follower
                 .pathBuilder()
-                .addPath(new BezierCurve(
-                        UNIVERSAL_SCORE_TARGET,
-                        INTAKE_CONTROL_POINT,
-                        END_INTAKE_START_SCORE))
+                .addPath(
+                        new BezierCurve(
+                            UNIVERSAL_SCORE_TARGET,
+                            INTAKE_CONTROL_POINT,
+                            END_INTAKE_START_SCORE
+                        )
+                )
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreRow1 = follower
                 .pathBuilder()
-                .addPath(new BezierLine(OPEN_GATE_OPEN, UNIVERSAL_SCORE_TARGET))
+                .addPath(new BezierLine(END_INTAKE_START_SCORE, UNIVERSAL_SCORE_TARGET))
                 .setLinearHeadingInterpolation(heading(180), heading(-90))
                 .build();
 
@@ -194,7 +243,7 @@ public class GoalAuto extends OpMode {
                                 END_INTAKE_START_SCORE2
                         )
                 )
-                .setTangentHeadingInterpolation()
+                .setConstantHeadingInterpolation(heading(225))
                 .build();
 
         scoreRow2 = follower
@@ -202,7 +251,7 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 OPEN_GATE_OPEN,
-                                new Pose(58, 73),
+                                INTAKE_CONTROL_SCORE_R2,
                                 UNIVERSAL_SCORE_TARGET
                         )
                 )
@@ -213,9 +262,11 @@ public class GoalAuto extends OpMode {
         intakeRow3 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(UNIVERSAL_SCORE_TARGET,
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET,
                                 INTAKE_CONTROL_POINT3,
-                                END_INTAKE_START_SCORE3)
+                                END_INTAKE_START_SCORE3
+                        )
                 )
                 .setTangentHeadingInterpolation()
                 .build();
@@ -238,23 +289,31 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 UNIVERSAL_SCORE_TARGET,
-                                INTAKE_CONTROL_POINT4,
+                                INTAKE_CONTROL_POINT4_0,
                                 END_INTAKE_START_SCORE_HP_ZONE
                         )
                 )
                 .setTangentHeadingInterpolation()
+                .setNoDeceleration()
+                .setBrakingStart(0.8)
+                .setTimeoutConstraint(0)
                 .build();
 
         scoreHPZone = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
                                 END_INTAKE_START_SCORE_HP_ZONE,
-                                INTAKE_CONTROL_POINT4,
+                                new Pose(66, 62),
                                 UNIVERSAL_SCORE_TARGET
                         )
                 )
                 .setTangentHeadingInterpolation()
                 .setReversed()
+                .build();
+
+        parkRP = follower.pathBuilder()
+                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET, new Pose(48, 72)))
+                .setTangentHeadingInterpolation()
                 .build();
     }
 

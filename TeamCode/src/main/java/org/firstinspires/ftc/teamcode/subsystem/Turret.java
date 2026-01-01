@@ -22,7 +22,6 @@ public class Turret extends SubsystemBase {
         RAW,
         PINPOINT,
         DEBUG,
-        LIMELIGHT
     }
 
     // State machine related things
@@ -130,23 +129,6 @@ public class Turret extends SubsystemBase {
                 robot.shooterTurret.set(power);
                 break;
             }
-
-            // Option B: Use limelight smart cam to aim turret
-            case LIMELIGHT: {
-                if (lastMode != Mode.LIMELIGHT) {
-                    limelightLargeErrorPID.reset();
-                    limelightSmallErrorPID.reset();
-                }
-                double tx = 0;
-                // use gain scheduling to make the controller better
-                double error = adjustTx(tx);
-                PIDFController scheduledController = limelightSmallErrorPID;
-                double power = scheduledController.calculate(error, 0);
-                robot.flightRecorder.addData("LimelightPower", power);
-                robot.shooterTurret.set(power);
-                break;
-            }
-
             // Debug purposes only
             case DEBUG: {
                 double power = turretAnglePID.calculate(encoderAngle, 0);

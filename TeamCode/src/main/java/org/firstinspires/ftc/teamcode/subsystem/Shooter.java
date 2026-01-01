@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 
 @Config
 public class Shooter extends SubsystemBase {
@@ -21,15 +22,16 @@ public class Shooter extends SubsystemBase {
 
     public static boolean tuning = false;
     public static Mode mode = Mode.RAW;
+    private final RunningAverageFilter velFilter = new RunningAverageFilter(10);
 
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
 
     public static double IDLE_VELOCITY = -600.0;
     public static double kV = 0.0005118;
-    public static double kP = 0.014;
+    public static double kP = 0.0025;
     public static double kI = 0.0;
-    public static double kD = 0.0;
+    public static double kD = 0.0004;
     public static double VELOCITY_TOLERANCE = 40.0;
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
 
@@ -98,8 +100,10 @@ public class Shooter extends SubsystemBase {
 
         TelemetryManager p = PanelsTelemetry.INSTANCE.getTelemetry();
         p.addData("Target Velocity", targetVelocityTicks);
-        p.addData("Current Velocity", robot.shooterLeft.getCorrectedVelocity());
+        p.addData("Current Velocity", velFilter.getFilteredOutput());
         p.update();
+
+        velFilter.updateValue(robot.shooterLeft.getCorrectedVelocity());
 
         logData();
     }
@@ -132,7 +136,7 @@ public class Shooter extends SubsystemBase {
             flywheelVelocityPID.setTolerance(VELOCITY_TOLERANCE);
         }
 
-        double currentVelocity = robot.shooterLeft.getCorrectedVelocity();
+        double currentVelocity = velFilter.getFilteredOutput();
         // voltage comp is necessary to prevent the bot from tweaking towards the end of the match
         double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks) * robot.getVoltageFeedforwardConstant() +
                 kV * targetVelocityTicks * robot.getVoltageFeedforwardConstant();
@@ -142,7 +146,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private void dynamicMode() {
-        double currentVelocity = robot.shooterLeft.getCorrectedVelocity();
+        double currentVelocity = velFilter.getFilteredOutput();
         // clip to a distance
         double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 12.0);
         double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal);

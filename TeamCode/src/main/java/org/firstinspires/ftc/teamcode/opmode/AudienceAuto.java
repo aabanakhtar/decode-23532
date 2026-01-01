@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.fork;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.go;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
@@ -23,6 +24,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
@@ -37,7 +39,7 @@ public class AudienceAuto extends OpMode {
     public static double TRANSFER_DELAY = 500.0;
     public static Pose START_POSE = new Pose(48, 7.3, GlobalAutonomousPoses.heading(90));
     private final DuneStrider robot = DuneStrider.get();
-    private PathChain shootPreload, lineUpRow3, intakeRow3, scoreRow3;
+    private PathChain shootPreload, intakeRow3, scoreRow3, intakeHPZone, intakeHPZone2, scoreHPZone;
 
     @Override
     public void init() {
@@ -67,13 +69,12 @@ public class AudienceAuto extends OpMode {
 
                 // drive up
                 new FollowPathCommand(follower, shootPreload),
-                waitFor((long)1000),
+                waitFor(300),
 
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
-                waitFor((long)2500),
-
+                waitFor(2500),
                 // de prepare
                 run(() -> robot.intakeTubing.set(0)),
                 run(() -> robot.shooter.setIdle())
@@ -83,18 +84,63 @@ public class AudienceAuto extends OpMode {
     private Command execRow3() {
         return new SequentialCommandGroup(
                 fork(
-                        go(robot.drive.follower, lineUpRow3, 1.0),
+                        nothing(),
                         run(() -> robot.intake.closeLatch())
                 ),
 
                 // turn on the intake and eat up the balls
                 intakeSet(Intake.Mode.INGEST),
                 go(robot.drive.follower, intakeRow3, 1),
-
+                waitFor(300),
                 new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                 intakeSet(Intake.Mode.OFF),
                 // go home and score
                 go(robot.drive.follower, scoreRow3, 1),
+                waitFor(300),
+                // shoot
+                intakeSet(Intake.Mode.INGEST),
+                run(() -> robot.intake.openLatch()),
+                waitFor((long)2500),
+
+                // de prepare
+                run(() -> robot.intakeTubing.set(0)),
+                run(() -> robot.shooter.setIdle()),
+                new SequentialCommandGroup(
+                        // HP ZONE ==============================================
+                        // turn on the intake and eat up the balls
+                        run(() -> robot.intake.closeLatch()),
+                        intakeSet(Intake.Mode.INGEST),
+                        go(robot.drive.follower, intakeHPZone, 1),
+                        waitFor(300),
+
+                        new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                        intakeSet(Intake.Mode.OFF),
+                        // go home and score
+                        go(robot.drive.follower, scoreHPZone, 1),
+                        waitFor(200),
+                        // shoot
+                        intakeSet(Intake.Mode.INGEST),
+                        run(() -> robot.intake.openLatch()),
+                        waitFor((long)2500),
+
+                        // de prepare
+                        run(() -> robot.intakeTubing.set(0)),
+                        run(() -> robot.shooter.setIdle())
+                ),
+
+
+                // ROUND 2 of HP Zone
+                run(() -> robot.intake.closeLatch()),
+
+                // turn on the intake and eat up the balls
+                intakeSet(Intake.Mode.INGEST),
+                go(robot.drive.follower, intakeRow3, 1),
+                waitFor(300),
+                new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                intakeSet(Intake.Mode.OFF),
+                // go home and score
+                go(robot.drive.follower, scoreRow3, 1),
+                waitFor(300),
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
@@ -122,20 +168,9 @@ public class AudienceAuto extends OpMode {
                 .setLinearHeadingInterpolation(heading(90), heading(-45))
                 .build();
 
-        lineUpRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AUNIVERSAL_SCORE_TARGET,
-                                ACONTROL1_LINEUP_ROW3,
-                                ALINEUP_ROW3_END
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(-45), heading(180))
-                .build();
-
         intakeRow3 = follower.pathBuilder()
                 .addPath(
-                        new BezierLine(ALINEUP_ROW3_END, AEND_INTAKE_ROW3)
+                        new BezierCurve(AUNIVERSAL_SCORE_TARGET, new Pose(44, 37), AEND_INTAKE_ROW3)
                 )
                 .setTangentHeadingInterpolation()
                 .build();
@@ -145,6 +180,38 @@ public class AudienceAuto extends OpMode {
                         new BezierCurve(
                                 AEND_INTAKE_ROW3,
                                 ACONTROL1_SCORE_ROW3,
+                                AUNIVERSAL_SCORE_TARGET
+                        )
+                )
+                .setLinearHeadingInterpolation(heading(180), heading(-45))
+                .build();
+
+        intakeHPZone = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                AUNIVERSAL_SCORE_TARGET,
+                                new Pose(58, 9),
+                                new Pose(9, 8)
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .build();
+
+        intakeHPZone2 = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                AUNIVERSAL_SCORE_TARGET,
+                                new Pose(33, 36),
+                                new Pose(9, 8)
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .build();
+
+        scoreHPZone = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                new Pose(13.5, 11),
                                 AUNIVERSAL_SCORE_TARGET
                         )
                 )
@@ -163,20 +230,6 @@ public class AudienceAuto extends OpMode {
                 .setLinearHeadingInterpolation(
                         heading(90),
                         mirrorHeading(heading(-45))
-                )
-                .build();
-
-        lineUpRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AUNIVERSAL_SCORE_TARGET.mirror(),
-                                ACONTROL1_LINEUP_ROW3.mirror(),
-                                ALINEUP_ROW3_END.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(
-                        mirrorHeading(heading(-45)),
-                        mirrorHeading(heading(180))
                 )
                 .build();
 

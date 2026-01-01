@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import static org.firstinspires.ftc.teamcode.subsystem.Shooter.shooterTimeRegression;
+
 import android.util.Range;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -53,6 +55,7 @@ public class MecanumDrive extends SubsystemBase {
 
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
+        robot.flightRecorder.addData("Velo:", getVelocity().getMagnitude());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
         follower.update();
     }
@@ -74,16 +77,45 @@ public class MecanumDrive extends SubsystemBase {
 
     public Pose predictNextPose(Pose goalPose) {
         Vector currentPose = getPose().getAsVector();
-        double shotTime = Shooter.shooterTimeRegression(getPose().distanceFrom(goalPose) / 12.0);
+        double shotTime = shooterTimeRegression(getPose().distanceFrom(goalPose) / 12.0);
 
         Vector predictedPosition = currentPose
-                .plus(getVelocity().times(shotTime * robot.getVoltageFeedforwardConstant()));
+                .plus(getVelocity().times(shotTime));
 
         double angle = getPose().getHeading();
-        double angularVelocity = getAngularVelocity() * shotTime * robot.getVoltageFeedforwardConstant();
+        double angularVelocity = getAngularVelocity() * shotTime;
         double predictedAngle = angle + angularVelocity;
 
         return new Pose(predictedPosition.getXComponent(), predictedPosition.getYComponent(), predictedAngle);
+    }
+
+    public Pose predictNextRobotPose(Pose currentBotPose, Vector velocity, double angularVelocity, Pose targetGoalPose) {
+        Vector currentPos = currentBotPose.getAsVector();
+        Vector goalPos = targetGoalPose.getAsVector();
+
+        Vector predictedRobotPos = currentPos;
+        double estimatedShotTime = 0;
+
+        for (int i = 0; i < 4; ++i) {
+            double distanceToGoalIn = predictedRobotPos.minus(goalPos).getMagnitude();
+            double distanceToGoalFt = distanceToGoalIn / 12.0;
+
+            estimatedShotTime = shooterTimeRegression(distanceToGoalFt);
+
+            if (estimatedShotTime == 0.0) {
+                break;
+            }
+
+            predictedRobotPos = currentPos.plus(velocity.times(estimatedShotTime));
+        }
+
+        double predictedHeading = currentBotPose.getHeading() + (angularVelocity * estimatedShotTime);
+
+        return new Pose(
+                predictedRobotPos.getXComponent(),
+                predictedRobotPos.getYComponent(),
+                predictedHeading
+        );
     }
 
     public Vector getVelocity() {
@@ -106,13 +138,24 @@ public class MecanumDrive extends SubsystemBase {
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         Pose currPose = getPose();
+
+        // aim logic to help prevent undershoot on the edge of the top tiles
+        Pose aimAtPose;
+        if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.BLUE) {
+            aimAtPose = new Pose(7, 144 -7);
+        } else if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.RED) {
+            aimAtPose = new Pose(144 - 7, 144 - 7);
+        } else {
+            aimAtPose = chosenPose;
+        }
+
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading() + Math.PI);
         double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading() + Math.PI);
 
         double absAngleToTarget = Math.atan2(
-                chosenPose.getY() - (currPose.getY() + turretYOffset),
-                chosenPose.getX() - (currPose.getX() + turretXOffset)
+                aimAtPose.getY() - (currPose.getY() + turretYOffset),
+                aimAtPose.getX() - (currPose.getX() + turretXOffset)
         );
 
         double robotHeading = currPose.getHeading(); // rad

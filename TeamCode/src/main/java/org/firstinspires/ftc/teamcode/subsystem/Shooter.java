@@ -29,7 +29,7 @@ public class Shooter extends SubsystemBase {
 
     public static double IDLE_VELOCITY = -600.0;
     public static double kV = 0.0005118;
-    public static double kP = 0.0025;
+    public static double kP = 0.003;
     public static double kI = 0.0;
     public static double kD = 0.0004;
     public static double VELOCITY_TOLERANCE = 40.0;

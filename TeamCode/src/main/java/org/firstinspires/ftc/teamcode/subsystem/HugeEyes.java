@@ -54,7 +54,6 @@ public class HugeEyes extends SubsystemBase {
 
             Pose pedroPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
             robot.flightRecorder.addData("Bot pose (Pedro)", pedroPose.toString());
-            robot.flightRecorder.addData("Is valid pose", verifyLimelightPose(pedroPose, robot.drive.getPose()));
 
             if (verifyLimelightPose(pedroPose, robot.drive.getPose()) && !disabled) {
                 robot.drive.follower.setPose(pedroPose);

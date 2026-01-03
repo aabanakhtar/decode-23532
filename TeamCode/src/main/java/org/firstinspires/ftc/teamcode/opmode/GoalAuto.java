@@ -44,9 +44,9 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @Configurable
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Global Goal Autonomous", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
-    public static double TRANSFER_DELAY = 700.0;
-    public static double INTAKE_DELAY_R1 = 300.0;
-    public static double INTAKE_DELAY = 150.0;
+    public static double TRANSFER_DELAY = 650.0;
+    public static double INTAKE_DELAY_R1 = 0.0;
+    public static double INTAKE_DELAY = 0.0;
     public static double INTAKE_LUCKY_CHARM = 400.0;
 
     private DuneStrider robot;
@@ -68,6 +68,7 @@ public class GoalAuto extends OpMode {
         if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
         else buildPathChainsRed(follower);
 
+        // we ball
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new HomeTurret(0.15),
@@ -78,7 +79,6 @@ public class GoalAuto extends OpMode {
                         If(execHPZone(), nothing(), () -> nRows >= 4),
                         go(follower, parkRP, 1),
                         run(() -> robot.shooter.setVelocity(0))
-
                 )
         );
     }
@@ -195,10 +195,11 @@ public class GoalAuto extends OpMode {
 
                 fork(
                         new SequentialCommandGroup(
-                                waitFor((long)INTAKE_LUCKY_CHARM + 300),
+                                waitFor((long)INTAKE_LUCKY_CHARM + 200),
                                 intakeSet(Intake.Mode.OFF)
                         ),
                         new SequentialCommandGroup(
+                                waitFor(800), // prevent excesssive current draw for no reason
                                 run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                                 go(robot.drive.follower, scoreHPZone, 1)
                         )
@@ -243,7 +244,7 @@ public class GoalAuto extends OpMode {
                                 END_INTAKE_START_SCORE2
                         )
                 )
-                .setConstantHeadingInterpolation(heading(225))
+                .setConstantHeadingInterpolation(heading(210))
                 .build();
 
         scoreRow2 = follower
@@ -319,11 +320,111 @@ public class GoalAuto extends OpMode {
 
     private void buildPathChainsRed(Follower follower) {
         // TODO: fill
-    }
+        shootPreload = follower
+                .pathBuilder()
+                .addPath(new BezierCurve(START_PRELOAD.mirror(), new Pose(49, 113).mirror(), UNIVERSAL_SCORE_TARGET.mirror()))
+                .setTangentHeadingInterpolation()
+                .build();
 
-    @Override
-    public void stop() {
-        Turret.autonomousEncoderOffset = robot.shooterTurret.getCurrentPosition();
+        intakeRow1 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET.mirror(),
+                                INTAKE_CONTROL_POINT.mirror(),
+                                END_INTAKE_START_SCORE.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .build();
+
+        scoreRow1 = follower
+                .pathBuilder()
+                .addPath(new BezierLine(END_INTAKE_START_SCORE.mirror(), UNIVERSAL_SCORE_TARGET.mirror()))
+                .setLinearHeadingInterpolation(mirrorHeading(heading(180)), mirrorHeading(heading(-90)))
+                .build();
+
+        intakeRow2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET.mirror(),
+                                INTAKE_CONTROL_POINT2.mirror(),
+                                END_INTAKE_START_SCORE2.mirror()
+                        )
+                )
+                .setConstantHeadingInterpolation(mirrorHeading(heading(210)))
+                .build();
+
+        scoreRow2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                OPEN_GATE_OPEN.mirror(),
+                                INTAKE_CONTROL_SCORE_R2.mirror(),
+                                UNIVERSAL_SCORE_TARGET.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .setReversed()
+                .build();
+
+        intakeRow3 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET.mirror(),
+                                INTAKE_CONTROL_POINT3.mirror(),
+                                END_INTAKE_START_SCORE3.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .build();
+
+        scoreRow3 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                END_INTAKE_START_SCORE3.mirror(),
+                                SCORE_CONTROL_POINT3.mirror(),
+                                UNIVERSAL_SCORE_TARGET.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .setReversed()
+                .build();
+
+
+        intakeHPZone = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                UNIVERSAL_SCORE_TARGET.mirror(),
+                                INTAKE_CONTROL_POINT4_0.mirror(),
+                                END_INTAKE_START_SCORE_HP_ZONE.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .setNoDeceleration()
+                .setBrakingStart(0.8)
+                .setTimeoutConstraint(0)
+                .build();
+
+        scoreHPZone = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                END_INTAKE_START_SCORE_HP_ZONE.mirror(),
+                                new Pose(66, 62).mirror(),
+                                UNIVERSAL_SCORE_TARGET.mirror()
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .setReversed()
+                .build();
+
+        parkRP = follower.pathBuilder()
+                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET.mirror(), new Pose(48, 72).mirror()))
+                    .setTangentHeadingInterpolation()
+                    .build();
     }
 
     private double mirrorHeading(double heading) {

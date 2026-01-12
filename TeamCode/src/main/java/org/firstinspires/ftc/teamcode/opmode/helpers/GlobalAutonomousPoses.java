@@ -14,6 +14,10 @@ public class GlobalAutonomousPoses {
     public static Pose BLUE_RELOCALIZE = RED_RELOCALIZE.mirror().withHeading(heading(180));
 
 
+    public static double mirrorHeading(double heading) {
+        return Math.PI - heading;
+    }
+
     @Configurable
     public static class GoalSidePoses {
         // The global scoring location

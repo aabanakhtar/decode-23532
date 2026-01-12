@@ -34,7 +34,7 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
-@Autonomous(name = "Global Audience Auto", group = "auto")
+@Autonomous(name = "Autonomous: 6 Artifact Non-configurable", group = "auto")
 public class AudienceAuto extends OpMode {
     public static double TRANSFER_DELAY = 500.0;
     public static Pose START_POSE = new Pose(48, 7.3, GlobalAutonomousPoses.heading(90));

@@ -23,25 +23,29 @@ public class GlobalAutonomousPoses {
 
         // ROW 1
         public static Pose INTAKE_CONTROL_POINT = new Pose(55, 85);
-        public static Pose END_INTAKE_START_SCORE = new Pose(19, 84.5);
+        public static Pose END_INTAKE_START_SCORE = new Pose(20, 82.5);
 
         // ROW 2
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(14.5, 68.5);
-        public static Pose INTAKE_CONTROL_POINT2 = new Pose(60, 61);
-        public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(58, 73);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(15, 58);
+        public static Pose INTAKE_CONTROL_POINT2 = new Pose(60, 59);
+        public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(60, 55);
 
         // JIAR Sync Auto related
-        public static Pose OPEN_GATE_OPEN = new Pose(20, 69);
+        public static Pose GATE_CONTROL_POINT = new Pose(30, 56);
+        public static Pose GATE_OPEN = new Pose(14, 69);
 
         // ROW 3
-        public static Pose INTAKE_CONTROL_POINT3 = new Pose(75, 36);
+        public static Pose INTAKE_CONTROL_POINT3 = new Pose(77, 32);
         public static Pose SCORE_CONTROL_POINT3 = new Pose(54, 46);
-        public static Pose END_INTAKE_START_SCORE3 = new Pose(7.5, 38.059);
+        public static Pose END_INTAKE_START_SCORE3 = new Pose(58, 5);
 
         // ROW 4
         public static Pose INTAKE_CONTROL_POINT4 = new Pose(41, 10);
-        public static Pose INTAKE_CONTROL_POINT4_0 = new Pose(8,  63);
-        public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(6, 15);
+        public static Pose INTAKE_CONTROL_POINT4_0 = new Pose(41,  14);
+        public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(9, 9);
+
+        public static Pose INTAKE_GATE = new Pose(30, 62);
+        public static Pose END_GATE = new Pose (5, 62);
     }
 
     @Configurable

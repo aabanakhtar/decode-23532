@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.Controller;
@@ -13,9 +14,11 @@ import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
 import org.firstinspires.ftc.teamcode.utilities.IdentityFilter;
 import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 
-@Configurable
+@Config
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
+
+    public static double PREDICT_FACTOR = 0.0;
 
     public enum Mode {
         HOMING,
@@ -117,7 +120,8 @@ public class Turret extends SubsystemBase {
                 double rawTarget = robot.drive.getAimTarget().heading;
                 setpointFilter.updateValue(rawTarget);
 
-                double filteredTarget = setpointFilter.getFilteredOutput();
+                double driveDTheta = Math.toDegrees(robot.drive.getAngularVelocity());
+                double filteredTarget = setpointFilter.getFilteredOutput() - driveDTheta * PREDICT_FACTOR;
                 double power = turretAnglePID.calculate(encoderAngle, filteredTarget);
 
                 robot.flightRecorder.addData("pinpoint target", filteredTarget);

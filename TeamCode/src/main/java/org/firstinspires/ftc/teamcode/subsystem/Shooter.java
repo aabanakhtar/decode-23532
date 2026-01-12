@@ -57,23 +57,21 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT = new InterpLUT();
 
         distToVeloLUT.add(-100, -1000);
-        distToVeloLUT.add(4, -1000);
-        distToVeloLUT.add(4.5, -1040);
-        distToVeloLUT.add(5, -1060);
-        distToVeloLUT.add(5.5, -1060);
-        distToVeloLUT.add(6, -1080);
-        distToVeloLUT.add(6.5, -1130);
-        distToVeloLUT.add(7, -1145);
-        distToVeloLUT.add(7.5, -1220);
-        distToVeloLUT.add(8, -1260);
-        distToVeloLUT.add(8.5, -1280);
-        distToVeloLUT.add(9, -1325);
-        distToVeloLUT.add(9.5, -1370);
-        distToVeloLUT.add(11.12, -1455);
-        distToVeloLUT.add(11.5, -1480);
-        distToVeloLUT.add(12, -1490);
-        distToVeloLUT.add(12.4, -1510);
-        distToVeloLUT.add(100, -1510);
+        distToVeloLUT.add(4.6, -1000);
+        distToVeloLUT.add(5, -1050);
+        distToVeloLUT.add(5.7, -1075);
+        distToVeloLUT.add(6, -1090);
+        distToVeloLUT.add(6.5, -1090);
+        distToVeloLUT.add(7.15, -1110);
+        distToVeloLUT.add(7.7, -1140);
+        distToVeloLUT.add(8.4, -1215);
+        distToVeloLUT.add(9.4, -1250);
+        // ======
+        distToVeloLUT.add(11.6, -1385);
+        distToVeloLUT.add(12, -1410);
+        distToVeloLUT.add(12.5, -1470);
+        distToVeloLUT.add(12.7, -1480);
+        distToVeloLUT.add(13.07, -1500);
         // to do: add
         distToVeloLUT.createLUT();
     }

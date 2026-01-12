@@ -26,8 +26,8 @@ public class HugeEyes extends SubsystemBase {
     private final DuneStrider robot;
 
     public static boolean disabled = true;
-    public static double MAX_SOURCE_DISPARITY = 3.0; // in
-    public static double MAX_RELOCALIZE_VELOCITY = 5.0; // in / sec
+    public static double MAX_SOURCE_DISPARITY = 2.0; // in
+    public static double MAX_RELOCALIZE_VELOCITY = 2.0; // in / sec
 
 
     public HugeEyes() {
@@ -36,7 +36,7 @@ public class HugeEyes extends SubsystemBase {
     }
 
     public void setEnabled(boolean enabled) {
-        this.disabled = !enabled;
+        disabled = !enabled;
     }
 
     @Override
@@ -50,13 +50,13 @@ public class HugeEyes extends SubsystemBase {
             double x = DistanceUnit.INCH.fromMeters(position.x);
             double y = DistanceUnit.INCH.fromMeters(position.y);
             double heading = Math.toRadians(botPose.getOrientation().getYaw());
-            robot.flightRecorder.addData("heading", Math.toDegrees(heading));
 
             Pose pedroPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
-            robot.flightRecorder.addData("Bot pose (Pedro)", pedroPose.toString());
 
             if (verifyLimelightPose(pedroPose, robot.drive.getPose()) && !disabled) {
                 robot.drive.follower.setPose(pedroPose);
+                robot.flightRecorder.addLine("======= HUGE EYES \uD83D\uDC41️ \uD83D\uDC41️ =======");
+                robot.flightRecorder.addData("Bot pose (Pedro)", pedroPose.toString());
             }
         }
 

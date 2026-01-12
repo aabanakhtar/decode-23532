@@ -54,14 +54,14 @@ public class AudienceAuto extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new HomeTurret(0.5),
-                        execPreload(follower), execRow3())
+                        execPreload(follower), execRow3(), execRowHP(), execRowHP())
         );
     }
 
     public Command execPreload(Follower follower) {
         return new SequentialCommandGroup(
                 // prepare our intake for world class domination
-                run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),
                 run(() -> robot.intake.closeLatch()),
 
                 // prep shooter
@@ -74,7 +74,7 @@ public class AudienceAuto extends OpMode {
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
-                waitFor(2500),
+                waitFor(1200),
                 // de prepare
                 run(() -> robot.intakeTubing.set(0)),
                 run(() -> robot.shooter.setIdle())
@@ -100,47 +100,28 @@ public class AudienceAuto extends OpMode {
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
-                waitFor((long)2500),
+                waitFor((long)1200),
 
                 // de prepare
                 run(() -> robot.intakeTubing.set(0)),
-                run(() -> robot.shooter.setIdle()),
-                new SequentialCommandGroup(
-                        // HP ZONE ==============================================
-                        // turn on the intake and eat up the balls
-                        run(() -> robot.intake.closeLatch()),
-                        intakeSet(Intake.Mode.INGEST),
-                        go(robot.drive.follower, intakeHPZone, 1),
-                        waitFor(300),
+                run(() -> robot.shooter.setIdle())
+        );
+    }
 
-                        new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                        intakeSet(Intake.Mode.OFF),
-                        // go home and score
-                        go(robot.drive.follower, scoreHPZone, 1),
-                        waitFor(200),
-                        // shoot
-                        intakeSet(Intake.Mode.INGEST),
-                        run(() -> robot.intake.openLatch()),
-                        waitFor((long)2500),
-
-                        // de prepare
-                        run(() -> robot.intakeTubing.set(0)),
-                        run(() -> robot.shooter.setIdle())
-                ),
-
-
-                // ROUND 2 of HP Zone
-                run(() -> robot.intake.closeLatch()),
-
+    private Command execRowHP() {
+        return new SequentialCommandGroup(
+                // HP ZONE ==============================================
                 // turn on the intake and eat up the balls
+                run(() -> robot.intake.closeLatch()),
                 intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeRow3, 1),
+                go(robot.drive.follower, intakeHPZone, 1),
                 waitFor(300),
+
                 new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                 intakeSet(Intake.Mode.OFF),
                 // go home and score
-                go(robot.drive.follower, scoreRow3, 1),
-                waitFor(300),
+                go(robot.drive.follower, scoreHPZone, 1),
+                waitFor(200),
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
@@ -148,7 +129,8 @@ public class AudienceAuto extends OpMode {
 
                 // de prepare
                 run(() -> robot.intakeTubing.set(0)),
-                run(() -> robot.shooter.setIdle())
+                run(() -> robot.shooter.setIdle()),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 1)
         );
     }
 

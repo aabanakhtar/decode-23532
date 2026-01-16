@@ -18,6 +18,7 @@ import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPose
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.START_PRELOAD;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.UNIVERSAL_SCORE_TARGET;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.heading;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.mirrorHeading;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
@@ -43,7 +44,7 @@ public class GoalAuto extends OpMode {
     // Mechanical
     public static double SHOOTER_TRANSFER_DELAY = 650.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 500.0;
-    public static long INTAKE_STOP_DELAY = 0;
+    public static long INTAKE_STOP_DELAY = 350;
 
     // Gate
     public static long GATE_DURATION = 750;
@@ -57,7 +58,7 @@ public class GoalAuto extends OpMode {
     // global path stuff
     public static double PW_SCALE_BRAKE_THRESHOLD = 0.87;
     public static double PW_SCALE_PATH_SPEED = 0.2;
-    public static double PRELOAD_SLOWDOWN_THRESH = 0.6;
+    public static double PRELOAD_SLOWDOWN_THRESH = 0.5;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -196,7 +197,13 @@ public class GoalAuto extends OpMode {
     private void buildPathChains(Follower follower) {
         shootPreload = follower
                 .pathBuilder()
-                .addPath(new BezierCurve(START_PRELOAD, new Pose(49, 113), UNIVERSAL_SCORE_TARGET))
+                .addPath(
+                        new BezierCurve(
+                            mPBA(START_PRELOAD),
+                            mPBA(new Pose(49, 113)),
+                            mPBA(UNIVERSAL_SCORE_TARGET)
+                        )
+                )
                 .addParametricCallback(PRELOAD_SLOWDOWN_THRESH, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .setTangentHeadingInterpolation()
@@ -208,9 +215,9 @@ public class GoalAuto extends OpMode {
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
-                            UNIVERSAL_SCORE_TARGET,
-                            INTAKE_CONTROL_POINT,
-                            END_INTAKE_START_SCORE
+                            mPBA(UNIVERSAL_SCORE_TARGET),
+                            mPBA(INTAKE_CONTROL_POINT),
+                            mPBA(END_INTAKE_START_SCORE)
                         )
                 )
                 .addParametricCallback(0, () -> follower.setMaxPowerScaling(ROW2_INTAKE_PATH_SPEED))
@@ -221,8 +228,16 @@ public class GoalAuto extends OpMode {
 
         scoreRow1 = follower
                 .pathBuilder()
-                .addPath(new BezierLine(END_INTAKE_START_SCORE, UNIVERSAL_SCORE_TARGET))
-                .setLinearHeadingInterpolation(heading(180), heading(-90))
+                .addPath(
+                        new BezierLine(
+                                mPBA(END_INTAKE_START_SCORE),
+                                mPBA(UNIVERSAL_SCORE_TARGET)
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        mHBA(heading(180)),
+                        mHBA(heading(-90))
+                )
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
@@ -230,29 +245,29 @@ public class GoalAuto extends OpMode {
         gateCycle = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                UNIVERSAL_SCORE_TARGET,
-                                new Pose(54, 55),
-                                INTAKE_GATE
+                                mPBA(UNIVERSAL_SCORE_TARGET),
+                                mPBA(new Pose(54, 55)),
+                                mPBA(INTAKE_GATE)
                         )
                 )
                 .addParametricCallback(0.1, () -> follower.setMaxPowerScaling(PW_SCALE_GATE_CYCLE_SPEED))
                 .setTangentHeadingInterpolation()
                 .addPath(
                         new BezierLine(
-                                INTAKE_GATE,
-                                END_GATE
+                                mPBA(INTAKE_GATE),
+                                mPBA(END_GATE)
                         )
                 )
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setConstantHeadingInterpolation(heading(GATE_HEADING))
+                .setConstantHeadingInterpolation(mHBA(heading(GATE_HEADING)))
                 .build();
 
         shootGate = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                END_GATE,
-                                new Pose(52, 46),
-                                UNIVERSAL_SCORE_TARGET
+                                mPBA(END_GATE),
+                                mPBA(new Pose(52, 46)),
+                                mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
                 .setTangentHeadingInterpolation()
@@ -265,13 +280,13 @@ public class GoalAuto extends OpMode {
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                UNIVERSAL_SCORE_TARGET,
-                                INTAKE_CONTROL_POINT2,
-                                END_INTAKE_START_SCORE2
+                                mPBA(UNIVERSAL_SCORE_TARGET),
+                                mPBA(INTAKE_CONTROL_POINT2),
+                                mPBA(END_INTAKE_START_SCORE2)
                         )
                 )
                 .addParametricCallback(0.4, () -> follower.setMaxPowerScaling(ROW2_INTAKE_PATH_SPEED))
-                .setConstantHeadingInterpolation(heading(180))
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
@@ -280,26 +295,43 @@ public class GoalAuto extends OpMode {
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                END_INTAKE_START_SCORE2,
-                                INTAKE_CONTROL_SCORE_R2,
-                                UNIVERSAL_SCORE_TARGET
+                                mPBA(END_INTAKE_START_SCORE2),
+                                mPBA(INTAKE_CONTROL_SCORE_R2),
+                                mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(
-                                new HeadingInterpolator.PiecewiseNode(0.0, 0.8, HeadingInterpolator.constant(heading(180))),
-                                new HeadingInterpolator.PiecewiseNode(0.3, 1, HeadingInterpolator.constant(heading(-90)))
+                                new HeadingInterpolator.PiecewiseNode(0.0, 0.8, HeadingInterpolator.constant(mHBA(heading(180)))),
+                                new HeadingInterpolator.PiecewiseNode(0.3, 1, HeadingInterpolator.constant(mHBA(heading(-90))))
                         )
                 )
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
 
         parkRP = follower.pathBuilder()
-                .addPath(new BezierLine(UNIVERSAL_SCORE_TARGET, new Pose(48, 72)))
+                .addPath(new BezierLine(mPBA(UNIVERSAL_SCORE_TARGET), mPBA(new Pose(48, 72))))
                 .setTangentHeadingInterpolation()
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
+    }
+
+    // Mirror Pose based on alliance
+    private Pose mPBA(Pose poseToMirror) {
+        if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
+            return poseToMirror.mirror();
+        } else {
+            return poseToMirror;
+        }
+    }
+
+    private double mHBA(double heading) {
+        if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
+            return mirrorHeading(heading);
+        } else {
+            return heading;
+        }
     }
 
     private void buildPathChainsRed() {

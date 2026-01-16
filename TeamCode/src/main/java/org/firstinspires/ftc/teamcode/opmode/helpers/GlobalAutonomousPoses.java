@@ -30,7 +30,7 @@ public class GlobalAutonomousPoses {
         public static Pose END_INTAKE_START_SCORE = new Pose(20, 82.5);
 
         // ROW 2
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(15, 58);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(14, 58);
         public static Pose INTAKE_CONTROL_POINT2 = new Pose(60, 59);
         public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(60, 55);
 
@@ -48,8 +48,8 @@ public class GlobalAutonomousPoses {
         public static Pose INTAKE_CONTROL_POINT4_0 = new Pose(41,  14);
         public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(9, 9);
 
-        public static Pose INTAKE_GATE = new Pose(30, 62);
-        public static Pose END_GATE = new Pose (5, 62);
+        public static Pose INTAKE_GATE = new Pose(30, 62.5);
+        public static Pose END_GATE = new Pose (5, 62.5);
     }
 
     @Configurable

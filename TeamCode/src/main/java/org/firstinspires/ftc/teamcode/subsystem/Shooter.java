@@ -29,10 +29,13 @@ public class Shooter extends SubsystemBase {
 
     public static double IDLE_VELOCITY = -600.0;
     public static double kV = 0.0005118;
-    public static double kP = 0.003;
+    public static double kP = 0.0035;
     public static double kI = 0.0;
     public static double kD = 0.0004;
     public static double VELOCITY_TOLERANCE = 40.0;
+    public static double CLOSE_ZONE_OFFSET = 20.0;
+    public static double FAR_ZONE_OFFSET = 0.0;
+
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
 
     DuneStrider robot = DuneStrider.get();
@@ -56,22 +59,22 @@ public class Shooter extends SubsystemBase {
     static {
         distToVeloLUT = new InterpLUT();
 
-        distToVeloLUT.add(-100, -1000);
-        distToVeloLUT.add(4.6, -1000);
-        distToVeloLUT.add(5, -1050);
-        distToVeloLUT.add(5.7, -1075);
-        distToVeloLUT.add(6, -1090);
-        distToVeloLUT.add(6.5, -1090);
-        distToVeloLUT.add(7.15, -1110);
-        distToVeloLUT.add(7.7, -1140);
-        distToVeloLUT.add(8.4, -1215);
-        distToVeloLUT.add(9.4, -1250);
+        distToVeloLUT.add(-100, -980 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(4.6, -980 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(5, -1030 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(5.7, -1055 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(6, -1070 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(6.5, -1090 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(7.15, -1090 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(7.7, -1110 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(8.4, -1190 - CLOSE_ZONE_OFFSET);
+        distToVeloLUT.add(9.4, -1215 - CLOSE_ZONE_OFFSET);
         // ======
-        distToVeloLUT.add(11.6, -1385);
-        distToVeloLUT.add(12, -1410);
-        distToVeloLUT.add(12.5, -1470);
-        distToVeloLUT.add(12.7, -1480);
-        distToVeloLUT.add(13.07, -1500);
+        distToVeloLUT.add(11.6, -1385 - FAR_ZONE_OFFSET);
+        distToVeloLUT.add(12, -1440 - FAR_ZONE_OFFSET);
+        distToVeloLUT.add(12.5, -1500 - FAR_ZONE_OFFSET);
+        distToVeloLUT.add(12.7, -1520 - FAR_ZONE_OFFSET);
+        distToVeloLUT.add(13.07, -1540 - FAR_ZONE_OFFSET);
         // to do: add
         distToVeloLUT.createLUT();
     }

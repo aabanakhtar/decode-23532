@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 // World class teleop design
 @TeleOp(name = "TeleOp")
@@ -30,6 +31,8 @@ public class SinglePlayerDrive extends OpMode {
     private DuneStrider robot;
     private GamepadEx gamepad1Ex;
     private double teleOpMultiplier = 1.0;
+    private double speedMultiplier = 1.0;
+    public static double MX_SPEED_SHOT = 0.3;
 
     @Override
     public void init() {
@@ -37,6 +40,8 @@ public class SinglePlayerDrive extends OpMode {
         robot.eyes.setEnabled(true);
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
+
+        Turret.PREDICT_FACTOR = -0.0115;
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
@@ -68,10 +73,12 @@ public class SinglePlayerDrive extends OpMode {
                 run(() -> {
                     robot.intake.openLatch();
                     robot.shooter.setMode(Shooter.Mode.DYNAMIC); // auto on
+                    speedMultiplier = MX_SPEED_SHOT;
                 }),
                 run(() -> {
                     robot.intake.closeLatch();
                     robot.shooter.setIdle(); // auto off
+                    speedMultiplier = 1.0;
                 })
         );
 
@@ -90,7 +97,8 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void loop() {
         robot.endLoop();
-        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * teleOpMultiplier, gamepad1Ex.getLeftX() * teleOpMultiplier,  -gamepad1Ex.getRightX());
+        robot.flightRecorder.addData("SPD Mult", speedMultiplier);
+        robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * teleOpMultiplier * speedMultiplier, gamepad1Ex.getLeftX() * teleOpMultiplier * speedMultiplier,  -gamepad1Ex.getRightX() * speedMultiplier);
     }
 
     public void bind(GamepadKeys.Button button, Command pressedCmd, Command releasedCmd) {

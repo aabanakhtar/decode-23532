@@ -49,12 +49,12 @@ public class GlobalAutonomousPoses {
         public static Pose END_INTAKE_START_SCORE_HP_ZONE = new Pose(9, 9);
 
         public static Pose INTAKE_GATE = new Pose(30, 62.5);
-        public static Pose END_GATE = new Pose (5, 62.5);
+        public static Pose END_GATE = new Pose (6, 62.5);
     }
 
     @Configurable
     public static class AudienceSidePoses {
-        public static Pose AUNIVERSAL_SCORE_TARGET = new Pose(63, 14);
+        public static Pose AUNIVERSAL_SCORE_TARGET = new Pose(63, 20);
 
         // row 3
         public static Pose ACONTROL1_LINEUP_ROW3 = new Pose(68.203, 35.635);

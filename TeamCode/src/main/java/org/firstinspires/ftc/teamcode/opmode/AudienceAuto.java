@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
+import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.mPBA;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ACONTROL1_LINEUP_ROW3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ACONTROL1_SCORE_ROW3;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.AEND_INTAKE_ROW3;
@@ -36,10 +37,10 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 
 @Autonomous(name = "Autonomous: 6 Artifact Non-configurable", group = "auto")
 public class AudienceAuto extends OpMode {
-    public static double TRANSFER_DELAY = 500.0;
+    public static double TRANSFER_DELAY = 1200.0;
     public static Pose START_POSE = new Pose(48, 7.3, GlobalAutonomousPoses.heading(90));
     private final DuneStrider robot = DuneStrider.get();
-    private PathChain shootPreload, intakeRow3, scoreRow3, intakeHPZone, intakeHPZone2, scoreHPZone;
+    private PathChain shootPreload, intakeRow3, scoreRow3, intakeHPZone, scoreHPZone;
 
     @Override
     public void init() {
@@ -48,14 +49,13 @@ public class AudienceAuto extends OpMode {
         robot.init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
 
         Follower follower = robot.drive.follower;
-        if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
-        else buildPathChainsRed(follower);
+        buildPathChains(follower);
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new HomeTurret(0.5),
-                        execPreload(follower), execRow3(), execRowHP(), execRowHP())
-        );
+                        execPreload(follower)
+        ));
     }
 
     public Command execPreload(Follower follower) {
@@ -74,63 +74,10 @@ public class AudienceAuto extends OpMode {
                 // shoot
                 intakeSet(Intake.Mode.INGEST),
                 run(() -> robot.intake.openLatch()),
-                waitFor(1200),
+                waitFor((long) TRANSFER_DELAY),
                 // de prepare
                 run(() -> robot.intakeTubing.set(0)),
                 run(() -> robot.shooter.setIdle())
-        );
-    }
-
-    private Command execRow3() {
-        return new SequentialCommandGroup(
-                fork(
-                        nothing(),
-                        run(() -> robot.intake.closeLatch())
-                ),
-
-                // turn on the intake and eat up the balls
-                intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeRow3, 1),
-                waitFor(300),
-                new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                intakeSet(Intake.Mode.OFF),
-                // go home and score
-                go(robot.drive.follower, scoreRow3, 1),
-                waitFor(300),
-                // shoot
-                intakeSet(Intake.Mode.INGEST),
-                run(() -> robot.intake.openLatch()),
-                waitFor((long)1200),
-
-                // de prepare
-                run(() -> robot.intakeTubing.set(0)),
-                run(() -> robot.shooter.setIdle())
-        );
-    }
-
-    private Command execRowHP() {
-        return new SequentialCommandGroup(
-                // HP ZONE ==============================================
-                // turn on the intake and eat up the balls
-                run(() -> robot.intake.closeLatch()),
-                intakeSet(Intake.Mode.INGEST),
-                go(robot.drive.follower, intakeHPZone, 1),
-                waitFor(300),
-
-                new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                intakeSet(Intake.Mode.OFF),
-                // go home and score
-                go(robot.drive.follower, scoreHPZone, 1),
-                waitFor(200),
-                // shoot
-                intakeSet(Intake.Mode.INGEST),
-                run(() -> robot.intake.openLatch()),
-                waitFor((long)2500),
-
-                // de prepare
-                run(() -> robot.intakeTubing.set(0)),
-                run(() -> robot.shooter.setIdle()),
-                run(() -> Intake.INGEST_MOTOR_SPEED = 1)
         );
     }
 
@@ -143,94 +90,11 @@ public class AudienceAuto extends OpMode {
         shootPreload = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                START_POSE,
-                                AUNIVERSAL_SCORE_TARGET
+                                mPBA(START_POSE),
+                                mPBA(AUNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setLinearHeadingInterpolation(heading(90), heading(-45))
-                .build();
-
-        intakeRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(AUNIVERSAL_SCORE_TARGET, new Pose(44, 37), AEND_INTAKE_ROW3)
-                )
-                .setTangentHeadingInterpolation()
-                .build();
-
-        scoreRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AEND_INTAKE_ROW3,
-                                ACONTROL1_SCORE_ROW3,
-                                AUNIVERSAL_SCORE_TARGET
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(180), heading(-45))
-                .build();
-
-        intakeHPZone = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AUNIVERSAL_SCORE_TARGET,
-                                new Pose(58, 9),
-                                new Pose(9, 8)
-                        )
-                )
-                .setTangentHeadingInterpolation()
-                .build();
-
-        intakeHPZone2 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AUNIVERSAL_SCORE_TARGET,
-                                new Pose(33, 36),
-                                new Pose(9, 8)
-                        )
-                )
-                .setTangentHeadingInterpolation()
-                .build();
-
-        scoreHPZone = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                new Pose(13.5, 11),
-                                AUNIVERSAL_SCORE_TARGET
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(180), heading(-45))
-                .build();
-    }
-
-    public void buildPathChainsRed(Follower follower) {
-        shootPreload = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                START_POSE.mirror(),
-                                AUNIVERSAL_SCORE_TARGET.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(
-                        heading(90),
-                        mirrorHeading(heading(-45))
-                )
-                .build();
-
-        intakeRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(ALINEUP_ROW3_END.mirror(), AEND_INTAKE_ROW3.mirror())
-                )
-                .setTangentHeadingInterpolation()
-                .build();
-
-        scoreRow3 = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                AEND_INTAKE_ROW3.mirror(),
-                                ACONTROL1_SCORE_ROW3.mirror(),
-                                AUNIVERSAL_SCORE_TARGET.mirror()
-                        )
-                )
-                .setLinearHeadingInterpolation(mirrorHeading(heading(180)), mirrorHeading(heading(-45)))
+                .setLinearHeadingInterpolation(heading(90), mirrorHeading(heading(-45)))
                 .build();
     }
 

@@ -2,13 +2,17 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.Controller;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.controller.SquIDFController;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
 import org.firstinspires.ftc.teamcode.utilities.IdentityFilter;
@@ -18,7 +22,7 @@ import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.0;
+    public static double PREDICT_FACTOR = -0.00; // -0.01
 
     public enum Mode {
         HOMING,
@@ -38,11 +42,12 @@ public class Turret extends SubsystemBase {
     public static final double targetAngle = 0.0;
 
     // turret gains
-    public static double kP = 0.075;
+    public static double kP = 0.07;
     public static double kI = 0.0;
-    public static double kD = 0.001;
+    // was 0.001
+    public static double kD = 0.000;
 
-    public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 6;
+    public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 4;
     public BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
 
     // limelight gains
@@ -117,19 +122,28 @@ public class Turret extends SubsystemBase {
                     setpointFilter.reset();
                 }
 
+                double predictedLeadOffset = calculateTurretOffset(
+                    robot.drive.getPose(),
+                    DuneStrider.Alliance.BLUE == DuneStrider.alliance ? MecanumDrive.blueGoalPose : MecanumDrive.redGoalPose,
+                    robot.drive.getVelocity(),
+                    PREDICT_FACTOR
+                );
+
                 double rawTarget = robot.drive.getAimTarget().heading;
                 setpointFilter.updateValue(rawTarget);
 
-                double driveDTheta = Math.toDegrees(robot.drive.getAngularVelocity());
-                double filteredTarget = setpointFilter.getFilteredOutput() - driveDTheta * PREDICT_FACTOR;
-                double power = turretAnglePID.calculate(encoderAngle, filteredTarget);
+                double filteredTarget = setpointFilter.getFilteredOutput() + predictedLeadOffset;
+                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, filteredTarget));
+                double power = turretAnglePID.calculate(encoderAngle, constrainedAngleDeg);
 
-                robot.flightRecorder.addData("pinpoint target", filteredTarget);
                 if (isAtTarget()) {
                     robot.shooterTurret.set(0.0);
                     break;
                 }
 
+                robot.flightRecorder.addData("pinpoint target", filteredTarget);
+                robot.flightRecorder.addData("velocity offset", predictedLeadOffset);
+                robot.flightRecorder.addData("velocity magnitude", robot.drive.getVelocity().getMagnitude());
                 robot.shooterTurret.set(power);
                 break;
             }
@@ -159,6 +173,42 @@ public class Turret extends SubsystemBase {
 
     public boolean isAtTarget() {
         return turretAnglePID.atSetPoint();
+    }
+
+    public double calculateTurretOffset(
+            Pose robotPose,
+            Pose goalPose,
+            Vector velocity,
+            double K) {
+
+        // Get position vectors
+        Vector robotPosition = robotPose.getAsVector();
+        Vector goalPosition = goalPose.getAsVector();
+
+        // Calculate vector from robot to goal
+        Vector toGoal = goalPosition.minus(robotPosition);
+
+        // Calculate angle to goal (field-relative)
+        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
+
+        // Get robot velocity info
+        double robotSpeed = velocity.getMagnitude();
+
+        if (robotSpeed < 3) {
+            return 0;
+        }
+
+        double robotVelocityAngle = Math.atan2(velocity.getYComponent(), velocity.getXComponent());
+
+        // Calculate tangential component
+        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
+        double vTangential = robotSpeed * Math.sin(deltaTheta);
+
+        // Calculate offset in radians
+        double turretOffsetRadians = K * vTangential;
+
+        // Convert to degrees
+        return Math.toDegrees(turretOffsetRadians);
     }
 
     private double adjustTx(double tx) {

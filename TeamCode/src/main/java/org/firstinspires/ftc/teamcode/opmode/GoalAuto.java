@@ -37,6 +37,7 @@ import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Configurable
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
@@ -52,12 +53,12 @@ public class GoalAuto extends OpMode {
 
     // paths
     public static double ROW1_BRAKE_STRENGTH = 1.0;
-    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.8;
+    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.7;
     public static double ROW2_INTAKE_PATH_SPEED = 0.7;
 
     // global path stuff
     public static double PW_SCALE_BRAKE_THRESHOLD = 0.87;
-    public static double PW_SCALE_PATH_SPEED = 0.2;
+    public static double PW_SCALE_PATH_SPEED = 0.18;
     public static double PRELOAD_SLOWDOWN_THRESH = 0.5;
 
     private DuneStrider robot;
@@ -75,10 +76,10 @@ public class GoalAuto extends OpMode {
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
+        Turret.PREDICT_FACTOR = 0;
 
         Follower follower = robot.drive.follower;
-        if (DuneStrider.alliance == DuneStrider.Alliance.BLUE) buildPathChains(follower);
-        else buildPathChainsRed();
+        buildPathChains(follower);
 
         // we ball
         CommandScheduler.getInstance().schedule(
@@ -260,6 +261,7 @@ public class GoalAuto extends OpMode {
                 )
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .setConstantHeadingInterpolation(mHBA(heading(GATE_HEADING)))
+                .setTimeoutConstraint(100)
                 .build();
 
         shootGate = follower.pathBuilder()
@@ -296,16 +298,20 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 mPBA(END_INTAKE_START_SCORE2),
-                                mPBA(INTAKE_CONTROL_SCORE_R2),
+                                mPBA(new Pose(52, 46)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
+                .setTangentHeadingInterpolation()
+                .setReversed()
+                /*
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(0.0, 0.8, HeadingInterpolator.constant(mHBA(heading(180)))),
                                 new HeadingInterpolator.PiecewiseNode(0.3, 1, HeadingInterpolator.constant(mHBA(heading(-90))))
                         )
-                )
+                ) */
+                .addParametricCallback(0.5, () -> follower.setMaxPowerScaling(0.6))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
 
@@ -318,7 +324,7 @@ public class GoalAuto extends OpMode {
     }
 
     // Mirror Pose based on alliance
-    private Pose mPBA(Pose poseToMirror) {
+    public static Pose mPBA(Pose poseToMirror) {
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
             return poseToMirror.mirror();
         } else {
@@ -326,15 +332,11 @@ public class GoalAuto extends OpMode {
         }
     }
 
-    private double mHBA(double heading) {
+    public static double mHBA(double heading) {
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
             return mirrorHeading(heading);
         } else {
             return heading;
         }
-    }
-
-    private void buildPathChainsRed() {
-
     }
 }

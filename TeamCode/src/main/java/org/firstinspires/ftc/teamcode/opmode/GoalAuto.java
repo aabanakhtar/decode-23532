@@ -50,6 +50,7 @@ public class GoalAuto extends OpMode {
     // Gate
     public static long GATE_DURATION = 750;
     public static double GATE_HEADING = 160;
+    public static double GATE_CYCLE_TM = 3000;
 
     // paths
     public static double ROW1_BRAKE_STRENGTH = 1.0;
@@ -125,7 +126,8 @@ public class GoalAuto extends OpMode {
                 run(() -> robot.intake.closeLatch()),
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
-                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0),
+                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0)
+                        .raceWith(waitFor((long) GATE_CYCLE_TM)),
                 waitFor(GATE_DURATION),
 
                 // let the intake regen

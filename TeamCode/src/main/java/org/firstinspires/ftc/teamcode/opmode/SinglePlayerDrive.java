@@ -32,7 +32,7 @@ public class SinglePlayerDrive extends OpMode {
     private GamepadEx gamepad1Ex;
     private double teleOpMultiplier = 1.0;
     private double speedMultiplier = 1.0;
-    public static double MX_SPEED_SHOT = 0.3;
+    public static double MX_SPEED_SHOT = 0.4;
 
     @Override
     public void init() {

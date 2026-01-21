@@ -33,7 +33,7 @@ public class Shooter extends SubsystemBase {
     public static double kI = 0.0;
     public static double kD = 0.0004;
     public static double VELOCITY_TOLERANCE = 40.0;
-    public static double CLOSE_ZONE_OFFSET = 20.0;
+    public static double CLOSE_ZONE_OFFSET = 0.0;
     public static double FAR_ZONE_OFFSET = 0.0;
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);

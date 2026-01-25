@@ -3,12 +3,9 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -20,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.device.SwyftRanger;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
-import org.firstinspires.ftc.teamcode.subsystem.HugeEyes;
+import org.firstinspires.ftc.teamcode.subsystem.MegaTagRelocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.SensorStack;
@@ -76,7 +73,7 @@ public class DuneStrider {
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
-    public HugeEyes eyes;
+    public MegaTagRelocalizer eyes;
 
     // for writing logs
     public MultipleTelemetry flightRecorder;
@@ -150,7 +147,7 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
-        eyes = new HugeEyes();
+        eyes = new MegaTagRelocalizer();
         reset();
         return inst;
     }

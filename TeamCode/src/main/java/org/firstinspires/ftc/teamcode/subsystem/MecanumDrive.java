@@ -51,14 +51,13 @@ public class MecanumDrive extends SubsystemBase {
         lastPose = follower.getPose();
 
         lastAimTarget = getShooterPositionPinpointRel2();
+        robot.flightRecorder.addLine("======DRIVETRAIN:=======");
         robot.flightRecorder.addData("goal heading", lastAimTarget.heading);
         robot.flightRecorder.addData("goal distance", lastAimTarget.distance);
 
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
-        robot.flightRecorder.addData("Velo:", getVelocity().getMagnitude());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
-        robot.flightRecorder.addData("angular velo:", Math.toDegrees(getAngularVelocity()));
 
         follower.update();
     }

@@ -30,7 +30,6 @@ public class KalmanPoseEstimator {
         uncertainty = (1 - kalmanGain) * uncertainty;
 
         DuneStrider.get().flightRecorder.addData("KALMAN GAIN", kalmanGain);
-
         return drift;
     }
 

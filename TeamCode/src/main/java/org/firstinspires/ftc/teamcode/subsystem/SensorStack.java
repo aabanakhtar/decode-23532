@@ -12,8 +12,8 @@ public class SensorStack extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public void periodic() { /*
         robot.flightRecorder.addData("Ranger 1", robot.ranger0.getDistance());
-        robot.flightRecorder.addData("Ranger 2", robot.ranger1.getDistance());
+        robot.flightRecorder.addData("Ranger 2", robot.ranger1.getDistance()); */
     }
 }

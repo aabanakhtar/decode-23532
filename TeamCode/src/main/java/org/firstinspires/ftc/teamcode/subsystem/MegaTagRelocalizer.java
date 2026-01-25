@@ -1,30 +1,17 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import androidx.annotation.Nullable;
-
-import com.pedropathing.control.KalmanFilter;
-import com.pedropathing.control.KalmanFilterParameters;
-import com.pedropathing.ftc.FTCCoordinates;
-import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.utilities.KalmanPoseEstimator;
 
-import java.util.List;
-
-public class HugeEyes extends SubsystemBase {
+public class MegaTagRelocalizer extends SubsystemBase {
     private final Limelight3A limelight;
     private final DuneStrider robot;
 
@@ -43,7 +30,7 @@ public class HugeEyes extends SubsystemBase {
     // TODO: ensure degrees as getHeading() returns radians
     KalmanPoseEstimator thetaPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_HEADING_COVARIANCE, LIMELIGHT_HEADING_COVARIANCE);
 
-    public HugeEyes() {
+    public MegaTagRelocalizer() {
         robot = DuneStrider.get();
         limelight = robot.limelight;
     }
@@ -71,7 +58,7 @@ public class HugeEyes extends SubsystemBase {
             double heading = Math.toRadians(botPose.getOrientation().getYaw());
             Pose limelightPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
 
-            robot.flightRecorder.addLine("======= HUGE EYES \uD83D\uDC41️ \uD83D\uDC41️ =======");
+            robot.flightRecorder.addLine("======= MEGATAG SUBSYS \uD83D\uDC41️ \uD83D\uDC41️ =======");
             robot.flightRecorder.addData("Bot pose (Pedro)", limelightPose.toString());
 
 

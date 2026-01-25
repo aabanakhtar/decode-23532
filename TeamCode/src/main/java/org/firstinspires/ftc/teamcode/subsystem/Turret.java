@@ -47,8 +47,10 @@ public class Turret extends SubsystemBase {
     public static double kD = 0.000;
 
     public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 4;
-    public BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
+    private final BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
 
+    public static int ABS_ANGLE_WINDOW_RANGE = 4;
+    private final BasicFilter analogEncoderFilter = new RunningAverageFilter(ABS_ANGLE_WINDOW_RANGE);
 
     // PIDs
     private final Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
@@ -57,11 +59,14 @@ public class Turret extends SubsystemBase {
     // 312 RPM Yellow Jacket with gearing 27t to 95t
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
     public static final double TURRET_ENCODER_CPR = 537.7 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
-    public static final double TURRET_MAX_ANGLE = 150.0;
-    public static final double TURRET_PID_TOLERANCE = 1.0;
+    // limits the turret's use of abs encoder beyond this area
+    public static final double MAX_SAFE_ANGLE = 150.0; //deg
+    public static double MAX_ANGULAR_HOME_VELOCITY = 5.0; // deg/s
+    public static double MAX_DISPARITY = 10.0; // deg
+    public static final double TURRET_MAX_ANGLE = 180.0; // deg
+    public static final double TURRET_PID_TOLERANCE = 1.0; //deg
 
     // for relocalizing turret
-    public static final double UNSAFE_ABSOLUTE_RANGE = 20.0;
     public static double TURRET_HOME_OFFSET = 0;
 
     public Turret() {
@@ -70,15 +75,13 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        //final double encoderAngle = calculateAngleFromEncoder();
-        final double encoderAngle = robot.analogEncoder.getCurrentPosition();
+        // always use quadrature
+        final double encoderAngle = calculateAngleFromEncoder();
+        analogEncoderFilter.updateValue(robot.analogEncoder.getCurrentPosition());
+
         robot.flightRecorder.addLine("==========TURRET===========");
-        robot.flightRecorder.addData("Mode", mode.toString());
-        robot.flightRecorder.addData("Encoder position", robot.shooterTurret.encoder.getPosition());
         robot.flightRecorder.addData("angle", encoderAngle);
-        robot.flightRecorder.addData("target angle", targetAngle);
-        robot.flightRecorder.addData("target power:", targetPower);
-        robot.flightRecorder.addData("is at home:", isAtHome());
+        robot.flightRecorder.addData("target angle", setpointFilter.getFilteredOutput());
 
         if (tuning) {
             ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
@@ -106,23 +109,26 @@ public class Turret extends SubsystemBase {
                     setpointFilter.reset();
                 }
 
+                attemptRelocalize();
+
                 double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR);
 
+                // filter our target
                 double rawTarget = robot.drive.getAimTarget().heading;
                 setpointFilter.updateValue(rawTarget);
 
                 double filteredTarget = setpointFilter.getFilteredOutput() - predictedLeadOffset;
+
+                // constrain our angles
                 double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, filteredTarget));
                 double power = turretAnglePID.calculate(encoderAngle, constrainedAngleDeg);
 
-                if (isAtTarget()) {
+                // absolute limit (idk if this helps but should)
+                if (isAtTarget() || (power > 0 && encoderAngle > TURRET_MAX_ANGLE) || (power < 0 && encoderAngle < -TURRET_MAX_ANGLE)) {
                     robot.shooterTurret.set(0.0);
                     break;
                 }
 
-                robot.flightRecorder.addData("pinpoint target", filteredTarget);
-                robot.flightRecorder.addData("velocity offset", predictedLeadOffset);
-                robot.flightRecorder.addData("velocity magnitude", robot.drive.getVelocity().getMagnitude());
                 robot.shooterTurret.set(power);
                 break;
             }
@@ -136,6 +142,32 @@ public class Turret extends SubsystemBase {
 
         // store this for smooth transitions between the two (rising-edge)
         lastMode = mode;
+    }
+
+    private void attemptRelocalize() {
+        // max speed angular and axis
+        if (Math.abs((robot.shooterTurret.getCorrectedVelocity() / TURRET_ENCODER_CPR) * 360.0) > MAX_ANGULAR_HOME_VELOCITY) {
+            return;
+        }
+        // are we shooting (vibration)
+        if (robot.shooter.getMode() == Shooter.Mode.DYNAMIC) {
+            return;
+        }
+        // voltage
+        if (robot.getVoltage() < DuneStrider.IDEAL_VOLTAGE) {
+            return;
+        }
+        // is encoder at max? Don't trust sign flipping here
+        if (Math.abs(calculateAngleFromEncoder()) >= MAX_SAFE_ANGLE) {
+            return;
+        }
+
+        // home
+        double error = analogEncoderFilter.getFilteredOutput() - calculateAngleFromEncoder();
+        if (error > MAX_DISPARITY) {
+            return;
+        }
+        TURRET_HOME_OFFSET += AngleUnit.normalizeDegrees(error);
     }
 
     public void setMode(Mode amode) {

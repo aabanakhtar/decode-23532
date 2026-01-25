@@ -107,7 +107,6 @@ public class GoalAuto extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("GB MAX POWER: ", robot.drive.follower.getMaxPowerScaling());
         robot.endLoop();
     }
 

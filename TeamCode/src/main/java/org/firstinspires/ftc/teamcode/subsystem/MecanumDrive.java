@@ -11,6 +11,7 @@ import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
@@ -58,6 +59,7 @@ public class MecanumDrive extends SubsystemBase {
         robot.flightRecorder.addData("Velo:", getVelocity().getMagnitude());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
         robot.flightRecorder.addData("angular velo:", Math.toDegrees(getAngularVelocity()));
+
         follower.update();
     }
 
@@ -76,45 +78,32 @@ public class MecanumDrive extends SubsystemBase {
         return follower.getPose();
     }
 
-    public Pose predictNextPose(Pose goalPose) {
-        Vector currentPose = getPose().getAsVector();
-        Vector predictedPosition = currentPose
-                .plus(getVelocity().times(PREDICT_FACTOR));
-
-        double angle = getPose().getHeading();
-        double angularVelocity = getAngularVelocity() * PREDICT_FACTOR;
-        double predictedAngle = angle + angularVelocity;
-
-        return new Pose(predictedPosition.getXComponent(), predictedPosition.getYComponent(), predictedAngle);
+    public double getRadialVelocityToGoal() {
+        return 0;
     }
 
-    public Pose predictNextRobotPose(Pose currentBotPose, Vector velocity, double angularVelocity, Pose targetGoalPose) {
-        Vector currentPos = currentBotPose.getAsVector();
-        Vector goalPos = targetGoalPose.getAsVector();
+    public double getTangentVelocityToGoal() {
+        Vector robotPosition = getPose().getAsVector();
+        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose).getAsVector();
 
-        Vector predictedRobotPos = currentPos;
-        double estimatedShotTime = 0;
+        // Calculate vector from robot to goal
+        Vector toGoal = goalPosition.minus(robotPosition);
 
-        for (int i = 0; i < 4; ++i) {
-            double distanceToGoalIn = predictedRobotPos.minus(goalPos).getMagnitude();
-            double distanceToGoalFt = distanceToGoalIn / 12.0;
+        // Calculate angle to goal (field-relative)
+        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
 
-            estimatedShotTime = shooterTimeRegression(distanceToGoalFt);
+        // Get robot velocity scalar
+        double robotSpeed = getVelocity().getMagnitude();
 
-            if (estimatedShotTime == 0.0) {
-                break;
-            }
-
-            predictedRobotPos = currentPos.plus(velocity.times(estimatedShotTime));
+        if (robotSpeed < 3) {
+            return 0;
         }
 
-        double predictedHeading = currentBotPose.getHeading() + (angularVelocity * estimatedShotTime);
+        double robotVelocityAngle = Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
 
-        return new Pose(
-                predictedRobotPos.getXComponent(),
-                predictedRobotPos.getYComponent(),
-                predictedHeading
-        );
+        // Calculate tangential component
+        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
+        return robotSpeed * Math.sin(deltaTheta);
     }
 
     public Vector getVelocity() {
@@ -133,7 +122,6 @@ public class MecanumDrive extends SubsystemBase {
         return lastAimTarget;
     }
 
-
     private AimAtTarget getShooterPositionPinpointRel2() {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         Pose currPose = getPose();
@@ -141,17 +129,16 @@ public class MecanumDrive extends SubsystemBase {
         // aim logic to help prevent undershoot on the edge of the top tiles
         Pose aimAtPose;
         if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.BLUE) {
-            aimAtPose = new Pose(7, 144 -7);
+            aimAtPose = new Pose(7, 144 - 7);
         } else if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.RED) {
             aimAtPose = new Pose(144 - 7, 144 - 7);
         } else {
             aimAtPose = chosenPose;
         }
 
-        Pose predictedPose = predictNextPose(chosenPose);
-        double distance = chosenPose.distanceFrom(predictedPose) / 12.0;
-        double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading() + Math.PI);
-        double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading() + Math.PI);
+        double distance = chosenPose.distanceFrom(chosenPose) / 12.0;
+        double turretXOffset = -TURRET_OFFSET * Math.cos(currPose.getHeading());
+        double turretYOffset = -TURRET_OFFSET * Math.sin(currPose.getHeading());
 
         double absAngleToTarget = Math.atan2(
                 aimAtPose.getY() - (currPose.getY() + turretYOffset),
@@ -159,7 +146,7 @@ public class MecanumDrive extends SubsystemBase {
         );
 
         double robotHeading = currPose.getHeading(); // rad
-        double turretRelativeAngleRad = absAngleToTarget - (robotHeading + Math.PI);
+        double turretRelativeAngleRad = absAngleToTarget - (robotHeading);
 
         // do normalization
         while (turretRelativeAngleRad <= -Math.PI) {

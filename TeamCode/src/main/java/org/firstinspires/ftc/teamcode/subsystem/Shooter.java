@@ -22,7 +22,7 @@ public class Shooter extends SubsystemBase {
 
     public static boolean tuning = false;
     public static Mode mode = Mode.RAW;
-    private final RunningAverageFilter velFilter = new RunningAverageFilter(10);
+    private final RunningAverageFilter velFilter = new RunningAverageFilter(5);
 
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
@@ -112,6 +112,7 @@ public class Shooter extends SubsystemBase {
     public void setMode(Mode mode) {
         Shooter.mode = mode;
     }
+    public Mode getMode() { return mode; }
 
     public double getOptimalVelocityForDist(double distance_ft) {
         return distToVeloLUT.get(distance_ft);

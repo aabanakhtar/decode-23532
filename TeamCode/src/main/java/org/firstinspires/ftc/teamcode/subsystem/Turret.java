@@ -37,12 +37,11 @@ public class Turret extends SubsystemBase {
     public static Mode lastMode = Mode.RAW;
 
     public static boolean tuning = false;
-    public static double autonomousEncoderOffset = 0.0;
     public static double targetPower = 0.0;
     public static final double targetAngle = 0.0;
 
     // turret gains
-    public static double kP = 0.07;
+    public static double kP = 0.04;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.000;
@@ -50,31 +49,20 @@ public class Turret extends SubsystemBase {
     public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 4;
     public BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
 
-    // limelight gains
-    public static double LIMELIGHT_FAR_kP = 0.0;
-    public static double LIMELIGHT_FAR_kD = 0.0;
-
-    public static double LIMELIGHT_CLOSE_kP = 0.0;
-    public static double LIMELIGHT_CLOSE_kD = 0;
-
-    public static double LIMELIGHT_SMALL_GAINS_THRESHOLD = 11.0;  /* degrees */
-    public static double LIMELIGHT_TRANSITION_GAINS_THRESHOLD = 20.0;
-    public static double LIMELIGHT_LOWER_TRANSITION_GAINS_THRESHOLD = 10.0;
-
 
     // PIDs
-    public static Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
+    private final Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
     // we have two for different sizes of error
-    public static PIDFController limelightLargeErrorPID = new PIDFController(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
-    public static PIDFController limelightSmallErrorPID = new PIDFController(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
 
     // 312 RPM Yellow Jacket with gearing 27t to 95t
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
     public static final double TURRET_ENCODER_CPR = 537.7 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
-    public static final double TURRET_MAX_ANGLE = 74.56;
+    public static final double TURRET_MAX_ANGLE = 150.0;
     public static final double TURRET_PID_TOLERANCE = 1.0;
-    public static final double TURRET_HOME_OFFSET = -TURRET_ENCODER_CPR * (84.56 / 360.0); // to set right to negative
-    public static final double HOME_POWER = -0.3;
+
+    // for relocalizing turret
+    public static final double UNSAFE_ABSOLUTE_RANGE = 20.0;
+    public static double TURRET_HOME_OFFSET = 0;
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
@@ -82,7 +70,8 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        final double encoderAngle = calculateAngleFromEncoder();
+        //final double encoderAngle = calculateAngleFromEncoder();
+        final double encoderAngle = robot.analogEncoder.getCurrentPosition();
         robot.flightRecorder.addLine("==========TURRET===========");
         robot.flightRecorder.addData("Mode", mode.toString());
         robot.flightRecorder.addData("Encoder position", robot.shooterTurret.encoder.getPosition());
@@ -93,8 +82,6 @@ public class Turret extends SubsystemBase {
 
         if (tuning) {
             ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
-            limelightLargeErrorPID.setPIDF(LIMELIGHT_FAR_kP, 0, LIMELIGHT_FAR_kD, 0);
-            limelightSmallErrorPID.setPIDF(LIMELIGHT_CLOSE_kP, 0, LIMELIGHT_CLOSE_kD, 0);
         }
 
         // update the queued mode
@@ -106,12 +93,9 @@ public class Turret extends SubsystemBase {
 
             // resetting encoder
             case HOMING: {
-                robot.shooterTurret.set(HOME_POWER);
-
-                if (isAtHome()) {
-                    pendingMode = Mode.PINPOINT;
-                    robot.shooterTurret.stopAndResetEncoder();
-                }
+                TURRET_HOME_OFFSET = robot.analogEncoder.getCurrentPosition();
+                pendingMode = Mode.PINPOINT;
+                robot.shooterTurret.stopAndResetEncoder();
                 break;
             }
 
@@ -122,17 +106,12 @@ public class Turret extends SubsystemBase {
                     setpointFilter.reset();
                 }
 
-                double predictedLeadOffset = calculateTurretOffset(
-                    robot.drive.getPose(),
-                    DuneStrider.Alliance.BLUE == DuneStrider.alliance ? MecanumDrive.blueGoalPose : MecanumDrive.redGoalPose,
-                    robot.drive.getVelocity(),
-                    PREDICT_FACTOR
-                );
+                double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR);
 
                 double rawTarget = robot.drive.getAimTarget().heading;
                 setpointFilter.updateValue(rawTarget);
 
-                double filteredTarget = setpointFilter.getFilteredOutput() + predictedLeadOffset;
+                double filteredTarget = setpointFilter.getFilteredOutput() - predictedLeadOffset;
                 double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, filteredTarget));
                 double power = turretAnglePID.calculate(encoderAngle, constrainedAngleDeg);
 
@@ -175,63 +154,9 @@ public class Turret extends SubsystemBase {
         return turretAnglePID.atSetPoint();
     }
 
-    public double calculateTurretOffset(
-            Pose robotPose,
-            Pose goalPose,
-            Vector velocity,
-            double K) {
-
-        // Get position vectors
-        Vector robotPosition = robotPose.getAsVector();
-        Vector goalPosition = goalPose.getAsVector();
-
-        // Calculate vector from robot to goal
-        Vector toGoal = goalPosition.minus(robotPosition);
-
-        // Calculate angle to goal (field-relative)
-        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
-
-        // Get robot velocity info
-        double robotSpeed = velocity.getMagnitude();
-
-        if (robotSpeed < 3) {
-            return 0;
-        }
-
-        double robotVelocityAngle = Math.atan2(velocity.getYComponent(), velocity.getXComponent());
-
-        // Calculate tangential component
-        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
-        double vTangential = robotSpeed * Math.sin(deltaTheta);
-
-        // Calculate offset in radians
-        double turretOffsetRadians = K * vTangential;
-
-        // Convert to degrees
-        return Math.toDegrees(turretOffsetRadians);
-    }
-
-    private double adjustTx(double tx) {
-        tx = -tx;
-        double current = calculateAngleFromEncoder();
-        double desired = current + tx;
-
-        // clamp
-        if (desired > TURRET_MAX_ANGLE) {
-            return TURRET_MAX_ANGLE - current;
-        }
-        if (desired < -TURRET_MAX_ANGLE) {
-            return -TURRET_MAX_ANGLE - current;
-        }
-
-        return tx;
-    }
-
     private double calculateAngleFromEncoder() {
         // results in 90 <---- 0 -----> -90
-        double encoderPos = TURRET_HOME_OFFSET + robot.shooterTurret.encoder.getPosition();
-        double angle = (encoderPos / TURRET_ENCODER_CPR) * 360.0;
-        angle = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, angle));
-        return angle;
+        double encoderPos = robot.shooterTurret.encoder.getPosition();
+        return TURRET_HOME_OFFSET + (encoderPos / TURRET_ENCODER_CPR) * 360.0;
     }
 }

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import androidx.annotation.Nullable;
 
+import com.pedropathing.control.KalmanFilter;
+import com.pedropathing.control.KalmanFilterParameters;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
@@ -18,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.utilities.KalmanPoseEstimator;
 
 import java.util.List;
 
@@ -29,6 +32,16 @@ public class HugeEyes extends SubsystemBase {
     public static double MAX_SOURCE_DISPARITY = 2.0; // in
     public static double MAX_RELOCALIZE_VELOCITY = 2.0; // in / sec
 
+    public static double LIMELIGHT_AXIS_COVARIANCE = 0.1772;
+    public static double PINPOINT_AXIS_COVARIANCE = 0.0853;
+
+    public static double LIMELIGHT_HEADING_COVARIANCE = 9.5118;
+    public static double PINPOINT_HEADING_COVARIANCE = 0.3811;
+
+    KalmanPoseEstimator xPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
+    KalmanPoseEstimator yPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
+    // TODO: ensure degrees as getHeading() returns radians
+    KalmanPoseEstimator thetaPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_HEADING_COVARIANCE, LIMELIGHT_HEADING_COVARIANCE);
 
     public HugeEyes() {
         robot = DuneStrider.get();
@@ -41,30 +54,43 @@ public class HugeEyes extends SubsystemBase {
 
     @Override
     public void periodic() {
+        limelight.updateRobotOrientation(Math.toDegrees(robot.drive.getPose().getHeading() + Math.PI / 2));
         LLResult result = limelight.getLatestResult();
 
+        double dt = robot.hubs.getDeltaTime();
+        xPoseEstimator.updateKalmanUncertainty(dt);
+        yPoseEstimator.updateKalmanUncertainty(dt);
+        thetaPoseEstimator.updateKalmanUncertainty(dt);
+
         if (result != null && result.isValid()) {
-            Pose3D botPose = result.getBotpose();
+            Pose3D botPose = result.getBotpose_MT2();
             Position position = botPose.getPosition();
 
             double x = DistanceUnit.INCH.fromMeters(position.x);
             double y = DistanceUnit.INCH.fromMeters(position.y);
             double heading = Math.toRadians(botPose.getOrientation().getYaw());
+            Pose limelightPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
 
-            Pose pedroPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
+            robot.flightRecorder.addLine("======= HUGE EYES \uD83D\uDC41️ \uD83D\uDC41️ =======");
+            robot.flightRecorder.addData("Bot pose (Pedro)", limelightPose.toString());
 
-            if (verifyLimelightPose(pedroPose, robot.drive.getPose()) && !disabled) {
-                robot.drive.follower.setPose(pedroPose);
-                robot.flightRecorder.addLine("======= HUGE EYES \uD83D\uDC41️ \uD83D\uDC41️ =======");
-                robot.flightRecorder.addData("Bot pose (Pedro)", pedroPose.toString());
+
+            if (verifyLimelightPose(limelightPose, robot.drive.getPose()) && !disabled) {
+                Pose pose = robot.drive.getPose();
+                double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), limelightPose.getX());
+                double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), limelightPose.getY());
+                double thetaDrift = thetaPoseEstimator.getDriftKalman(Math.toDegrees(pose.getHeading()), Math.toDegrees(limelightPose.getHeading()));
+                // filter based on drift
+                pose = pose.minus(new Pose(xDrift, yDrift, Math.toRadians(thetaDrift)));
+                robot.drive.follower.setPose(pose);
             }
         }
 
     }
 
     public boolean verifyLimelightPose(Pose newEstimate, Pose current) {
-        if (Math.abs(current.distanceFrom(newEstimate)) < MAX_SOURCE_DISPARITY) {
-            return false;
+        if (Math.abs(current.distanceFrom(newEstimate)) > MAX_SOURCE_DISPARITY) {
+            return true;
         }
 
         if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0)) {

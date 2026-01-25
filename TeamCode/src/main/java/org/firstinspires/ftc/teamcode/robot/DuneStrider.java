@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -15,6 +17,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.device.SwyftRanger;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.HugeEyes;
@@ -29,9 +32,11 @@ import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 import java.util.Arrays;
 import java.util.List;
 
+@Config
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
-    public final static double IDEAL_VOLTAGE = 13.0;
+    public final static double IDEAL_VOLTAGE = 12.5;
+    public static double TURRET_ENCODER_OFFSET = -102.0;
 
     public enum Mode {
         AUTO,
@@ -54,7 +59,8 @@ public class DuneStrider {
     // sensors
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
-    private final BasicFilter batteryFilter = new RunningAverageFilter(10);
+    private final BasicFilter batteryFilter = new RunningAverageFilter(5);
+    public AbsoluteAnalogEncoder analogEncoder;
 
     public SwyftRanger ranger0;
     public SwyftRanger ranger1;
@@ -103,7 +109,7 @@ public class DuneStrider {
         lynxModules = map.getAll(LynxModule.class);
         ranger0 = new SwyftRanger(hardwareMap, "ranger0");
         ranger1 = new SwyftRanger(hardwareMap, "ranger1");
-
+        analogEncoder = new AbsoluteAnalogEncoder(hardwareMap, "abs", TURRET_ENCODER_OFFSET);
 
         // sensors
         batterySensor = hardwareMap.getAll(VoltageSensor.class)
@@ -149,6 +155,9 @@ public class DuneStrider {
         return inst;
     }
 
+    public double getVoltage() {
+        return lastMeasuredVoltage;
+    }
 
     public double getVoltageFeedforwardConstant() {
         // 11.0 is just we don't place unnecessary strain if somehow the battery drops to something like 4v.
@@ -158,7 +167,9 @@ public class DuneStrider {
     }
 
     public void endLoop() {
+
         flightRecorder.addData("ALLIANCE", alliance.toString());
+        flightRecorder.addData("ENCODER VALUE", analogEncoder.getCurrentPosition());
         // sensor update
         lastMeasuredVoltage = batterySensor.getVoltage();
         flightRecorder.addData("BATTERY STATE", lastMeasuredVoltage);

@@ -20,17 +20,10 @@ public class HomeTurret extends CommandBase {
     @Override
     public void initialize() {
         robot.turret.setMode(Turret.Mode.HOMING);
-        timer.start();
     }
 
     @Override
     public boolean isFinished() {
-        boolean cond = timer.done();
-        if (cond) {
-            robot.shooterTurret.stopAndResetEncoder();
-            robot.turret.setMode(Turret.Mode.PINPOINT);
-        }
-
-        return cond;
+        return true;
     }
 }

@@ -97,7 +97,6 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void loop() {
         robot.endLoop();
-        robot.flightRecorder.addData("SPD Mult", speedMultiplier);
         robot.drive.setTeleOpDrive(-gamepad1Ex.getLeftY() * teleOpMultiplier * speedMultiplier, gamepad1Ex.getLeftX() * teleOpMultiplier * speedMultiplier,  -gamepad1Ex.getRightX() * speedMultiplier);
     }
 

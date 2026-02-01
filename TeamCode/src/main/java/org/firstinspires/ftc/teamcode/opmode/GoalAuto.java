@@ -77,6 +77,7 @@ public class GoalAuto extends OpMode {
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
+        robot.turret.loadAngle(0);
         Turret.PREDICT_FACTOR = 0;
 
         Follower follower = robot.drive.follower;
@@ -85,7 +86,6 @@ public class GoalAuto extends OpMode {
         // we ball
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        new HomeTurret(0.15),
                         execPreload(),
                         If(execRow2(), nothing(), () -> nRows >= 2),
                         If(execRowGate(), nothing(), () -> nRows >= 2),

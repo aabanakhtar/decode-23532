@@ -10,11 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 public class HomeTurret extends CommandBase {
     private final DuneStrider robot = DuneStrider.get();
-    private final Timing.Timer timer ;
 
     public HomeTurret(double time) {
         addRequirements(DuneStrider.get().turret);
-        timer = new Timing.Timer((long)(1000.0 * time), TimeUnit.MILLISECONDS);
     }
 
     @Override

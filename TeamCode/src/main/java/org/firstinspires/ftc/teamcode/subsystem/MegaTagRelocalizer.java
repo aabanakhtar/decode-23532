@@ -76,10 +76,6 @@ public class MegaTagRelocalizer extends SubsystemBase {
     }
 
     public boolean verifyLimelightPose(Pose newEstimate, Pose current) {
-        if (Math.abs(current.distanceFrom(newEstimate)) > MAX_SOURCE_DISPARITY) {
-            return true;
-        }
-
         if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0)) {
             return false;
         }

@@ -33,7 +33,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = -102.0;
+    public static double TURRET_ENCODER_OFFSET = 147;
 
     public enum Mode {
         AUTO,
@@ -121,7 +121,6 @@ public class DuneStrider {
 
         // Turret motor
         shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.001);
-        shooterTurret.stopAndResetEncoder();
         shooterTurret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // Intake motor

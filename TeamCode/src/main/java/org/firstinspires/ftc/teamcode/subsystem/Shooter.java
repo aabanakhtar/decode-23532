@@ -27,37 +27,33 @@ public class Shooter extends SubsystemBase {
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
 
-    public static double IDLE_VELOCITY = -600.0;
+    public static double IDLE_VELOCITY = 800.0;
     public static double kV = 4.2e-4;
-    public static double kP = 0.001;
+    public static double kP = 0.004;
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
-    public static double VELOCITY_TOLERANCE = 40.0;
+    public static double VELOCITY_TOLERANCE = 30.0;
+    public static double PREDICT_FACTOR = 0; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
+    private final DuneStrider robot = DuneStrider.get();
 
-    DuneStrider robot = DuneStrider.get();
-
-    public static double REGRESSION_A = 0.0116667;
-    public static double REGRESSION_B = 0.0505952;
-    public static double REGRESSION_C = 0.0989881;
-
-    public static double shooterTimeRegression(double shotDistance) {
-        if (shotDistance < 4.0 || shotDistance > 8.0) {
-            return 0.0;
-        }
-
-        return REGRESSION_A * shotDistance * shotDistance
-                + REGRESSION_B * shotDistance
-                + REGRESSION_C;
-    }
 
     // initialize this thing to persist as is
     public static final InterpLUT distToVeloLUT;
     static {
         distToVeloLUT = new InterpLUT();
-        distToVeloLUT.add(0, 0);
-        distToVeloLUT.add(13.07, 0);
+        distToVeloLUT.add(0, 1000);
+        distToVeloLUT.add(4, 1000);
+        distToVeloLUT.add(5, 1100);
+        distToVeloLUT.add(5.9, 1100);
+        distToVeloLUT.add(7, 1160);
+        distToVeloLUT.add(8, 1230);
+        distToVeloLUT.add(11, 1380);
+        distToVeloLUT.add(11.9, 1480);
+        distToVeloLUT.add(12.5, 1500);
+        distToVeloLUT.add(13.07, 1565);
+        distToVeloLUT.add(100, 1565);
         // to do: add
         distToVeloLUT.createLUT();
     }
@@ -126,10 +122,13 @@ public class Shooter extends SubsystemBase {
     }
 
     private void dynamicMode() {
+        // clip to a distance between 1 and 15
+        double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 15.0);
+        // use radial velo comp
+        double predictedDistance = distanceToGoal - robot.drive.getRadialVelocityToGoal() * shooterTimeRegression(distanceToGoal) * PREDICT_FACTOR;
+        double optimalVelocityForDist = getOptimalVelocityForDist(predictedDistance);
+
         double currentVelocity = velFilter.getFilteredOutput();
-        // clip to a distance
-        double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 12.0);
-        double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal);
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
                 + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 
@@ -151,6 +150,22 @@ public class Shooter extends SubsystemBase {
 
     public boolean isAtTargetVelocity() {
         return flywheelVelocityPID.atSetPoint();
+    }
+
+
+    // SOTM
+    public static double REGRESSION_A = 0.008;
+    public static double REGRESSION_B = 0.0505952;
+    public static double REGRESSION_C = 0.0989881;
+
+    public static double shooterTimeRegression(double shotDistance) {
+        if (shotDistance < 2.0 || shotDistance > 10.0) {
+            return 0.0;
+        }
+
+        return REGRESSION_A * shotDistance * shotDistance
+                + REGRESSION_B * shotDistance
+                + REGRESSION_C;
     }
 
 }

@@ -32,11 +32,14 @@ public class Turret extends SubsystemBase {
     public static double targetAngle = 0.0;
     private static double lastAngle = 0.0;
 
+    public static double TURRET_APPROACH_kP = 0.02;
+    public static  double TURRET_PID_SWITCH = 3.0;
+
     // turret gains
-    public static double kP = 0.018;
+    public static double kP = 0.03;
     public static double kI = 0.0;
     // was 0.001
-    public static double kD = 0.0008;
+    public static double kD = 0.000;
 
     public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 4;
     private final BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
@@ -51,8 +54,8 @@ public class Turret extends SubsystemBase {
 
     // limits the turret's use of abs encoder beyond this area
     public static final double TURRET_MAX_ANGLE = 180.0; // deg
-    public static final double TURRET_PID_TOLERANCE = 1.0; //deg
-    public static final double TURRET_SAFE_ZONE = 135;
+    public static final double TURRET_PID_TOLERANCE = 0.5; //deg
+    public static final double TURRET_SAFE_ZONE = 160;
 
     // for relocalizing turret
     private double TURRET_HOME_OFFSET = 0;
@@ -77,12 +80,12 @@ public class Turret extends SubsystemBase {
         lastAngle = quadratureAngle;
 
         // ensure that we're safe, not moving, and have good health
-        if (!shouldRelocalizeTurret && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.getVoltage() > 12.5) {
+        if (!shouldRelocalizeTurret && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.getVoltage() > 12) {
             double rawQuadAngle =
                     (robot.shooterTurret.encoder.getPosition()
                             / TURRET_ENCODER_CPR) * 360.0;
             double error = absAngle - rawQuadAngle;
-            TURRET_HOME_OFFSET = (TURRET_HOME_OFFSET * 0.7) + (error * 0.3);
+            TURRET_HOME_OFFSET = (TURRET_HOME_OFFSET * 0.9) + (error * 0.1);
         }
 
         robot.flightRecorder.addLine("==========TURRET===========");
@@ -124,7 +127,11 @@ public class Turret extends SubsystemBase {
 
                 // constrain our angles
                 double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, filteredTarget));
+                double error = constrainedAngleDeg - quadratureAngle;
                 double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg);
+                if (Math.abs(error) > TURRET_PID_SWITCH) {
+                    power = TURRET_APPROACH_kP * error;
+                }
 
                 // absolute limit (idk if this helps but should)
                 if (isAtTarget() || (power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {

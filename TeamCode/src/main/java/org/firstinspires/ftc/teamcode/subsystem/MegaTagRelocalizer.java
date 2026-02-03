@@ -19,11 +19,11 @@ public class MegaTagRelocalizer extends SubsystemBase {
     public static double MAX_SOURCE_DISPARITY = 2.0; // in
     public static double MAX_RELOCALIZE_VELOCITY = 2.0; // in / sec
 
-    public static double LIMELIGHT_AXIS_COVARIANCE = 0.1772;
-    public static double PINPOINT_AXIS_COVARIANCE = 0.0853;
+    public static double LIMELIGHT_AXIS_COVARIANCE = 0.6458;
+    public static double PINPOINT_AXIS_COVARIANCE = Math.pow(0.0032, 2);
 
-    public static double LIMELIGHT_HEADING_COVARIANCE = 9.5118;
-    public static double PINPOINT_HEADING_COVARIANCE = 0.3811;
+    public static double LIMELIGHT_HEADING_COVARIANCE = 0.0003;
+    public static double PINPOINT_HEADING_COVARIANCE = 0.0035;
 
     KalmanPoseEstimator xPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
     KalmanPoseEstimator yPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);

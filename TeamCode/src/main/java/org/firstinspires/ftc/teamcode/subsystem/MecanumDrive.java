@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @Config
 public class MecanumDrive extends SubsystemBase {
-    private static final double TURRET_OFFSET = 2.0599;
+    public static double TURRET_OFFSET = -8;
     public static double PREDICT_FACTOR = 0.35;
     DuneStrider robot = DuneStrider.get();
 
@@ -53,7 +53,7 @@ public class MecanumDrive extends SubsystemBase {
         lastAimTarget = getShooterPositionPinpointRel2();
         robot.flightRecorder.addLine("======DRIVETRAIN:=======");
         robot.flightRecorder.addData("goal heading", lastAimTarget.heading);
-        robot.flightRecorder.addData("goal distance", lastAimTarget.distance);
+        robot.flightRecorder.addData("goal distance", getShooterPositionPinpointRel2().distance);
 
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
@@ -78,8 +78,28 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public double getRadialVelocityToGoal() {
-        return 0;
+        Vector robotPosition = getPose().getAsVector();
+        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE
+                ? blueGoalPose
+                : redGoalPose).getAsVector();
+
+        Vector toGoal = goalPosition.minus(robotPosition);
+
+        double angleToGoalField =
+                Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
+
+        double robotSpeed = getVelocity().getMagnitude();
+        if (robotSpeed < 3) {
+            return 0;
+        }
+
+        double robotVelocityAngle =
+                Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
+        double deltaTheta =
+                AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
+        return robotSpeed * Math.cos(deltaTheta);
     }
+
 
     public double getTangentVelocityToGoal() {
         Vector robotPosition = getPose().getAsVector();
@@ -135,9 +155,9 @@ public class MecanumDrive extends SubsystemBase {
             aimAtPose = chosenPose;
         }
 
-        double distance = chosenPose.distanceFrom(chosenPose) / 12.0;
-        double turretXOffset = -TURRET_OFFSET * Math.cos(currPose.getHeading());
-        double turretYOffset = -TURRET_OFFSET * Math.sin(currPose.getHeading());
+        double distance = chosenPose.distanceFrom(currPose) / 12.0;
+        double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading() + Math.PI);
+        double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading() + Math.PI);
 
         double absAngleToTarget = Math.atan2(
                 aimAtPose.getY() - (currPose.getY() + turretYOffset),

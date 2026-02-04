@@ -30,19 +30,15 @@ public class Turret extends SubsystemBase {
     public static boolean tuning = false;
     public static double targetPower = 0.0;
     public static double targetAngle = 0.0;
-    private static double lastAngle = 0.0;
 
     public static double TURRET_APPROACH_kP = 0.02;
     public static  double TURRET_PID_SWITCH = 3.0;
 
     // turret gains
-    public static double kP = 0.03;
+    public static double kP = 0.09;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.000;
-
-    public static int SETPOINT_SMOOTHING_WINDOW_RANGE = 4;
-    private final BasicFilter setpointFilter = new RunningAverageFilter(SETPOINT_SMOOTHING_WINDOW_RANGE);
 
     // PIDs
     private final Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
@@ -54,13 +50,11 @@ public class Turret extends SubsystemBase {
 
     // limits the turret's use of abs encoder beyond this area
     public static final double TURRET_MAX_ANGLE = 180.0; // deg
-    public static final double TURRET_PID_TOLERANCE = 0.5; //deg
-    public static final double TURRET_SAFE_ZONE = 160;
+    public static final double TURRET_PID_TOLERANCE = 0.0; //deg
+    public static final double TURRET_SAFE_ZONE = 165;
 
     // for relocalizing turret
     private double TURRET_HOME_OFFSET = 0;
-    public double MANUAL_OFFSET = 0;
-
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
@@ -74,24 +68,22 @@ public class Turret extends SubsystemBase {
     @Override
     public void periodic() {
         // always use quadrature
-        boolean shouldRelocalizeTurret = Math.abs(robot.analogEncoder.getCurrentPosition()) > TURRET_SAFE_ZONE;
-        final double quadratureAngle = calculateAngleFromEncoder();
+        boolean isOutOfSafeRange = Math.abs(robot.analogEncoder.getCurrentPosition()) > TURRET_SAFE_ZONE;
         final double absAngle = robot.analogEncoder.getCurrentPosition();
-        lastAngle = quadratureAngle;
 
-        // ensure that we're safe, not moving, and have good health
-        if (!shouldRelocalizeTurret && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.getVoltage() > 12) {
+        // ensure that we're safe, not moving, etc.
+        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0) {
             double rawQuadAngle =
                     (robot.shooterTurret.encoder.getPosition()
                             / TURRET_ENCODER_CPR) * 360.0;
-            double error = absAngle - rawQuadAngle;
-            TURRET_HOME_OFFSET = (TURRET_HOME_OFFSET * 0.9) + (error * 0.1);
+            TURRET_HOME_OFFSET = absAngle - rawQuadAngle;
         }
+
+        final double quadratureAngle = calculateAngleFromEncoder();
 
         robot.flightRecorder.addLine("==========TURRET===========");
         robot.flightRecorder.addData("absolute encoder", absAngle);
         robot.flightRecorder.addData("quadrature angle", quadratureAngle);
-        robot.flightRecorder.addData("target angle", setpointFilter.getFilteredOutput());
 
         if (tuning) {
             ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
@@ -114,27 +106,26 @@ public class Turret extends SubsystemBase {
             case PINPOINT: {
                 if (lastMode != Mode.PINPOINT) {
                     turretAnglePID.reset();
-                    setpointFilter.reset();
                 }
 
                 double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR);
 
                 // filter our target
                 double rawTarget = robot.drive.getAimTarget().heading;
-                setpointFilter.updateValue(rawTarget);
-
-                double filteredTarget = setpointFilter.getFilteredOutput() - predictedLeadOffset + MANUAL_OFFSET;
+                double compensatedTarget = rawTarget - predictedLeadOffset;
+                robot.flightRecorder.addData("TARGET", rawTarget);
 
                 // constrain our angles
-                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, filteredTarget));
+                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, compensatedTarget));
                 double error = constrainedAngleDeg - quadratureAngle;
                 double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg);
+
                 if (Math.abs(error) > TURRET_PID_SWITCH) {
                     power = TURRET_APPROACH_kP * error;
                 }
 
                 // absolute limit (idk if this helps but should)
-                if (isAtTarget() || (power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {
+                if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {
                     robot.shooterTurret.set(0.0);
                     break;
                 }

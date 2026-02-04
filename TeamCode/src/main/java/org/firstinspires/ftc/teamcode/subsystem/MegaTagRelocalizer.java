@@ -22,13 +22,8 @@ public class MegaTagRelocalizer extends SubsystemBase {
     public static double LIMELIGHT_AXIS_COVARIANCE = 0.6458;
     public static double PINPOINT_AXIS_COVARIANCE = Math.pow(0.0032, 2);
 
-    public static double LIMELIGHT_HEADING_COVARIANCE = 0.0003;
-    public static double PINPOINT_HEADING_COVARIANCE = 0.0035;
-
     KalmanPoseEstimator xPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
     KalmanPoseEstimator yPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
-    // TODO: ensure degrees as getHeading() returns radians
-    KalmanPoseEstimator thetaPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_HEADING_COVARIANCE, LIMELIGHT_HEADING_COVARIANCE);
 
     public MegaTagRelocalizer() {
         robot = DuneStrider.get();
@@ -47,7 +42,6 @@ public class MegaTagRelocalizer extends SubsystemBase {
         double dt = robot.hubs.getDeltaTime();
         xPoseEstimator.updateKalmanUncertainty(dt);
         yPoseEstimator.updateKalmanUncertainty(dt);
-        thetaPoseEstimator.updateKalmanUncertainty(dt);
 
         if (result != null && result.isValid()) {
             Pose3D botPose = result.getBotpose_MT2();
@@ -66,9 +60,8 @@ public class MegaTagRelocalizer extends SubsystemBase {
                 Pose pose = robot.drive.getPose();
                 double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), limelightPose.getX());
                 double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), limelightPose.getY());
-                double thetaDrift = thetaPoseEstimator.getDriftKalman(Math.toDegrees(pose.getHeading()), Math.toDegrees(limelightPose.getHeading()));
                 // filter based on drift
-                pose = pose.minus(new Pose(xDrift, yDrift, Math.toRadians(thetaDrift)));
+                pose = pose.minus(new Pose(xDrift, yDrift, 0));
                 robot.drive.follower.setPose(pose);
             }
         }

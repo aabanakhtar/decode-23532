@@ -14,6 +14,7 @@ public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
     public static double PREDICT_FACTOR = -0.00;
+    public static double offset_angle = 0;
 
     public enum Mode {
         HOMING,
@@ -33,9 +34,9 @@ public class Turret extends SubsystemBase {
 
     public static double TURRET_APPROACH_kP = 0.02;
     public static  double TURRET_PID_SWITCH = 3.0;
-
+    public static double kS = 0.00;
     // turret gains
-    public static double kP = 0.09;
+    public static double kP = 0.035;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.000;
@@ -46,7 +47,8 @@ public class Turret extends SubsystemBase {
 
     // 312 RPM Yellow Jacket with gearing 27t to 95t
     public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
-    public static final double TURRET_ENCODER_CPR = 537.7 * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
+    public static double ENCODER_PPR = 4000;
+    public static double TURRET_ENCODER_CPR = ENCODER_PPR * 1; // ≈ 1891.6 ticks per turret rotation
 
     // limits the turret's use of abs encoder beyond this area
     public static final double TURRET_MAX_ANGLE = 180.0; // deg
@@ -84,6 +86,7 @@ public class Turret extends SubsystemBase {
         robot.flightRecorder.addLine("==========TURRET===========");
         robot.flightRecorder.addData("absolute encoder", absAngle);
         robot.flightRecorder.addData("quadrature angle", quadratureAngle);
+        robot.flightRecorder.addData("ticks", robot.shooterTurret.getCurrentPosition());
 
         if (tuning) {
             ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
@@ -116,12 +119,12 @@ public class Turret extends SubsystemBase {
                 robot.flightRecorder.addData("TARGET", rawTarget);
 
                 // constrain our angles
-                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, compensatedTarget));
+                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, compensatedTarget)) + offset_angle;
                 double error = constrainedAngleDeg - quadratureAngle;
-                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg);
+                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg) + kS;
 
                 if (Math.abs(error) > TURRET_PID_SWITCH) {
-                    power = TURRET_APPROACH_kP * error;
+                    power = TURRET_APPROACH_kP * error + kS;
                 }
 
                 // absolute limit (idk if this helps but should)

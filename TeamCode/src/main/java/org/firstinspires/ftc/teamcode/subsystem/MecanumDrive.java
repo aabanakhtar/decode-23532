@@ -19,8 +19,7 @@ import java.util.Objects;
 
 @Config
 public class MecanumDrive extends SubsystemBase {
-    public static double TURRET_OFFSET = 2.06;
-    public static double PREDICT_FACTOR = 0.35;
+    public static double TURRET_OFFSET = -2.06;
     DuneStrider robot = DuneStrider.get();
 
     public static class AimAtTarget {
@@ -137,20 +136,12 @@ public class MecanumDrive extends SubsystemBase {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         Pose currPose = getPose();
 
-        // aim logic to help prevent undershoot on the edge of the top tiles
-        Pose aimAtPose;
-        if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.BLUE) {
-            aimAtPose = new Pose(5, 144 - 5);
-        } else if (currPose.getY() > 72.0 && DuneStrider.alliance == DuneStrider.Alliance.RED) {
-            aimAtPose = new Pose(144 - 5, 144 - 5);
-        } else {
-            aimAtPose = chosenPose;
-        }
+        Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(11, -11, 0)) : chosenPose.minus(new Pose(11, 11, 0));
 
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         // Math.PI makes it face the other direction.
-        double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading() + Math.PI);
-        double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading() + Math.PI);
+        double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading());
+        double turretYOffset = TURRET_OFFSET * Math.sin(currPose.getHeading());
 
         double absAngleToTarget = Math.atan2(
                 aimAtPose.getY() - (currPose.getY() + turretYOffset),
@@ -160,6 +151,8 @@ public class MecanumDrive extends SubsystemBase {
         double robotHeading = currPose.getHeading(); // rad
         double turretRelativeAngleRad = AngleUnit.normalizeRadians(absAngleToTarget - robotHeading);
         double turretRelativeAngleDeg = Math.toDegrees(turretRelativeAngleRad);
+
+        // clamp and return
         double minAngle = -Turret.TURRET_MAX_ANGLE;
         double maxAngle = Turret.TURRET_MAX_ANGLE;
         double constrainedAngleDeg = Math.max(minAngle, Math.min(maxAngle, turretRelativeAngleDeg));

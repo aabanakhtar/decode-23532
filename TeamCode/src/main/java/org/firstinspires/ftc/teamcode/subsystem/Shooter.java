@@ -29,7 +29,7 @@ public class Shooter extends SubsystemBase {
 
     public static double IDLE_VELOCITY = 800.0;
     public static double kV = 4.2e-4;
-    public static double kP = 0.004;
+    public static double kP = 0.002;
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
     public static double VELOCITY_TOLERANCE = 30.0;
@@ -43,17 +43,17 @@ public class Shooter extends SubsystemBase {
     public static final InterpLUT distToVeloLUT;
     static {
         distToVeloLUT = new InterpLUT();
-        distToVeloLUT.add(0, 1000);
-        distToVeloLUT.add(4, 1000);
-        distToVeloLUT.add(5, 1100);
-        distToVeloLUT.add(5.9, 1100);
-        distToVeloLUT.add(7, 1160);
-        distToVeloLUT.add(8, 1230);
-        distToVeloLUT.add(11, 1380);
-        distToVeloLUT.add(11.9, 1480);
-        distToVeloLUT.add(12.5, 1500);
-        distToVeloLUT.add(13.07, 1545);
-        distToVeloLUT.add(100, 1545);
+        distToVeloLUT.add(0, 970);
+        distToVeloLUT.add(4, 980);
+        distToVeloLUT.add(5, 1000);
+        distToVeloLUT.add(5.9, 1050);
+        distToVeloLUT.add(7, 1130);
+        distToVeloLUT.add(8, 1200);
+        distToVeloLUT.add(11, 1360);
+        distToVeloLUT.add(11.9, 1460);
+        distToVeloLUT.add(12.5, 1480);
+        distToVeloLUT.add(13.07, 1500);
+        distToVeloLUT.add(100, 1510);
         // to do: add
         distToVeloLUT.createLUT();
     }

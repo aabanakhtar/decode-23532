@@ -37,7 +37,6 @@ public class SinglePlayerDrive extends OpMode {
     @Override
     public void init() {
         robot = DuneStrider.get().init(DuneStrider.Mode.TELEOP, MecanumDrive.lastPose, hardwareMap, telemetry);
-        robot.eyes.setEnabled(true);
 
         // load the last measured angle from auto
         //robot.turret.loadAngle(robot.turret.getLastAngle());
@@ -47,6 +46,7 @@ public class SinglePlayerDrive extends OpMode {
 
         // WARNING: This is REALLY BAD!
         Turret.PREDICT_FACTOR = 0.0;
+        robot.eyes.setEnabled(true);
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
@@ -101,10 +101,8 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init_loop() {
-        if (robot.analogEncoder.getVoltage() > 0.001) {
-            double measuredAbsAngle = robot.analogEncoder.getCurrentPosition();
+            double measuredAbsAngle = 0;
             robot.turret.loadAngle(measuredAbsAngle);
-        }
     }
 
     @Override

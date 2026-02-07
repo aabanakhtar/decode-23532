@@ -44,8 +44,6 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        // WARNING: This is REALLY BAD!
-        Turret.PREDICT_FACTOR = 0.0;
         robot.eyes.setEnabled(true);
 
         teleOpMultiplier = 1.0;
@@ -88,7 +86,7 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         // reset localizer bindings
-        bind(GamepadKeys.Button.START, new HomeTurret(2), nothing());
+        bind(GamepadKeys.Button.START, robot.drive.resetHeading(), nothing());
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
                 If(

@@ -78,7 +78,6 @@ public class GoalAuto extends OpMode {
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
         robot.turret.loadAngle(0);
-        Turret.PREDICT_FACTOR = 0;
 
         Follower follower = robot.drive.follower;
         buildPathChains(follower);
@@ -216,16 +215,15 @@ public class GoalAuto extends OpMode {
         intakeRow1 = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(
+                        new BezierLine(
                             mPBA(UNIVERSAL_SCORE_TARGET),
-                            mPBA(INTAKE_CONTROL_POINT),
                             mPBA(END_INTAKE_START_SCORE)
                         )
                 )
                 .addParametricCallback(0, () -> follower.setMaxPowerScaling(ROW2_INTAKE_PATH_SPEED))
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setTangentHeadingInterpolation()
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
                 .build();
 
         scoreRow1 = follower
@@ -236,10 +234,8 @@ public class GoalAuto extends OpMode {
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        mHBA(heading(180)),
-                        mHBA(heading(-90))
-                )
+                .setTangentHeadingInterpolation()
+                .setReversed()
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
@@ -273,8 +269,7 @@ public class GoalAuto extends OpMode {
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setTangentHeadingInterpolation()
-                .setReversed()
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
@@ -303,8 +298,7 @@ public class GoalAuto extends OpMode {
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setTangentHeadingInterpolation()
-                .setReversed()
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
                 /*
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(

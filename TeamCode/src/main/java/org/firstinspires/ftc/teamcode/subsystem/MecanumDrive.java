@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.subsystem.Shooter.shooterTimeRegression;
 
 import android.util.Range;
@@ -9,6 +10,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -21,6 +23,10 @@ import java.util.Objects;
 public class MecanumDrive extends SubsystemBase {
     public static double TURRET_OFFSET = -2.06;
     DuneStrider robot = DuneStrider.get();
+
+    public Command resetHeading() {
+        return run(() -> robot.drive.follower.setHeading(0));
+    }
 
     public static class AimAtTarget {
         public double distance;
@@ -57,12 +63,10 @@ public class MecanumDrive extends SubsystemBase {
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
+        robot.flightRecorder.addData("Compensation Radial", getRadialVelocityToGoal());
+        robot.flightRecorder.addData("Compensation Tangent", getTangentVelocityToGoal());
 
         follower.update();
-    }
-
-    public void resetHeading(double newHeading) {
-        follower.setPose(follower.getPose().setHeading(newHeading));
     }
 
     public void setTeleOpDrive(double forward, double strafe, double rotation) {

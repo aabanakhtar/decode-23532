@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = -0.00;
+    public static double PREDICT_FACTOR = 0.01;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -111,7 +111,7 @@ public class Turret extends SubsystemBase {
                     turretAnglePID.reset();
                 }
 
-                double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR);
+                double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR) * robot.getVoltageFeedforwardConstant();
 
                 // filter our target
                 double rawTarget = robot.drive.getAimTarget().heading;

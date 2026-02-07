@@ -91,7 +91,7 @@ public class TuneLimelightCovariance extends OpMode {
         LLResult result = limelight3A.getLatestResult();
 
         if (result != null && result.isValid()) {
-            Pose3D botPose = result.getBotpose_MT2();
+            Pose3D botPose = result.getBotpose();
             Position position = botPose.getPosition();
 
             double y = DistanceUnit.INCH.fromMeters(position.y);

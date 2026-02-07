@@ -18,7 +18,6 @@ public class MegaTagRelocalizer extends SubsystemBase {
     private final DuneStrider robot;
 
     public static boolean disabled = true;
-    public static double MAX_SOURCE_DISPARITY = 6.0; // in
     public static double MAX_RELOCALIZE_VELOCITY = 2.0; // in / sec
 
     public static double LIMELIGHT_AXIS_COVARIANCE = 0.6458;
@@ -38,6 +37,8 @@ public class MegaTagRelocalizer extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (disabled) return;
+
         limelight.updateRobotOrientation(Math.toDegrees(robot.drive.getPose().getHeading() + Math.PI / 2));
         LLResult result = limelight.getLatestResult();
 
@@ -46,7 +47,7 @@ public class MegaTagRelocalizer extends SubsystemBase {
         yPoseEstimator.updateKalmanUncertainty(dt);
 
         if (result != null && result.isValid()) {
-            Pose3D botPose = result.getBotpose_MT2();
+            Pose3D botPose = result.getBotpose();
             Position position = botPose.getPosition();
 
             double x = DistanceUnit.INCH.fromMeters(position.x);
@@ -58,7 +59,7 @@ public class MegaTagRelocalizer extends SubsystemBase {
             p.fieldOverlay().setFill("blue").fillCircle(x, y, Math.toDegrees(heading));
             FtcDashboard.getInstance().sendTelemetryPacket(p);
 
-            if (verifyLimelightPose(limelightPose, robot.drive.getPose()) && !disabled) {
+            if (verifyLimelightPose(limelightPose) && !disabled) {
                 Pose pose = robot.drive.getPose();
                 double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), limelightPose.getX());
                 double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), limelightPose.getY());
@@ -70,12 +71,8 @@ public class MegaTagRelocalizer extends SubsystemBase {
 
     }
 
-    public boolean verifyLimelightPose(Pose newEstimate, Pose current) {
-        if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0)) {
-            return false;
-        }
-
-        if (newEstimate.distanceFrom(current) > MAX_SOURCE_DISPARITY) {
+    public boolean verifyLimelightPose(Pose newEstimate) {
+        if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0) && robot.shooter.getMode() != Shooter.Mode.DYNAMIC) {
             return false;
         }
 

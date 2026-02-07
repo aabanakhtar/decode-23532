@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double SHOT_OFFSET = 25;
+    public static double SHOT_OFFSET = 0;
     // initialize this thing to persist as is
     public static final InterpLUT distToVeloLUT;
     static {
@@ -51,10 +51,10 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.add(7, 1200);
         distToVeloLUT.add(8.4, 1250);
         distToVeloLUT.add(11.2, 1430);
-        distToVeloLUT.add(11.8, 1510);
-        distToVeloLUT.add(12.3, 1570);
-        distToVeloLUT.add(12.8, 1600);
-        distToVeloLUT.add(1000, 1540);
+        distToVeloLUT.add(11.8, 1490);
+        distToVeloLUT.add(12.3, 1540);
+        distToVeloLUT.add(12.8, 1570);
+        distToVeloLUT.add(1000, 1570);
         // to do: add
         distToVeloLUT.createLUT();
     }

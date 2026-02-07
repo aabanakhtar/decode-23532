@@ -33,7 +33,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 151;
+    public static double TURRET_ENCODER_OFFSET = 147;
 
     public enum Mode {
         AUTO,
@@ -114,13 +114,13 @@ public class DuneStrider {
                 .next();
 
         // Shooter motors
-        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.001);
-        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.001);
+        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.00001);
+        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.00001);
         // Reverse one shooter motor so they spin the same way i think
         shooterRight.setInverted(true);
 
         // Turret motor
-        shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.001);
+        shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.00001);
         shooterTurret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // Intake motor

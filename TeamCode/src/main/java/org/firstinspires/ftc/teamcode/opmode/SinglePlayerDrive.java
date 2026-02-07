@@ -17,6 +17,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.cmd.HomeTurret;
+import org.firstinspires.ftc.teamcode.cmd.RelocalizeUsingLimelight3A;
 import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
@@ -44,7 +45,7 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        robot.eyes.setEnabled(true);
+        robot.eyes.setEnabled(false);
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
@@ -89,11 +90,7 @@ public class SinglePlayerDrive extends OpMode {
         bind(GamepadKeys.Button.START, robot.drive.resetHeading(), nothing());
 
         gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
-                If(
-                        run(() -> robot.drive.follower.setPose(GlobalAutonomousPoses.BLUE_RELOCALIZE)),
-                        run(() -> robot.drive.follower.setPose(GlobalAutonomousPoses.RED_RELOCALIZE)),
-                        () -> DuneStrider.alliance == DuneStrider.Alliance.BLUE
-                )
+                new RelocalizeUsingLimelight3A(gamepad1Ex)
         );
     }
 

@@ -74,7 +74,7 @@ public class Turret extends SubsystemBase {
         final double absAngle = robot.analogEncoder.getCurrentPosition();
 
         // ensure that we're safe, not moving, etc.
-        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0) {
+        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.shooter.getMode() != Shooter.Mode.DYNAMIC) {
             double rawQuadAngle =
                     (robot.shooterTurret.encoder.getPosition()
                             / TURRET_ENCODER_CPR) * 360.0;

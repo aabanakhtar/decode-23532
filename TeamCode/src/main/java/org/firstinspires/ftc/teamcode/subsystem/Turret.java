@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.01;
+    public static double PREDICT_FACTOR = 0.00;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -36,7 +36,7 @@ public class Turret extends SubsystemBase {
     public static  double TURRET_PID_SWITCH = 3.0;
     public static double kS = 0.00;
     // turret gains
-    public static double kP = 0.035;
+    public static double kP = 0.02;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.000;

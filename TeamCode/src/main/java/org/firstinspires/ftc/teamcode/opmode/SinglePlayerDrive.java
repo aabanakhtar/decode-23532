@@ -4,6 +4,8 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.If;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.BLUE_RELOCALIZE;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.RED_RELOCALIZE;
 import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.INGEST;
 import static org.firstinspires.ftc.teamcode.subsystem.Intake.Mode.OFF;
 
@@ -86,12 +88,28 @@ public class SinglePlayerDrive extends OpMode {
                 })
         );
 
-        // reset localizer bindings
-        bind(GamepadKeys.Button.START, robot.drive.resetHeading(), nothing());
 
-        gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
-                new RelocalizeUsingLimelight3A(gamepad1Ex)
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
+                If(
+                        run(() -> robot.drive.follower.setPose(BLUE_RELOCALIZE)),
+                        run(() -> robot.drive.follower.setPose(RED_RELOCALIZE)),
+                        () -> DuneStrider.alliance == DuneStrider.Alliance.BLUE
+                )
         );
+
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+            run(() -> Turret.offset_angle += 3)
+        );
+
+
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                run(() -> Turret.offset_angle -= 3)
+        );
+
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
+                run(() -> Turret.offset_angle = 0)
+        );
+
     }
 
     @Override

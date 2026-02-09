@@ -140,7 +140,7 @@ public class MecanumDrive extends SubsystemBase {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         Pose currPose = getPose();
 
-        Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(11, -11, 0)) : chosenPose.minus(new Pose(11, 11, 0));
+        Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(5, -5, 0)) : chosenPose.minus(new Pose(5, 5, 0));
 
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         // Math.PI makes it face the other direction.

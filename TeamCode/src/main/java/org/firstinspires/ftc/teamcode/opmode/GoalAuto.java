@@ -43,12 +43,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
     // Mechanical
-    public static double SHOOTER_TRANSFER_DELAY = 650.0;
+    public static double SHOOTER_TRANSFER_DELAY = 850.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 500.0;
     public static long INTAKE_STOP_DELAY = 350;
 
     // Gate
-    public static long GATE_DURATION = 750;
+    public static long GATE_DURATION = 1000;
     public static double GATE_HEADING = 160;
     public static double GATE_CYCLE_TM = 3000;
 
@@ -88,9 +88,8 @@ public class GoalAuto extends OpMode {
                         execPreload(),
                         If(execRow2(), nothing(), () -> nRows >= 2),
                         If(execRowGate(), nothing(), () -> nRows >= 2),
-                        If(execRowGate(), nothing(), () -> nRows >= 2),
                         If(execRow1(), nothing(), () -> nRows >= 1),
-                        go(follower, parkRP, 1),
+                        go(robot.drive.follower, parkRP, 1),
                         run(() -> robot.shooter.setVelocity(0))
                 )
         );
@@ -234,9 +233,8 @@ public class GoalAuto extends OpMode {
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setTangentHeadingInterpolation()
-                .setReversed()
-                .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
+                .addParametricCallback(0.5, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
 

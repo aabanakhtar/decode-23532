@@ -17,13 +17,11 @@ public class AbsoluteAnalogEncoder {
     }
 
     public double getCurrentPosition() {
-        double pos = -((getVoltage() / 3.244) * 360) - offset;
-        return -AngleUnit.normalizeDegrees(pos);
+        return (getVoltage() - 0.017) / (3.244 - 0.017) * 360 - offset;
     }
 
     public double getCurrentPositionNoOffset() {
-        double pos = -(getVoltage() / 3.244) * 360;
-        return -AngleUnit.normalizeDegrees(pos);
+        return (getVoltage() - 0.017) / (3.244 - 0.017) * 360;
     }
 
     public AnalogInput getEncoder() {

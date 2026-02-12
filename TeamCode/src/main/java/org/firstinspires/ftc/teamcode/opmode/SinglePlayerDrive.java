@@ -47,7 +47,7 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        robot.eyes.setEnabled(false);
+        //robot.eyes.setEnabled(false);
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {

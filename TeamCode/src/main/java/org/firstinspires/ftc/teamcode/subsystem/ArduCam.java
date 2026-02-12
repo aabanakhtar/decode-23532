@@ -5,10 +5,13 @@ import android.util.Size;
 
 import androidx.annotation.Nullable;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -29,8 +32,8 @@ public class ArduCam extends SubsystemBase {
     private final VisionPortal visionPortal;
     private final AprilTagProcessor processor;
 
-    private static final Position camPose = null;
-    private static final YawPitchRollAngles orientation = null;
+    private static final Position camPose = new Position(DistanceUnit.INCH, -2.5, 7.16, 8.5, 0);
+    private static final YawPitchRollAngles orientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -82, 0, 0);
 
     public static int N_THREADS = 3;
 
@@ -70,6 +73,7 @@ public class ArduCam extends SubsystemBase {
                 .setCameraResolution(new Size(640, 480))
                 .addProcessor(processor)
                 .build();
+
     }
 
     @Override
@@ -83,10 +87,17 @@ public class ArduCam extends SubsystemBase {
                     Position pos = d.robotPose.getPosition();
                     YawPitchRollAngles angles = d.robotPose.getOrientation();
 
+                    TelemetryPacket p = new TelemetryPacket();
+                    p.fieldOverlay().setFill("blue");
+                    p.fieldOverlay().fillCircle(pos.x, pos.y, 3);
+                    FtcDashboard.getInstance().sendTelemetryPacket(p);
+
                     double x = pos.x, y = pos.y, thetaDegrees = angles.getYaw();
 
                     lastDetection = new Pose(y + 72, 72 - x, Math.toRadians(thetaDegrees));
                     logData(lastDetection);
+
+                    break;
                 }
             }
         }

@@ -14,8 +14,10 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.device.SwyftRanger;
+import org.firstinspires.ftc.teamcode.subsystem.ArduCam;
 import org.firstinspires.ftc.teamcode.subsystem.Hubs;
 import org.firstinspires.ftc.teamcode.subsystem.MegaTagRelocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
@@ -33,7 +35,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 148;
+    public static double TURRET_ENCODER_OFFSET = 130;
 
     public enum Mode {
         AUTO,
@@ -73,6 +75,7 @@ public class DuneStrider {
     public Shooter shooter;
     public Intake intake;
     public Turret turret;
+    public ArduCam cam;
     public MegaTagRelocalizer eyes;
 
     // for writing logs
@@ -93,8 +96,8 @@ public class DuneStrider {
         shooter.setIdle();
         shooter.setPower(0);
 
-        limelight.pipelineSwitch(2);
-        limelight.start();
+        //limelight.pipelineSwitch(2);
+        //limelight.start();
     }
 
     public DuneStrider init(Mode mode, Pose pose, HardwareMap map, Telemetry t) {
@@ -135,8 +138,6 @@ public class DuneStrider {
                     x.setRunMode(Motor.RunMode.RawPower);
                 });
 
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-
         flightRecorder = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
 
         // subsystem init
@@ -146,7 +147,7 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
-        eyes = new MegaTagRelocalizer();
+        cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
         reset();
         return inst;
     }
@@ -163,7 +164,6 @@ public class DuneStrider {
     }
 
     public void endLoop() {
-
         flightRecorder.addData("ALLIANCE", alliance.toString());
         flightRecorder.addData("ENCODER VALUE", analogEncoder.getCurrentPosition());
         // sensor update

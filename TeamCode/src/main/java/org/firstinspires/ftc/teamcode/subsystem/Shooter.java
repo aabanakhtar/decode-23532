@@ -126,8 +126,7 @@ public class Shooter extends SubsystemBase {
         // clip to a distance between 1 and 15
         double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 15.0);
         // use radial velo comp
-        double predictedDistance = distanceToGoal - robot.drive.getRadialVelocityToGoal() * shooterTimeRegression(distanceToGoal) * PREDICT_FACTOR;
-        double optimalVelocityForDist = getOptimalVelocityForDist(predictedDistance) +  SHOT_OFFSET;
+        double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal) +  SHOT_OFFSET;
 
         double currentVelocity = velFilter.getFilteredOutput();
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()

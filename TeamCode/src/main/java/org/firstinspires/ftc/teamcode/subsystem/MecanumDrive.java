@@ -58,14 +58,9 @@ public class MecanumDrive extends SubsystemBase {
         lastAimTarget = getShooterPositionPinpointRel2();
         robot.flightRecorder.addLine("======DRIVETRAIN:=======");
         robot.flightRecorder.addData("goal heading", lastAimTarget.heading);
-        robot.flightRecorder.addData("goal distance", getShooterPositionPinpointRel2().distance);
-
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
-        robot.flightRecorder.addData("Compensation Radial", getRadialVelocityToGoal());
-        robot.flightRecorder.addData("Compensation Tangent", getTangentVelocityToGoal());
-
         follower.update();
     }
 
@@ -78,54 +73,6 @@ public class MecanumDrive extends SubsystemBase {
      */
     public Pose getPose() {
         return follower.getPose();
-    }
-
-    public double getRadialVelocityToGoal() {
-        Vector robotPosition = getPose().getAsVector();
-        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE
-                ? blueGoalPose
-                : redGoalPose).getAsVector();
-
-        Vector toGoal = goalPosition.minus(robotPosition);
-
-        double angleToGoalField =
-                Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
-
-        double robotSpeed = getVelocity().getMagnitude();
-        if (robotSpeed < 3) {
-            return 0;
-        }
-
-        double robotVelocityAngle =
-                Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
-        double deltaTheta =
-                AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
-        return robotSpeed * Math.cos(deltaTheta);
-    }
-
-
-    public double getTangentVelocityToGoal() {
-        Vector robotPosition = getPose().getAsVector();
-        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose).getAsVector();
-
-        // Calculate vector from robot to goal
-        Vector toGoal = goalPosition.minus(robotPosition);
-
-        // Calculate angle to goal (field-relative)
-        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
-
-        // Get robot velocity scalar
-        double robotSpeed = getVelocity().getMagnitude();
-
-        if (robotSpeed < 3) {
-            return 0;
-        }
-
-        double robotVelocityAngle = Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
-
-        // Calculate tangential component
-        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
-        return robotSpeed * Math.sin(deltaTheta);
     }
 
     public Vector getVelocity() {

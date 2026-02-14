@@ -13,6 +13,8 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -26,6 +28,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ArduCam extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
@@ -47,6 +50,12 @@ public class ArduCam extends SubsystemBase {
     public static final double RED_TAG = 24;
     public static final double MAX_STALENESS = 1e8;
 
+    public static boolean tuning = false;
+    public static int EXPOSURE_MS = 3;
+    public static int BRIGHTNESS = 76;
+
+    private boolean initializedControls = false;
+
     private Pose lastDetection = null;
     private long lastReadStamp = 0;
 
@@ -64,13 +73,12 @@ public class ArduCam extends SubsystemBase {
                 .setDrawCubeProjection(true)
                 .build();
 
-        processor.setDecimation(1);
 
         visionPortal = new VisionPortal.Builder()
                 .setCamera(webcam)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .enableLiveView(true)
                 .setCameraResolution(new Size(640, 480))
+                .enableLiveView(true)
                 .addProcessor(processor)
                 .build();
 
@@ -78,6 +86,15 @@ public class ArduCam extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING && (!initializedControls || tuning)) {
+            visionPortal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
+            visionPortal.getCameraControl(ExposureControl.class).setExposure(EXPOSURE_MS, TimeUnit.MILLISECONDS);
+            visionPortal.getCameraControl(GainControl.class).setGain(BRIGHTNESS);
+            initializedControls = true;
+        }
+
+
+
         lastDetection = null;
         List<AprilTagDetection> detections = processor.getDetections();
         for (AprilTagDetection d : detections) {

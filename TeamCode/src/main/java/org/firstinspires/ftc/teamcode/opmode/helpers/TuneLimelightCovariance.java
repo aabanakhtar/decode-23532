@@ -12,10 +12,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.util.Timing;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystem.ArduCam;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -28,8 +30,9 @@ public class TuneLimelightCovariance extends OpMode {
     ArrayList<Double> limelightAxisReadings;
     ArrayList<Double> limelightThetaReadings;
     Follower follower;
-    Limelight3A limelight3A;
     Timing.Timer timer = new Timing.Timer(10, TimeUnit.SECONDS);
+
+    ArduCam cam;
 
     double covarianceResultAxis = 0;
     double covarianceResultTheta = 0;
@@ -46,12 +49,11 @@ public class TuneLimelightCovariance extends OpMode {
 
         shooterRight = new Motor(hardwareMap, "shooterRight");
         shooterLeft = new Motor(hardwareMap, "shooterLeft");
-        limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+        cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
         follower = Constants.createFollower(hardwareMap);
 
         follower.setPose(new Pose(72, 72, 0));
         follower.startTeleopDrive();
-        limelight3A.pipelineSwitch(2);
         shooterRight.setInverted(true);
     }
 
@@ -60,7 +62,6 @@ public class TuneLimelightCovariance extends OpMode {
         shooterLeft.set(0.5);
         shooterRight.set(0.5);
         timer.start();
-        limelight3A.start();
     }
 
     public static double getCovariance(ArrayList<Double> samples) {
@@ -86,19 +87,11 @@ public class TuneLimelightCovariance extends OpMode {
 
     private void collectSamples() {
         telemetry.addLine("Collecting data.....");
+        cam.periodic();
 
-        limelight3A.updateRobotOrientation(Math.toDegrees(follower.getPose().getHeading() + Math.PI / 2));
-        LLResult result = limelight3A.getLatestResult();
+         Pose pedroPose = cam.getPedroPose();
 
-        if (result != null && result.isValid()) {
-            Pose3D botPose = result.getBotpose();
-            Position position = botPose.getPosition();
-
-            double y = DistanceUnit.INCH.fromMeters(position.y);
-            double heading = Math.toRadians(botPose.getOrientation().getYaw());
-
-            Pose pedroPose = new Pose(y + 72, 0, heading - Math.PI/2);
-
+         if (pedroPose != null) {
             limelightAxisReadings.add(pedroPose.getX());
             limelightThetaReadings.add(Math.toDegrees(pedroPose.getHeading()));
         }

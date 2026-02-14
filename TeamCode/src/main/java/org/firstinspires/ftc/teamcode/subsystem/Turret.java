@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
 import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
+import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 
 @Config
 public class Turret extends SubsystemBase {
@@ -57,6 +58,7 @@ public class Turret extends SubsystemBase {
 
     // for relocalizing turret
     private double TURRET_HOME_OFFSET = 0;
+    private SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
@@ -69,15 +71,17 @@ public class Turret extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // always use quadrature
-        boolean isOutOfSafeRange = Math.abs(robot.analogEncoder.getCurrentPosition()) > TURRET_SAFE_ZONE;
+        averager.mark();
+
         final double absAngle = robot.analogEncoder.getCurrentPosition();
+        final double rawQuad = robot.shooterTurret.getCurrentPosition();
+        // always use quadrature
+        boolean isOutOfSafeRange = Math.abs(absAngle) > TURRET_SAFE_ZONE;
 
         // ensure that we're safe, not moving, etc.
         if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.shooter.getMode() != Shooter.Mode.DYNAMIC) {
             double rawQuadAngle =
-                    (robot.shooterTurret.encoder.getPosition()
-                            / TURRET_ENCODER_CPR) * 360.0;
+                    (rawQuad / TURRET_ENCODER_CPR) * 360.0;
             TURRET_HOME_OFFSET = absAngle - rawQuadAngle;
         }
 
@@ -86,6 +90,7 @@ public class Turret extends SubsystemBase {
         robot.flightRecorder.addLine("==========TURRET===========");
         robot.flightRecorder.addData("absolute encoder", absAngle);
         robot.flightRecorder.addData("quadrature angle", quadratureAngle);
+        robot.flightRecorder.addData("average ms", averager.getAvgMs());
 
         if (tuning) {
             ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
@@ -112,14 +117,12 @@ public class Turret extends SubsystemBase {
 
                 // filter our target
                 double rawTarget = robot.drive.getAimTarget().heading;
-                robot.flightRecorder.addData("TARGET", rawTarget);
-
                 // constrain our angles
-                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, rawTarget)) + offset_angle;
-                double error = constrainedAngleDeg - quadratureAngle;
-                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg) + kS;
+                double offsetted = rawTarget + offset_angle;
+                double error = offsetted - quadratureAngle;
+                double power = turretAnglePID.calculate(quadratureAngle, offsetted) + kS;
 
-                // absolute limit (idk if this helps but should)
+                // prevent wire snapping
                 if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {
                     robot.shooterTurret.set(0.0);
                     break;
@@ -128,6 +131,7 @@ public class Turret extends SubsystemBase {
                 robot.shooterTurret.set(power);
                 break;
             }
+
             // Debug purposes only
             case DEBUG: {
                 double power = turretAnglePID.calculate(quadratureAngle, targetAngle);
@@ -138,6 +142,7 @@ public class Turret extends SubsystemBase {
 
         // store this for smooth transitions between the two (rising-edge)
         lastMode = mode;
+        averager.endMark();
     }
 
     public void setMode(Mode amode) {

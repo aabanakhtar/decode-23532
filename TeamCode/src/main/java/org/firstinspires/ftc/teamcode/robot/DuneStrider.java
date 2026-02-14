@@ -117,20 +117,20 @@ public class DuneStrider {
                 .next();
 
         // Shooter motors
-        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.00001);
-        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.00001);
+        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.0001);
+        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.0001);
         // Reverse one shooter motor so they spin the same way i think
         shooterRight.setInverted(true);
 
         // Turret motor
-        shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.00001);
+        shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.0001);
         shooterTurret.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // Intake motor
-        intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.001);
+        intakeTubing = new MotorEx(map, "intake").setCachingTolerance(0.1);
         intakeTubing.setInverted(false);
 
-        latchServo = new ServoEx(map, "latch").setCachingTolerance(0.001);
+        latchServo = new ServoEx(map, "latch").setCachingTolerance(0.1);
 
         // Apply common run modes
         Arrays.asList(shooterLeft, shooterRight, intakeTubing)
@@ -157,18 +157,17 @@ public class DuneStrider {
     }
 
     public double getVoltageFeedforwardConstant() {
-        // 11.0 is just we don't place unnecessary strain if somehow the battery drops to something like 4v.
-        double safeVoltage = Math.max(lastMeasuredVoltage, 9.0);
-        batteryFilter.updateValue(IDEAL_VOLTAGE / safeVoltage);
         return batteryFilter.getFilteredOutput();
     }
 
     public void endLoop() {
-        flightRecorder.addData("ALLIANCE", alliance.toString());
-        flightRecorder.addData("ENCODER VALUE", analogEncoder.getCurrentPosition());
+        flightRecorder.addData(">>>>ALLIANCE", alliance.toString());
         // sensor update
+        flightRecorder.addData(">>>>BATTERY STATE", lastMeasuredVoltage);
+
         lastMeasuredVoltage = batterySensor.getVoltage();
-        flightRecorder.addData("BATTERY STATE", lastMeasuredVoltage);
+        double safeVoltage = Math.max(lastMeasuredVoltage, 9.0);
+        batteryFilter.updateValue(IDEAL_VOLTAGE / safeVoltage);
 
         CommandScheduler.getInstance().run();
         flightRecorder.update();

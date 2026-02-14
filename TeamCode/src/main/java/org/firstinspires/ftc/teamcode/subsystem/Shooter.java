@@ -11,6 +11,7 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
+import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 
 @Config
 public class Shooter extends SubsystemBase {
@@ -59,12 +60,16 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.createLUT();
     }
 
+    private final SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
+
     public Shooter() {
         flywheelVelocityPID.setTolerance(VELOCITY_TOLERANCE);
     }
 
     @Override
     public void periodic() {
+        averager.mark();
+
         switch (mode) {
             case RAW:
                 rawMode();
@@ -80,7 +85,7 @@ public class Shooter extends SubsystemBase {
         }
 
         velFilter.updateValue(robot.shooterLeft.getCorrectedVelocity());
-        logData();
+        averager.endMark();
     }
 
     public void setMode(Mode mode) {
@@ -120,13 +125,15 @@ public class Shooter extends SubsystemBase {
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
+
+        logData(currentVelocity, output);
     }
 
     private void dynamicMode() {
         // clip to a distance between 1 and 15
         double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 15.0);
         // use radial velo comp
-        double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal) +  SHOT_OFFSET;
+        double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal) + SHOT_OFFSET;
 
         double currentVelocity = velFilter.getFilteredOutput();
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
@@ -134,6 +141,8 @@ public class Shooter extends SubsystemBase {
 
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
+
+        logData(currentVelocity, output);
     }
 
     private void rawMode() {
@@ -141,17 +150,16 @@ public class Shooter extends SubsystemBase {
         robot.shooterRight.set(targetRawPower);
     }
 
-    private void logData() {
+    private void logData(double velo, double rawPower) {
         robot.flightRecorder.addLine("========SHOOTER========");
         robot.flightRecorder.addData("Flywheel Target velocity", targetVelocityTicks);
-        robot.flightRecorder.addData("Flywheel Current velocity", robot.shooterLeft.encoder.getCorrectedVelocity());
-        robot.flightRecorder.addData("Flywheel raw power output", robot.shooterLeft.get());
+        robot.flightRecorder.addData("Flywheel Current velocity", velo);
+        robot.flightRecorder.addData("average ms", averager.getAvgMs());
     }
 
     public boolean isAtTargetVelocity() {
         return flywheelVelocityPID.atSetPoint();
     }
-
 
     // SOTM
     public static double REGRESSION_A = 0.008;

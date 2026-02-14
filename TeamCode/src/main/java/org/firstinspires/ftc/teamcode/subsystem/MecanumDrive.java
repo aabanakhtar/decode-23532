@@ -16,13 +16,15 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
+import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 
 import java.util.Objects;
 
 @Config
 public class MecanumDrive extends SubsystemBase {
     public static double TURRET_OFFSET = -2.06;
-    DuneStrider robot = DuneStrider.get();
+    private SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
+    private DuneStrider robot = DuneStrider.get();
 
     public Command resetHeading() {
         return run(() -> robot.drive.follower.setHeading(0));
@@ -53,6 +55,7 @@ public class MecanumDrive extends SubsystemBase {
 
     @Override
     public void periodic() {
+        averager.mark();
         lastPose = follower.getPose();
 
         lastAimTarget = getShooterPositionPinpointRel2();
@@ -61,7 +64,10 @@ public class MecanumDrive extends SubsystemBase {
         robot.flightRecorder.addData("X:", lastPose.getX());
         robot.flightRecorder.addData("Y:", lastPose.getY());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
+        robot.flightRecorder.addData("avg ms", averager.getAvgMs());
         follower.update();
+
+        averager.endMark();
     }
 
     public void setTeleOpDrive(double forward, double strafe, double rotation) {
@@ -104,9 +110,6 @@ public class MecanumDrive extends SubsystemBase {
         double turretRelativeAngleDeg = Math.toDegrees(turretRelativeAngleRad);
 
         // clamp and return
-        double minAngle = -Turret.TURRET_MAX_ANGLE;
-        double maxAngle = Turret.TURRET_MAX_ANGLE;
-        double constrainedAngleDeg = Math.max(minAngle, Math.min(maxAngle, turretRelativeAngleDeg));
-        return new AimAtTarget(distance, constrainedAngleDeg);
+        return new AimAtTarget(distance, turretRelativeAngleDeg);
     }
 }

@@ -107,6 +107,10 @@ public class DuneStrider {
         DuneStrider.mode = mode;
         hardwareMap = map;
         lynxModules = map.getAll(LynxModule.class);
+        lynxModules.forEach(x -> {
+            x.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        });
+
         ranger0 = new SwyftRanger(hardwareMap, "ranger0");
         ranger1 = new SwyftRanger(hardwareMap, "ranger1");
         analogEncoder = new AbsoluteAnalogEncoder(hardwareMap, "abs", TURRET_ENCODER_OFFSET);
@@ -138,7 +142,7 @@ public class DuneStrider {
                     x.setRunMode(Motor.RunMode.RawPower);
                 });
 
-        flightRecorder = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
+        flightRecorder = new MultipleTelemetry(t);
 
         // subsystem init
         hubs = new Hubs();

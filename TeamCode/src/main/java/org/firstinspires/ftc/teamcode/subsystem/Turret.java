@@ -69,12 +69,25 @@ public class Turret extends SubsystemBase {
         robot.shooterTurret.stopAndResetEncoder();
     }
 
-    @Override
     public void periodic() {
         averager.mark();
 
         final double absAngle = robot.analogEncoder.getCurrentPosition();
-        final double rawQuad = robot.shooterTurret.getCurrentPosition();
+        final double rawQuad = robot.shooterTurret.encoder.getPosition();
+        final double velo = robot.shooterTurret.getCorrectedVelocity();
+
+        robot.flightRecorder.addData("turret ms", averager.getAvgMs());
+
+        robot.shooterTurret.set(0);
+
+        averager.endMark();
+    }
+
+    public void periodicb() {
+        averager.mark();
+
+        final double absAngle = robot.analogEncoder.getCurrentPosition();
+        final double rawQuad = robot.shooterTurret.encoder.getPosition();
         // always use quadrature
         boolean isOutOfSafeRange = Math.abs(absAngle) > TURRET_SAFE_ZONE;
 

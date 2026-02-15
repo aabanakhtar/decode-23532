@@ -43,7 +43,7 @@ public class Commandlet {
         // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
                 waitFor(300),
-                run(() -> Intake.INGEST_MOTOR_SPEED = 0.6),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),
                 new ParallelCommandGroup(
                     // open the latch
                     waitFor((long)Intake.INTAKE_LATCH_DELAY),

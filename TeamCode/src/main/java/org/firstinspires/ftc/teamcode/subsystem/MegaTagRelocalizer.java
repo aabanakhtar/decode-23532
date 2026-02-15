@@ -14,21 +14,19 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.utilities.KalmanPoseEstimator;
 
 public class MegaTagRelocalizer extends SubsystemBase {
-    private final Limelight3A limelight;
     private final DuneStrider robot;
 
     public static boolean disabled = true;
     public static double MAX_RELOCALIZE_VELOCITY = 2.0; // in / sec
 
-    public static double LIMELIGHT_AXIS_COVARIANCE = 0.6458;
-    public static double PINPOINT_AXIS_COVARIANCE = 0.0853;
+    public static double LIMELIGHT_AXIS_COVARIANCE = 0.3608;
+    public static double PINPOINT_AXIS_COVARIANCE = 0.1853;
 
     KalmanPoseEstimator xPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
     KalmanPoseEstimator yPoseEstimator = new KalmanPoseEstimator(0.5, 0.25, PINPOINT_AXIS_COVARIANCE, LIMELIGHT_AXIS_COVARIANCE);
 
     public MegaTagRelocalizer() {
         robot = DuneStrider.get();
-        limelight = robot.limelight;
     }
 
     public void setEnabled(boolean enabled) {
@@ -38,41 +36,23 @@ public class MegaTagRelocalizer extends SubsystemBase {
     @Override
     public void periodic() {
         if (disabled) return;
-
-        limelight.updateRobotOrientation(Math.toDegrees(robot.drive.getPose().getHeading() + Math.PI / 2));
-        LLResult result = limelight.getLatestResult();
-
         double dt = robot.hubs.getDeltaTime();
         xPoseEstimator.updateKalmanUncertainty(dt);
         yPoseEstimator.updateKalmanUncertainty(dt);
 
-        if (result != null && result.isValid()) {
-            Pose3D botPose = result.getBotpose();
-            Position position = botPose.getPosition();
-
-            double x = DistanceUnit.INCH.fromMeters(position.x);
-            double y = DistanceUnit.INCH.fromMeters(position.y);
-            double heading = Math.toRadians(botPose.getOrientation().getYaw());
-            Pose limelightPose = new Pose(y + 72, 72 - x, heading - Math.PI/2);
-
-            TelemetryPacket p = new TelemetryPacket();
-            p.fieldOverlay().setFill("blue").fillCircle(x, y, Math.toDegrees(heading));
-            FtcDashboard.getInstance().sendTelemetryPacket(p);
-
-            if (verifyLimelightPose(limelightPose) && !disabled) {
+        Pose arducamPose = robot.cam.getPedroPose();
+        if (arducamPose != null && verifyLimelightPose(arducamPose))  {
                 Pose pose = robot.drive.getPose();
-                double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), limelightPose.getX());
-                double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), limelightPose.getY());
+                double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), arducamPose.getX());
+                double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), arducamPose.getY());
                 // filter based on drift
                 pose = pose.minus(new Pose(xDrift, yDrift, 0));
-                robot.drive.follower.setPose(pose);
+                robot.drive.follower.setPose(arducamPose);
             }
         }
 
-    }
-
     public boolean verifyLimelightPose(Pose newEstimate) {
-        if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0) && robot.shooter.getMode() != Shooter.Mode.DYNAMIC) {
+        if (!(newEstimate.getX() < 144 && newEstimate.getY() < 144 && newEstimate.getX() > 0 && newEstimate.getY() > 0)) {
             return false;
         }
 

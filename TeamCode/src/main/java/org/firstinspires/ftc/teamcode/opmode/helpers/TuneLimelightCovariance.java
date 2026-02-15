@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.ArduCam;
 
 import java.lang.reflect.Array;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "Tune Limelight Covariances")
 public class TuneLimelightCovariance extends OpMode {
+    DuneStrider robot = DuneStrider.get();
     Motor shooterLeft;
     Motor shooterRight;
     ArrayList<Double> limelightAxisReadings;

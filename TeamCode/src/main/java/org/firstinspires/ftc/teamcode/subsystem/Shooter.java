@@ -44,17 +44,17 @@ public class Shooter extends SubsystemBase {
     public static final InterpLUT distToVeloLUT;
     static {
         distToVeloLUT = new InterpLUT();
-        distToVeloLUT.add(-100000, 1000);
-        distToVeloLUT.add(0, 1000);
-        distToVeloLUT.add(4, 1050);
-        distToVeloLUT.add(5, 1070);
-        distToVeloLUT.add(6.2, 1150);
-        distToVeloLUT.add(7, 1200);
-        distToVeloLUT.add(8.4, 1250);
-        distToVeloLUT.add(11.2, 1460);
-        distToVeloLUT.add(11.8, 1540);
-        distToVeloLUT.add(12.3, 1570);
-        distToVeloLUT.add(12.8, 1600);
+        distToVeloLUT.add(-1000, 1100);
+        distToVeloLUT.add(5.07, 1120);
+        distToVeloLUT.add(5.7, 1135);
+        distToVeloLUT.add(6.8, 1190);
+        distToVeloLUT.add(7.6, 1240);
+        distToVeloLUT.add(8.8, 1320);
+        distToVeloLUT.add(10.9, 1450);
+        distToVeloLUT.add(11.5, 1480);
+        distToVeloLUT.add(11.8, 1500);
+        distToVeloLUT.add(12.8, 1550);
+        distToVeloLUT.add(13.1, 1580);
         distToVeloLUT.add(1000, 1600);
         // to do: add
         distToVeloLUT.createLUT();
@@ -142,6 +142,7 @@ public class Shooter extends SubsystemBase {
         robot.shooterLeft.set(output);
         robot.shooterRight.set(output);
 
+        robot.flightRecorder.addData("distance to goal", distanceToGoal);
         logData(currentVelocity, output);
     }
 
@@ -151,6 +152,9 @@ public class Shooter extends SubsystemBase {
     }
 
     private void logData(double velo, double rawPower) {
+
+        double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 15.0);
+        robot.flightRecorder.addData("distance to goal", distanceToGoal);
         robot.flightRecorder.addLine("========SHOOTER========");
         robot.flightRecorder.addData("Flywheel Target velocity", targetVelocityTicks);
         robot.flightRecorder.addData("Flywheel Current velocity", velo);

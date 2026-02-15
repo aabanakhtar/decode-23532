@@ -151,6 +151,7 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
+        eyes = new MegaTagRelocalizer();
         cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
         reset();
         return inst;

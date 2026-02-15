@@ -47,7 +47,8 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        //robot.eyes.setEnabled(false);
+        robot.eyes.setEnabled(true);
+        robot.turret.setMode(Turret.Mode.DEBUG);
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
@@ -77,11 +78,13 @@ public class SinglePlayerDrive extends OpMode {
         // gate
         bind(GamepadKeys.Button.RIGHT_BUMPER,
                 run(() -> {
+                    robot.turret.setMode(Turret.Mode.PINPOINT);
                     robot.intake.openLatch();
                     robot.shooter.setMode(Shooter.Mode.DYNAMIC); // auto on
                     speedMultiplier = MX_SPEED_SHOT;
                 }),
                 run(() -> {
+                    robot.turret.setMode(Turret.Mode.DEBUG);
                     robot.intake.closeLatch();
                     robot.shooter.setIdle(); // auto off
                     speedMultiplier = 1.0;

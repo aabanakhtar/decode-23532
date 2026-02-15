@@ -5,7 +5,9 @@ import static org.firstinspires.ftc.teamcode.subsystem.Shooter.shooterTimeRegres
 
 import android.util.Range;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
@@ -65,6 +67,7 @@ public class MecanumDrive extends SubsystemBase {
         robot.flightRecorder.addData("Y:", lastPose.getY());
         robot.flightRecorder.addData("Heading", Math.toDegrees(lastPose.getHeading()));
         robot.flightRecorder.addData("avg ms", averager.getAvgMs());
+
         follower.update();
 
         averager.endMark();
@@ -93,7 +96,7 @@ public class MecanumDrive extends SubsystemBase {
         Pose chosenPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose;
         Pose currPose = getPose();
 
-        Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(5, -5, 0)) : chosenPose.minus(new Pose(5, 5, 0));
+        Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(0, 0, 0)) : chosenPose.minus(new Pose(0, 0, 0));
 
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         // Math.PI makes it face the other direction.

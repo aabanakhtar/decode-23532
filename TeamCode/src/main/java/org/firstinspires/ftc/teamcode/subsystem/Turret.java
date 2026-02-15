@@ -37,7 +37,7 @@ public class Turret extends SubsystemBase {
     public static  double TURRET_PID_SWITCH = 3.0;
     public static double kS = 0.00;
     // turret gains
-    public static double kP = 0.0;
+    public static double kP = 0.03;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.000;
@@ -69,21 +69,8 @@ public class Turret extends SubsystemBase {
         robot.shooterTurret.stopAndResetEncoder();
     }
 
+    @Override
     public void periodic() {
-        averager.mark();
-
-        final double absAngle = robot.analogEncoder.getCurrentPosition();
-        final double rawQuad = robot.shooterTurret.encoder.getPosition();
-        final double velo = robot.shooterTurret.getCorrectedVelocity();
-
-        robot.flightRecorder.addData("turret ms", averager.getAvgMs());
-
-        robot.shooterTurret.set(0);
-
-        averager.endMark();
-    }
-
-    public void periodicb() {
         averager.mark();
 
         final double absAngle = robot.analogEncoder.getCurrentPosition();

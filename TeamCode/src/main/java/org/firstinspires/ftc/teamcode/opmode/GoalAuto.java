@@ -43,7 +43,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
     // Mechanical
-    public static double SHOOTER_TRANSFER_DELAY = 850.0;
+    public static double SHOOTER_TRANSFER_DELAY = 800.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 500.0;
     public static long INTAKE_STOP_DELAY = 350;
 
@@ -53,14 +53,13 @@ public class GoalAuto extends OpMode {
     public static double GATE_CYCLE_TM = 3000;
 
     // paths
-    public static double ROW1_BRAKE_STRENGTH = 1.0;
-    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.7;
-    public static double ROW2_INTAKE_PATH_SPEED = 0.7;
+    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.6;
+    public static double ROW2_INTAKE_PATH_SPEED = 0.6;
 
     // global path stuff
-    public static double PW_SCALE_BRAKE_THRESHOLD = 0.87;
+    public static double PW_SCALE_BRAKE_THRESHOLD = 0.8;
     public static double PW_SCALE_PATH_SPEED = 0.18;
-    public static double PRELOAD_SLOWDOWN_THRESH = 0.5;
+    public static double PRELOAD_SLOWDOWN_THRESH = 0.9;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -73,7 +72,7 @@ public class GoalAuto extends OpMode {
 
     @Override
     public void init() {
-        Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(0) : START_PRELOAD.mirror().setHeading(heading(180));
+        Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(heading(90)) : START_PRELOAD.mirror().setHeading(heading(90));
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
@@ -87,6 +86,7 @@ public class GoalAuto extends OpMode {
                 new SequentialCommandGroup(
                         execPreload(),
                         If(execRow2(), nothing(), () -> nRows >= 2),
+                        If(execRowGate(), nothing(), () -> nRows >= 2),
                         If(execRowGate(), nothing(), () -> nRows >= 2),
                         If(execRow1(), nothing(), () -> nRows >= 1),
                         go(robot.drive.follower, parkRP, 1),
@@ -123,8 +123,7 @@ public class GoalAuto extends OpMode {
                 run(() -> robot.intake.closeLatch()),
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
-                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0)
-                        .raceWith(waitFor((long) GATE_CYCLE_TM)),
+                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0),
                 waitFor(GATE_DURATION),
 
                 // let the intake regen
@@ -206,9 +205,7 @@ public class GoalAuto extends OpMode {
                 )
                 .addParametricCallback(PRELOAD_SLOWDOWN_THRESH, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setTangentHeadingInterpolation()
-                .setBrakingStart(0.7)
-                .setBrakingStrength(ROW1_BRAKE_STRENGTH)
+                .setLinearHeadingInterpolation(heading(90), mHBA(heading(180)))
                 .build();
 
         intakeRow1 = follower
@@ -234,7 +231,7 @@ public class GoalAuto extends OpMode {
                         )
                 )
                 .setConstantHeadingInterpolation(mHBA(heading(180)))
-                .addParametricCallback(0.5, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
+                .addParametricCallback(0.65, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .build();
 
@@ -242,11 +239,11 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 mPBA(UNIVERSAL_SCORE_TARGET),
-                                mPBA(new Pose(54, 55)),
+                                mPBA(new Pose(45, 56)),
                                 mPBA(INTAKE_GATE)
                         )
                 )
-                .addParametricCallback(0.1, () -> follower.setMaxPowerScaling(PW_SCALE_GATE_CYCLE_SPEED))
+                .addParametricCallback(0.65, () -> follower.setMaxPowerScaling(PW_SCALE_GATE_CYCLE_SPEED))
                 .setTangentHeadingInterpolation()
                 .addPath(
                         new BezierLine(
@@ -263,13 +260,14 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 mPBA(END_GATE),
-                                mPBA(new Pose(52, 46)),
+                                mPBA(new Pose(34, 56)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setConstantHeadingInterpolation(mHBA(heading(180)))
+                .setTangentHeadingInterpolation()
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
+                .setReversed()
                 .build();
 
         intakeRow2 = follower
@@ -292,20 +290,14 @@ public class GoalAuto extends OpMode {
                 .addPath(
                         new BezierCurve(
                                 mPBA(END_INTAKE_START_SCORE2),
-                                mPBA(new Pose(52, 46)),
+                                mPBA(new Pose(28, 55)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
-                .setConstantHeadingInterpolation(mHBA(heading(180)))
-                /*
-                .setHeadingInterpolation(
-                        HeadingInterpolator.piecewise(
-                                new HeadingInterpolator.PiecewiseNode(0.0, 0.8, HeadingInterpolator.constant(mHBA(heading(180)))),
-                                new HeadingInterpolator.PiecewiseNode(0.3, 1, HeadingInterpolator.constant(mHBA(heading(-90))))
-                        )
-                ) */
-                .addParametricCallback(0.5, () -> follower.setMaxPowerScaling(0.6))
+                .setTangentHeadingInterpolation()
+                .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
+                .setReversed()
                 .build();
 
         parkRP = follower.pathBuilder()

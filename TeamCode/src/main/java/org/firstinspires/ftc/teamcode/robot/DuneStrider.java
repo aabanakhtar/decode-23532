@@ -35,7 +35,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 130;
+    public static double TURRET_ENCODER_OFFSET = 216.5;
 
     public enum Mode {
         AUTO,

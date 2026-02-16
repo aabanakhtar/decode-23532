@@ -62,6 +62,29 @@ public class Commandlet {
         );
     }
 
+    public static Command shootFar(long transfer_delay) {
+        // TODO: use distance sensors to gauge success
+        return new SequentialCommandGroup(
+                waitFor(300),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.7),
+                new ParallelCommandGroup(
+                        // open the latch
+                        waitFor((long) Intake.INTAKE_LATCH_DELAY),
+                        run(() -> dunestrider.intake.openLatch())
+                ),
+                // run the intake
+                new ParallelCommandGroup(
+                        intakeSet(Intake.Mode.INGEST),
+                        waitFor(transfer_delay)
+                ),
+                // turn off after doing everything
+                run(() -> DuneStrider.get().shooter.setIdle()),
+                intakeSet(Intake.Mode.OFF),
+                run(() -> dunestrider.intake.closeLatch()),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 1)
+        );
+    }
+
     public static Command fork(Command a, Command b) {
         return new ParallelCommandGroup(a, b);
     }

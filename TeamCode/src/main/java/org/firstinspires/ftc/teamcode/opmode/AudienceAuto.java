@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shootFar;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.mPBA;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.ACONTROL1_LINEUP_ROW3;
@@ -34,6 +35,7 @@ import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Autonomous(name = "Autonomous: 6 Artifact Non-configurable", group = "auto")
 public class AudienceAuto extends OpMode {
@@ -53,31 +55,22 @@ public class AudienceAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        new HomeTurret(0.5),
-                        execPreload(follower)
+                        run(() -> Turret.offset_angle = -2.5),
+                        execPreload(follower),
+                        run(() -> Turret.offset_angle = 2.5)
         ));
     }
 
     public Command execPreload(Follower follower) {
         return new SequentialCommandGroup(
                 // prepare our intake for world class domination
-                run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.7),
                 run(() -> robot.intake.closeLatch()),
 
                 // prep shooter
                 new InstantCommand(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-
-                // drive up
-                new FollowPathCommand(follower, shootPreload),
-                waitFor(300),
-
-                // shoot
-                intakeSet(Intake.Mode.INGEST),
-                run(() -> robot.intake.openLatch()),
-                waitFor((long) TRANSFER_DELAY),
-                // de prepare
-                run(() -> robot.intakeTubing.set(0)),
-                run(() -> robot.shooter.setIdle())
+                waitFor(1000),
+                shootFar(1000)
         );
     }
 
@@ -87,15 +80,6 @@ public class AudienceAuto extends OpMode {
     }
 
     public void buildPathChains(Follower follower) {
-        shootPreload = follower.pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                mPBA(START_POSE),
-                                mPBA(AUNIVERSAL_SCORE_TARGET)
-                        )
-                )
-                .setLinearHeadingInterpolation(heading(90), mirrorHeading(heading(-45)))
-                .build();
     }
 
     private double mirrorHeading(double heading) {

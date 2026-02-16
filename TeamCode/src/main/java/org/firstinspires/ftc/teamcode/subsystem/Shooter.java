@@ -34,7 +34,7 @@ public class Shooter extends SubsystemBase {
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
     public static double VELOCITY_TOLERANCE = 30.0;
-    public static double PREDICT_FACTOR = 0.00; // TODO: fix
+    public static double PREDICT_FACTOR = -0.07; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();
@@ -131,7 +131,8 @@ public class Shooter extends SubsystemBase {
 
     private void dynamicMode() {
         // clip to a distance between 1 and 15
-        double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance, 1.0, 15.0);
+        double distOffset = PREDICT_FACTOR * robot.drive.getRadialVelocityToGoal() * robot.getVoltageFeedforwardConstant();
+        double distanceToGoal = Range.clip(robot.drive.getAimTarget().distance + distOffset, 1.0, 15.0);
         // use radial velo comp
         double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal) + SHOT_OFFSET;
 

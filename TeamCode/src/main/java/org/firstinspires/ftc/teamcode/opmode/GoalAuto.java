@@ -45,21 +45,22 @@ public class GoalAuto extends OpMode {
     // Mechanical
     public static double SHOOTER_TRANSFER_DELAY = 800.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 500.0;
-    public static long INTAKE_STOP_DELAY = 350;
+    public static long INTAKE_STOP_DELAY = 100;
 
     // Gate
     public static long GATE_DURATION = 1000;
     public static double GATE_HEADING = 160;
-    public static double GATE_CYCLE_TM = 3000;
+    public static double GATE_CYCLE_TM = 4000;
+    public static double START_SCHEDULE_SHOT = 0.3;
 
     // paths
     public static double PW_SCALE_GATE_CYCLE_SPEED = 0.6;
     public static double ROW2_INTAKE_PATH_SPEED = 0.6;
 
     // global path stuff
-    public static double PW_SCALE_BRAKE_THRESHOLD = 0.8;
-    public static double PW_SCALE_PATH_SPEED = 0.18;
-    public static double PRELOAD_SLOWDOWN_THRESH = 0.9;
+    public static double PW_SCALE_BRAKE_THRESHOLD = 0.75;
+    public static double PW_SCALE_PATH_SPEED = 0.14;
+    public static double PRELOAD_SLOWDOWN_THRESH = 0.7;
 
     private DuneStrider robot;
     private PathChain shootPreload;
@@ -76,7 +77,6 @@ public class GoalAuto extends OpMode {
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
-        robot.turret.loadAngle(0);
 
         Follower follower = robot.drive.follower;
         buildPathChains(follower);
@@ -112,8 +112,7 @@ public class GoalAuto extends OpMode {
         return new SequentialCommandGroup(
                 run(() -> robot.intake.openLatch()),
                 run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                new FollowPathCommand(robot.drive.follower, shootPreload, true),
-                shoot((long) SHOOTER_TRANSFER_DELAY)
+                new FollowPathCommand(robot.drive.follower, shootPreload, true)
         );
     }
 
@@ -123,7 +122,8 @@ public class GoalAuto extends OpMode {
                 run(() -> robot.intake.closeLatch()),
                 // eat the balls
                 intakeSet(Intake.Mode.INGEST),
-                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0),
+                new FollowPathCommand(robot.drive.follower, gateCycle, 1.0)
+                        .raceWith(waitFor((long)GATE_CYCLE_TM)),
                 waitFor(GATE_DURATION),
 
                 // let the intake regen
@@ -197,13 +197,13 @@ public class GoalAuto extends OpMode {
         shootPreload = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(
+                        new BezierLine(
                             mPBA(START_PRELOAD),
-                            mPBA(new Pose(49, 113)),
                             mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
                 .addParametricCallback(PRELOAD_SLOWDOWN_THRESH, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
+                .addParametricCallback(START_SCHEDULE_SHOT, () -> CommandScheduler.getInstance().schedule(shoot((long)SHOOTER_TRANSFER_DELAY)))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
                 .setLinearHeadingInterpolation(heading(90), mHBA(heading(180)))
                 .build();
@@ -244,7 +244,7 @@ public class GoalAuto extends OpMode {
                         )
                 )
                 .addParametricCallback(0.65, () -> follower.setMaxPowerScaling(PW_SCALE_GATE_CYCLE_SPEED))
-                .setTangentHeadingInterpolation()
+                .setConstantHeadingInterpolation(mHBA(heading(170)))
                 .addPath(
                         new BezierLine(
                                 mPBA(INTAKE_GATE),
@@ -252,8 +252,9 @@ public class GoalAuto extends OpMode {
                         )
                 )
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setConstantHeadingInterpolation(mHBA(heading(GATE_HEADING)))
+                .setLinearHeadingInterpolation(mHBA(heading(180)), mHBA(heading(GATE_HEADING)))
                 .setTimeoutConstraint(100)
+                .setTValueConstraint(0.95)
                 .build();
 
         shootGate = follower.pathBuilder()

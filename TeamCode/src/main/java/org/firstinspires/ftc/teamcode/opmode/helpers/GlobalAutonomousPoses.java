@@ -27,7 +27,7 @@ public class GlobalAutonomousPoses {
 
         // ROW 1
         public static Pose INTAKE_CONTROL_POINT = new Pose(55, 85);
-        public static Pose END_INTAKE_START_SCORE = new Pose(20, 79);
+        public static Pose END_INTAKE_START_SCORE = new Pose(15, 79);
 
         // ROW 2
         public static Pose END_INTAKE_START_SCORE2 = new Pose(15, 59.5);
@@ -35,7 +35,7 @@ public class GlobalAutonomousPoses {
         public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(28, 55);
 
         public static Pose INTAKE_GATE = new Pose(30, 61.5);
-        public static Pose END_GATE = new Pose (7, 61);
+        public static Pose END_GATE = new Pose (11, 61);
     }
 
     @Configurable

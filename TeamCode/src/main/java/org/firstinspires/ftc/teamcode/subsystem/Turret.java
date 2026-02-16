@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.00;
+    public static double PREDICT_FACTOR = 0.0105;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -115,14 +115,19 @@ public class Turret extends SubsystemBase {
                     turretAnglePID.reset();
                 }
 
+
+                double predictedLeadOffset = Math.toDegrees(robot.drive.getTangentVelocityToGoal() * PREDICT_FACTOR * robot.getVoltageFeedforwardConstant());
+
                 // filter our target
                 double rawTarget = robot.drive.getAimTarget().heading;
-                // constrain our angles
-                double offsetted = rawTarget + offset_angle;
-                double error = offsetted - quadratureAngle;
-                double power = turretAnglePID.calculate(quadratureAngle, offsetted) + kS;
+                double compensatedTarget = rawTarget - predictedLeadOffset;
+                robot.flightRecorder.addData("TARGET", rawTarget);
 
-                // prevent wire snapping
+                // constrain our angles
+                double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, compensatedTarget)) + offset_angle;
+                double error = constrainedAngleDeg - quadratureAngle;
+                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg) + kS;
+
                 if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {
                     robot.shooterTurret.set(0.0);
                     break;

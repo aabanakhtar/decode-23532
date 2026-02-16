@@ -32,6 +32,54 @@ public class MecanumDrive extends SubsystemBase {
         return run(() -> robot.drive.follower.setHeading(0));
     }
 
+    public double getRadialVelocityToGoal() {
+        Vector robotPosition = getPose().getAsVector();
+        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose).getAsVector();
+
+        // Calculate vector from robot to goal
+        Vector toGoal = goalPosition.minus(robotPosition);
+
+        // Calculate angle to goal (field-relative)
+        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
+
+        // Get robot velocity scalar
+        double robotSpeed = getVelocity().getMagnitude();
+
+        if (robotSpeed < 3) {
+            return 0;
+        }
+
+        double robotVelocityAngle = Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
+
+        // Calculate tangential component
+        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
+        return robotSpeed * Math.cos(deltaTheta);
+    }
+
+    public double getTangentVelocityToGoal() {
+        Vector robotPosition = getPose().getAsVector();
+        Vector goalPosition = (DuneStrider.alliance == DuneStrider.Alliance.BLUE ? blueGoalPose : redGoalPose).getAsVector();
+
+        // Calculate vector from robot to goal
+        Vector toGoal = goalPosition.minus(robotPosition);
+
+        // Calculate angle to goal (field-relative)
+        double angleToGoalField = Math.atan2(toGoal.getYComponent(), toGoal.getXComponent());
+
+        // Get robot velocity scalar
+        double robotSpeed = getVelocity().getMagnitude();
+
+        if (robotSpeed < 3) {
+            return 0;
+        }
+
+        double robotVelocityAngle = Math.atan2(getVelocity().getYComponent(), getVelocity().getXComponent());
+
+        // Calculate tangential component
+        double deltaTheta = AngleUnit.normalizeRadians(robotVelocityAngle - angleToGoalField);
+        return robotSpeed * Math.sin(deltaTheta);
+    }
+
     public static class AimAtTarget {
         public double distance;
         public double heading;

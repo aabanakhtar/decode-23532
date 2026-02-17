@@ -55,9 +55,7 @@ public class AudienceAuto extends OpMode {
 
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
-                        run(() -> Turret.offset_angle = -2.5),
-                        execPreload(follower),
-                        run(() -> Turret.offset_angle = 2.5)
+                        execPreload(follower)
         ));
     }
 

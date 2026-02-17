@@ -46,6 +46,7 @@ public class GoalAuto extends OpMode {
     public static double SHOOTER_TRANSFER_DELAY = 800.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 500.0;
     public static long INTAKE_STOP_DELAY = 100;
+    public static double PRELOAD_MAX_SPEED = 0.8;
 
     // Gate
     public static long GATE_DURATION = 1000;
@@ -202,10 +203,11 @@ public class GoalAuto extends OpMode {
                             mPBA(UNIVERSAL_SCORE_TARGET)
                         )
                 )
+                .addParametricCallback(0, () -> follower.setMaxPowerScaling(PRELOAD_MAX_SPEED))
                 .addParametricCallback(PRELOAD_SLOWDOWN_THRESH, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
-                .addParametricCallback(START_SCHEDULE_SHOT, () -> CommandScheduler.getInstance().schedule(shoot((long)SHOOTER_TRANSFER_DELAY)))
+                .addParametricCallback(START_SCHEDULE_SHOT, () -> CommandScheduler.getInstance().schedule(shoot((long)SHOOTER_TRANSFER_DELAY - 200)))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setLinearHeadingInterpolation(heading(90), mHBA(heading(180)))
+                .setConstantHeadingInterpolation(heading(90))
                 .build();
 
         intakeRow1 = follower

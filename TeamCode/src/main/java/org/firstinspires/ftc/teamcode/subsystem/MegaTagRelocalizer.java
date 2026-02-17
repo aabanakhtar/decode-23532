@@ -36,17 +36,8 @@ public class MegaTagRelocalizer extends SubsystemBase {
     @Override
     public void periodic() {
         if (disabled) return;
-        double dt = robot.hubs.getDeltaTime();
-        xPoseEstimator.updateKalmanUncertainty(dt);
-        yPoseEstimator.updateKalmanUncertainty(dt);
-
         Pose arducamPose = robot.cam.getPedroPose();
         if (arducamPose != null && verifyLimelightPose(arducamPose))  {
-                Pose pose = robot.drive.getPose();
-                double xDrift = xPoseEstimator.getDriftKalman(pose.getX(), arducamPose.getX());
-                double yDrift = yPoseEstimator.getDriftKalman(pose.getY(), arducamPose.getY());
-                // filter based on drift
-                pose = pose.minus(new Pose(xDrift, yDrift, 0));
                 robot.drive.follower.setPose(arducamPose);
             }
         }

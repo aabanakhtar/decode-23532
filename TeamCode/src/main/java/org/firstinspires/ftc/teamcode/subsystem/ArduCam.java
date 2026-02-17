@@ -35,7 +35,7 @@ public class ArduCam extends SubsystemBase {
     private final VisionPortal visionPortal;
     private final AprilTagProcessor processor;
 
-    private static final Position camPose = new Position(DistanceUnit.INCH, 2.5, 7.16, 8.5, 0);
+    private static final Position camPose = new Position(DistanceUnit.INCH, -2.5, 7.16, 8.5, 0);
     private static final YawPitchRollAngles orientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -82, 0, 0);
 
     public static int N_THREADS = 3;

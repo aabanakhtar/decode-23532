@@ -40,7 +40,6 @@ public class Commandlet {
     }
 
     public static Command shoot(long transfer_delay) {
-        // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
                 waitFor(300),
                 run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),

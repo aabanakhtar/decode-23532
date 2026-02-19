@@ -28,13 +28,13 @@ public class Shooter extends SubsystemBase {
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
 
-    public static double IDLE_VELOCITY = 600.0;
+    public static double IDLE_VELOCITY = 850.0;
     public static double kV = 4.2e-4;
-    public static double kP = 0.0034;
+    public static double kP = 0.004;
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
     public static double VELOCITY_TOLERANCE = 30.0;
-    public static double PREDICT_FACTOR = -0.065; // TODO: fix
+    public static double PREDICT_FACTOR = -0.07; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();

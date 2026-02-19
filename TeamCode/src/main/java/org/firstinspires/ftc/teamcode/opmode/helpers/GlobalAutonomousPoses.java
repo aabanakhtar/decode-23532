@@ -21,7 +21,7 @@ public class GlobalAutonomousPoses {
     @Configurable
     public static class GoalSidePoses {
         // The global scoring location
-        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(56, 90);
+        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(50, 79);
         // preload points
         public static Pose START_PRELOAD = new Pose(30, 134);
 
@@ -35,19 +35,14 @@ public class GlobalAutonomousPoses {
         public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(28, 55);
 
         public static Pose INTAKE_GATE = new Pose(30, 64);
-        public static Pose END_GATE = new Pose (11, 62);
+        public static Pose END_GATE = new Pose (10.5, 65);
     }
 
     @Configurable
     public static class AudienceSidePoses {
-        public static Pose AUNIVERSAL_SCORE_TARGET = new Pose(63, 20);
+        public static Pose A_SCORE_TARGET = new Pose(53, 15);
 
-        // row 3
-        public static Pose ACONTROL1_LINEUP_ROW3 = new Pose(68.203, 35.635);
-        public static Pose ALINEUP_ROW3_END = new Pose(39.140, 35.635);
-
-        public static Pose AEND_INTAKE_ROW3 = new Pose(15, 35);
-        // score row 3
-        public static Pose ACONTROL1_SCORE_ROW3 = new Pose(66,  39);
+        public static Pose A_ROW3_END = new Pose(10, 35);
+        public static Pose A_ROw3_CONTROL = new Pose(49, 35);
     }
 }

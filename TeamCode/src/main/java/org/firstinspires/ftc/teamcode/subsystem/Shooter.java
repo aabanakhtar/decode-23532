@@ -46,8 +46,8 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT = new InterpLUT();
         distToVeloLUT.add(-1000, 1100);
         distToVeloLUT.add(5.07, 1120);
-        distToVeloLUT.add(5.7, 1135);
-        distToVeloLUT.add(6.8, 1200);
+        distToVeloLUT.add(5.7, 1145);
+        distToVeloLUT.add(6.8, 1210);
         distToVeloLUT.add(7.6, 1240);
         distToVeloLUT.add(8.8, 1320);
         distToVeloLUT.add(10.9, 1450);
@@ -137,6 +137,10 @@ public class Shooter extends SubsystemBase {
         double optimalVelocityForDist = getOptimalVelocityForDist(distanceToGoal) + SHOT_OFFSET;
 
         double currentVelocity = velFilter.getFilteredOutput();
+        // gain scheduling (smoother shots from far)
+        double P = robot.drive.getPose().getY() < 60 ? 0.003 : 0.0045;
+        flywheelVelocityPID.setP(P);
+
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
                 + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 

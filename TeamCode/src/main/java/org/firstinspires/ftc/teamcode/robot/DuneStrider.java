@@ -58,7 +58,7 @@ public class DuneStrider {
     // sensors
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
-    private final BasicFilter batteryFilter = new RunningAverageFilter(5);
+    private final BasicFilter batteryFilter = new RunningAverageFilter(3);
     public AbsoluteAnalogEncoder analogEncoder;
 
     public SwyftRanger ranger0;
@@ -122,8 +122,8 @@ public class DuneStrider {
                 .next();
 
         // Shooter motors
-        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.0001);
-        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.0001);
+        shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.000001);
+        shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.000001);
         // Reverse one shooter motor so they spin the same way i think
         shooterRight.setInverted(true);
 

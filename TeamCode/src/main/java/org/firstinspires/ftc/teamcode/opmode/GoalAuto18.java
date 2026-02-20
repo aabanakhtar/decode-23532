@@ -278,10 +278,10 @@ public class GoalAuto18 extends OpMode {
                             mPBA(END_INTAKE_START_SCORE)
                         )
                 )
-                .addParametricCallback(0, () -> follower.setMaxPowerScaling(ROW2_INTAKE_PATH_SPEED))
+                .addParametricCallback(0, () -> follower.setMaxPowerScaling(ROW2_INTAKE_PATH_SPEED - 0.1))
                 .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
-                .setConstantHeadingInterpolation(mHBA(heading(180)))
+                .setConstantHeadingInterpolation(mHBA(heading(180 - 10)))
                 .build();
 
         scoreRow1 = follower
@@ -323,6 +323,7 @@ public class GoalAuto18 extends OpMode {
                 .setTangentHeadingInterpolation()
                 .addParametricCallback(BRAKE_THRESHOLD_SHOTS, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1.0))
+                .setTValueConstraint(0.97)
                 .setReversed()
                 .build();
 

@@ -43,7 +43,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
     // Mechanical
-    public static double SHOOTER_TRANSFER_DELAY = 750.0;
+    public static double SHOOTER_TRANSFER_DELAY = 765.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 300.0;
     public static long INTAKE_STOP_DELAY = 0;
     public static double PRELOAD_MAX_SPEED = 0.85;

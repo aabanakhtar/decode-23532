@@ -79,7 +79,7 @@ public class Turret extends SubsystemBase {
         boolean isOutOfSafeRange = Math.abs(absAngle) > TURRET_SAFE_ZONE;
 
         // ensure that we're safe, not moving, etc.
-        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0 && robot.shooter.getMode() != Shooter.Mode.DYNAMIC) {
+        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0) {
             double rawQuadAngle =
                     (rawQuad / TURRET_ENCODER_CPR) * 360.0;
             TURRET_HOME_OFFSET = absAngle - rawQuadAngle;

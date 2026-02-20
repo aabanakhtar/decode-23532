@@ -27,15 +27,15 @@ public class GlobalAutonomousPoses {
 
         // ROW 1
         public static Pose INTAKE_CONTROL_POINT = new Pose(55, 85);
-        public static Pose END_INTAKE_START_SCORE = new Pose(15, 82);
+        public static Pose END_INTAKE_START_SCORE = new Pose(18, 82);
 
         // ROW 2
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(15, 59.5);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(13, 59.5);
         public static Pose INTAKE_CONTROL_POINT2 = new Pose(62, 59);
         public static Pose INTAKE_CONTROL_SCORE_R2 = new Pose(28, 55);
 
         public static Pose INTAKE_GATE = new Pose(30, 64);
-        public static Pose END_GATE = new Pose (10.5, 65);
+        public static Pose END_GATE = new Pose (5, 63);
     }
 
     @Configurable

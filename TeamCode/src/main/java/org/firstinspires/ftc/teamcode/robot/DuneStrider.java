@@ -35,7 +35,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 216.5;
+    public static double TURRET_ENCODER_OFFSET = 217;
 
     public enum Mode {
         AUTO,
@@ -103,6 +103,7 @@ public class DuneStrider {
     public DuneStrider init(Mode mode, Pose pose, HardwareMap map, Telemetry t) {
         CommandScheduler.getInstance().reset();
         batteryFilter.reset();
+        Turret.offset_angle = 0;
 
         DuneStrider.mode = mode;
         hardwareMap = map;

@@ -34,7 +34,7 @@ public class Shooter extends SubsystemBase {
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
     public static double VELOCITY_TOLERANCE = 30.0;
-    public static double PREDICT_FACTOR = -0.07; // TODO: fix
+    public static double PREDICT_FACTOR = -0.06; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();
@@ -47,7 +47,7 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.add(-1000, 1100);
         distToVeloLUT.add(5.07, 1120);
         distToVeloLUT.add(5.7, 1135);
-        distToVeloLUT.add(6.8, 1190);
+        distToVeloLUT.add(6.8, 1200);
         distToVeloLUT.add(7.6, 1240);
         distToVeloLUT.add(8.8, 1320);
         distToVeloLUT.add(10.9, 1450);

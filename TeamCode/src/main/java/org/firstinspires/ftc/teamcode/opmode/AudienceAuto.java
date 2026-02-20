@@ -33,6 +33,7 @@ import org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
+import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Autonomous(name = "Autonomous: 6 Artifact Non-configurable", group = "auto")
 public class AudienceAuto extends OpMode {
@@ -50,7 +51,6 @@ public class AudienceAuto extends OpMode {
         startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ?
                 START_POSE.setHeading(heading(90)) : START_POSE.mirror().setHeading(heading(90));
         robot.init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
-
         Follower follower = robot.drive.follower;
         buildPathChains(follower);
 
@@ -59,6 +59,10 @@ public class AudienceAuto extends OpMode {
                         execPreload(follower),
                         execRow3()
         ));
+    }
+
+    public void stop() {
+        Turret.offset_angle = 0;
     }
 
     public Command execPreload(Follower follower) {

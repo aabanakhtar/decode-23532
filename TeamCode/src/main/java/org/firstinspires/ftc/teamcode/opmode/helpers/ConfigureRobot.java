@@ -6,7 +6,7 @@ import com.skeletonarmy.marrow.prompts.OptionPrompt;
 import com.skeletonarmy.marrow.prompts.Prompter;
 import com.skeletonarmy.marrow.prompts.ValuePrompt;
 
-import org.firstinspires.ftc.teamcode.opmode.GoalAuto;
+import org.firstinspires.ftc.teamcode.pedroPathing.GoalAuto;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
 @TeleOp(name = "⚙️ Pre-Match Configure robot")

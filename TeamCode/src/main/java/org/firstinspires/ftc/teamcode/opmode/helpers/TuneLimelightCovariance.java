@@ -6,6 +6,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "Tune Limelight Covariances")
+@Disabled
 public class TuneLimelightCovariance extends OpMode {
     DuneStrider robot = DuneStrider.get();
     Motor shooterLeft;

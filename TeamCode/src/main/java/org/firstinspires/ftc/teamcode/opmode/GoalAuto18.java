@@ -25,6 +25,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -37,7 +38,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 18 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 18 CLOSE", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto18 extends OpMode {
     // Mechanical
     public static double SHOOTER_TRANSFER_DELAY = 720.0;
@@ -77,7 +78,7 @@ public class GoalAuto18 extends OpMode {
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
-        Turret.offset_angle = 0;
+        Turret.offset_angle = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? 1.5 : -1.5;
         Follower follower = robot.drive.follower;
         buildPathChains(follower);
 

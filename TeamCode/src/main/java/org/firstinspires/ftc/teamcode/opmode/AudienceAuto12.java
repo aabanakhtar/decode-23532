@@ -4,15 +4,12 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.fork;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.go;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
-import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shootFar;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.INTAKE_RECOLLECTION_TIMEOUT;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.PW_SCALE_BRAKE_THRESHOLD;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.PW_SCALE_PATH_SPEED;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.SHOOTER_TRANSFER_DELAY;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.mHBA;
-import static org.firstinspires.ftc.teamcode.opmode.GoalAuto.mPBA;
+import static org.firstinspires.ftc.teamcode.pedroPathing.GoalAuto.INTAKE_RECOLLECTION_TIMEOUT;
+import static org.firstinspires.ftc.teamcode.pedroPathing.GoalAuto.PW_SCALE_BRAKE_THRESHOLD;
+import static org.firstinspires.ftc.teamcode.pedroPathing.GoalAuto.PW_SCALE_PATH_SPEED;
+import static org.firstinspires.ftc.teamcode.pedroPathing.GoalAuto.mPBA;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.A_ROW3_END;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.A_ROw3_CONTROL;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.AudienceSidePoses.A_SCORE_TARGET;
@@ -38,9 +35,9 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
-@Autonomous(name = "Autonomous: 6 Artifact Non-configurable", group = "auto")
+@Autonomous(name = "Autonomous: 12 FAR", group = "auto", preselectTeleOp = "TeleOp")
 @Config
-public class AudienceAuto extends OpMode {
+public class AudienceAuto12 extends OpMode {
     public static double TRANSFER_DELAY = 1200.0;
     public static Pose START_POSE = new Pose(48, 7.3, GlobalAutonomousPoses.heading(90));
     private final DuneStrider robot = DuneStrider.get();
@@ -63,6 +60,7 @@ public class AudienceAuto extends OpMode {
                 new SequentialCommandGroup(
                         execPreload(follower),
                         execRow3(),
+                        execHPZone(),
                         execHPZone(),
                         go(follower, parkRP, 1.0)
         ));
@@ -121,7 +119,7 @@ public class AudienceAuto extends OpMode {
                 run(() -> robot.drive.follower.setMaxPowerScaling(0.35)),
                 new FollowPathCommand(robot.drive.follower, hpZone, false, 1.0),
                 run(() -> robot.drive.follower.setMaxPowerScaling(1.0)),
-                waitFor(1200),
+                waitFor(800),
                 // let the intake regen
                 fork (
                         new SequentialCommandGroup(
@@ -169,7 +167,6 @@ public class AudienceAuto extends OpMode {
                 )
                 .setTangentHeadingInterpolation()
                 .setReversed()
-                .addParametricCallback(PW_SCALE_BRAKE_THRESHOLD, () -> follower.setMaxPowerScaling(PW_SCALE_PATH_SPEED))
                 .addParametricCallback(1, () -> follower.setMaxPowerScaling(1))
                 .build();
 
@@ -177,7 +174,7 @@ public class AudienceAuto extends OpMode {
                 .addPath(
                         new BezierLine(
                                 mPBA(A_SCORE_TARGET),
-                                mPBA(new Pose(56, 36))
+                                mPBA(new Pose(30, 36))
                         )
                 )
                 .setTangentHeadingInterpolation()
@@ -190,6 +187,8 @@ public class AudienceAuto extends OpMode {
                                 mPBA(hpPose)
                         )
                 )
+                .addParametricCallback(0.5, () -> follower.setMaxPowerScaling(0.18))
+                .addParametricCallback(1, () -> follower.setMaxPowerScaling(1))
                 .setTangentHeadingInterpolation()
                 .build();
 

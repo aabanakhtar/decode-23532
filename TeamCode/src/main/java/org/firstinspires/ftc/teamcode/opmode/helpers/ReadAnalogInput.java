@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 
-@TeleOp(name = "load em up")
+@TeleOp(name = "Analog Encoder Utility")
 public class ReadAnalogInput extends OpMode {
     AbsoluteAnalogEncoder enc;
     MultipleTelemetry t = new MultipleTelemetry(FtcDashboard.getInstance().getTelemetry(), telemetry);

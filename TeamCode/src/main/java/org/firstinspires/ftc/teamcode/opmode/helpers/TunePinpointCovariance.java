@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.helpers;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "Tune Pinpoint Covariances")
+@Disabled
 public class TunePinpointCovariance extends OpMode {
     private Motor shooterLeft;
     private Motor shooterRight;

@@ -41,13 +41,12 @@ public class SinglePlayerDrive extends OpMode {
     public void init() {
         robot = DuneStrider.get().init(DuneStrider.Mode.TELEOP, MecanumDrive.lastPose, hardwareMap, telemetry);
 
-        // load the last measured angle from auto
-        //robot.turret.loadAngle(robot.turret.getLastAngle());
+        robot.turret.loadAngle(robot.analogEncoder.getCurrentPosition());
 
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        robot.eyes.setEnabled(true);
+        //robot.eyes.setEnabled(true);
         robot.turret.setMode(Turret.Mode.DEBUG);
 
         teleOpMultiplier = 1.0;
@@ -92,7 +91,7 @@ public class SinglePlayerDrive extends OpMode {
         );
 
 
-        gamepad1Ex.getGamepadButton(GamepadKeys.Button.START).whenPressed(
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
                 If(
                         run(() -> robot.drive.follower.setPose(BLUE_RELOCALIZE)),
                         run(() -> robot.drive.follower.setPose(RED_RELOCALIZE)),
@@ -117,7 +116,7 @@ public class SinglePlayerDrive extends OpMode {
 
     @Override
     public void init_loop() {
-            double measuredAbsAngle = 0;
+            double measuredAbsAngle = robot.analogEncoder.getCurrentPosition();
             robot.turret.loadAngle(measuredAbsAngle);
     }
 

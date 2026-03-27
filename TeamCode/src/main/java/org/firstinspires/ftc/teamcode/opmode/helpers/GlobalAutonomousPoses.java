@@ -10,8 +10,8 @@ public class GlobalAutonomousPoses {
         return Math.toRadians(degrees);
     }
 
-    public static Pose RED_RELOCALIZE = new Pose(7, 7.83, 0);
-    public static Pose BLUE_RELOCALIZE = RED_RELOCALIZE.mirror().withHeading(heading(180));
+    public static Pose BLUE_RELOCALIZE = new Pose(13, 109, heading(90));
+    public static Pose RED_RELOCALIZE = BLUE_RELOCALIZE.mirror().withHeading(heading(90));
 
 
     public static double mirrorHeading(double heading) {
@@ -21,7 +21,7 @@ public class GlobalAutonomousPoses {
     @Configurable
     public static class GoalSidePoses {
         // The global scoring location
-        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(50, 79);
+        public static Pose UNIVERSAL_SCORE_TARGET = new Pose(51, 83);
         // preload points
         public static Pose START_PRELOAD = new Pose(30, 134);
 
@@ -30,11 +30,13 @@ public class GlobalAutonomousPoses {
         public static Pose END_INTAKE_START_SCORE = new Pose(17, 88);
 
         // ROW 2
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(11, 59.5);
-        public static Pose INTAKE_CONTROL_POINT2 = new Pose(62, 59);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(11, 56);
+        public static Pose INTAKE_CONTROL_POINT2 = new Pose(62, 56);
 
         public static Pose INTAKE_GATE = new Pose(30, 64);
-        public static Pose END_GATE = new Pose (5, 63);
+        public static Pose INTAKE_GATE_RED = new Pose(30, 60);
+        public static Pose END_GATE_RED = new Pose(4, 58.6);
+        public static Pose END_GATE = new Pose (5, 64);
     }
 
     @Configurable

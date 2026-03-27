@@ -35,7 +35,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 217;
+    public static double TURRET_ENCODER_OFFSET = 200.57;
 
     public enum Mode {
         AUTO,
@@ -112,8 +112,6 @@ public class DuneStrider {
             x.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         });
 
-        ranger0 = new SwyftRanger(hardwareMap, "ranger0");
-        ranger1 = new SwyftRanger(hardwareMap, "ranger1");
         analogEncoder = new AbsoluteAnalogEncoder(hardwareMap, "abs", TURRET_ENCODER_OFFSET);
 
         // sensors
@@ -125,7 +123,7 @@ public class DuneStrider {
         shooterLeft = new MotorEx(map, "shooterLeft").setCachingTolerance(0.000001);
         shooterRight = new MotorEx(map, "shooterRight").setCachingTolerance(0.000001);
         // Reverse one shooter motor so they spin the same way i think
-        shooterRight.setInverted(true);
+        shooterLeft.setInverted(true);
 
         // Turret motor
         shooterTurret = new MotorEx(map, "shooterTurret", Motor.GoBILDA.RPM_312).setCachingTolerance(0.0001);
@@ -152,8 +150,8 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
-        eyes = new MegaTagRelocalizer();
-        cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
+        //eyes = new MegaTagRelocalizer();
+        //cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
         reset();
         return inst;
     }

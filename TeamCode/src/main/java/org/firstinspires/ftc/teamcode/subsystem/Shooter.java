@@ -27,14 +27,15 @@ public class Shooter extends SubsystemBase {
 
     public static double targetVelocityTicks = 0.0;
     public static double targetRawPower = 0.0;
+    public static double currentVelo = 0;
 
-    public static double IDLE_VELOCITY = 850.0;
-    public static double kV = 4.2e-4;
-    public static double kP = 0.004;
+    public static double IDLE_VELOCITY = 300.0;
+    public static double kV = 5.0e-4;
+    public static double kP = 0.002;
     public static double kI = 0.0;
     public static double kD = 1.0e-5;
     public static double VELOCITY_TOLERANCE = 30.0;
-    public static double PREDICT_FACTOR = -0.06; // TODO: fix
+    public static double PREDICT_FACTOR = -0.00; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();
@@ -45,18 +46,10 @@ public class Shooter extends SubsystemBase {
     static {
         distToVeloLUT = new InterpLUT();
         distToVeloLUT.add(-1000, 1100);
-        distToVeloLUT.add(5.07, 1120);
-        distToVeloLUT.add(5.7, 1145);
-        distToVeloLUT.add(6.8, 1210);
-        distToVeloLUT.add(7.6, 1240);
-        distToVeloLUT.add(8.8, 1320);
-        distToVeloLUT.add(10.9, 1450);
-        distToVeloLUT.add(11.5, 1480);
-        distToVeloLUT.add(11.8, 1500);
-        distToVeloLUT.add(12.8, 1550);
-        distToVeloLUT.add(13.1, 1580);
-        distToVeloLUT.add(1000, 1600);
-        // to do: add
+        distToVeloLUT.add(5.8, 1230);
+        distToVeloLUT.add(6.8, 1280);
+        distToVeloLUT.add(8.6, 1420);
+        distToVeloLUT.add(100, 1500);
         distToVeloLUT.createLUT();
     }
 
@@ -123,8 +116,9 @@ public class Shooter extends SubsystemBase {
         double output = flywheelVelocityPID.calculate(currentVelocity, targetVelocityTicks) * robot.getVoltageFeedforwardConstant() +
                 kV * targetVelocityTicks * robot.getVoltageFeedforwardConstant();
 
-        robot.shooterLeft.set(output);
-        robot.shooterRight.set(output);
+        Shooter.currentVelo = currentVelocity;
+        robot.shooterLeft.set(-output);
+        robot.shooterRight.set(-output);
 
         logData(currentVelocity, output);
     }
@@ -138,14 +132,14 @@ public class Shooter extends SubsystemBase {
 
         double currentVelocity = velFilter.getFilteredOutput();
         // gain scheduling (smoother shots from far)
-        double P = robot.drive.getPose().getY() < 60 ? 0.003 : 0.0045;
+        double P = robot.drive.getPose().getY() < 60 ? 0.003 : 0.004;
         flywheelVelocityPID.setP(P);
 
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
                 + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 
-        robot.shooterLeft.set(output);
-        robot.shooterRight.set(output);
+        robot.shooterLeft.set(-output);
+        robot.shooterRight.set(-output);
 
         robot.flightRecorder.addData("distance to goal", distanceToGoal);
         logData(currentVelocity, output);

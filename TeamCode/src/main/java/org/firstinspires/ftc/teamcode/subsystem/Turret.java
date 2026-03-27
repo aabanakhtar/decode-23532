@@ -6,15 +6,13 @@ import com.seattlesolvers.solverslib.controller.Controller;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
 import org.firstinspires.ftc.teamcode.robot.DuneStrider;
-import org.firstinspires.ftc.teamcode.utilities.BasicFilter;
-import org.firstinspires.ftc.teamcode.utilities.RunningAverageFilter;
 import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 
 @Config
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.0105;
+    public static double PREDICT_FACTOR = 0.00;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -34,31 +32,31 @@ public class Turret extends SubsystemBase {
     public static double targetAngle = 0.0;
 
     public static double TURRET_APPROACH_kP = 0.0;
-    public static  double TURRET_PID_SWITCH = 3.0;
+    public static double TURRET_PID_SWITCH = 3.0;
     public static double kS = 0.00;
     // turret gains
     public static double kP = 0.03;
     public static double kI = 0.0;
     // was 0.001
-    public static double kD = 0.000;
+    public static double kD = 0.0001;
 
     // PIDs
     private final Controller turretAnglePID = new PIDFController(kP, kI, kD, 0);
     // we have two for different sizes of error
 
     // 312 RPM Yellow Jacket with gearing 27t to 95t
-    public static final double GEAR_RATIO = 95.0 / 27.0; // motor rotations per turret rotation
-    public static double ENCODER_PPR = 4000;
-    public static double TURRET_ENCODER_CPR = ENCODER_PPR * 1; // ≈ 1891.6 ticks per turret rotation
+    public static final double GEAR_RATIO = 4; // motor rotations per turret rotation
+    public static double ENCODER_PPR = 384.5;
+    public static double TURRET_ENCODER_CPR = ENCODER_PPR * GEAR_RATIO; // ≈ 1891.6 ticks per turret rotation
 
     // limits the turret's use of abs encoder beyond this area
-    public static final double TURRET_MAX_ANGLE = 180.0; // deg
+    public static final double TURRET_MAX_ANGLE = 85; // deg
     public static final double TURRET_PID_TOLERANCE = 0.0; //deg
     public static final double TURRET_SAFE_ZONE = 165;
 
     // for relocalizing turret
     private double TURRET_HOME_OFFSET = 0;
-    private SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
+    private final SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
 
     public Turret() {
         turretAnglePID.setTolerance(TURRET_PID_TOLERANCE);
@@ -67,6 +65,10 @@ public class Turret extends SubsystemBase {
     public void loadAngle(double angle) {
         TURRET_HOME_OFFSET = angle;
         robot.shooterTurret.stopAndResetEncoder();
+    }
+
+    public static double getLastAngle() {
+        return 0.0;
     }
 
     @Override
@@ -88,12 +90,11 @@ public class Turret extends SubsystemBase {
         final double quadratureAngle = calculateAngleFromEncoder();
 
         robot.flightRecorder.addLine("==========TURRET===========");
-        robot.flightRecorder.addData("absolute encoder", absAngle);
         robot.flightRecorder.addData("quadrature angle", quadratureAngle);
         robot.flightRecorder.addData("average ms", averager.getAvgMs());
 
         if (tuning) {
-            ((PIDFController)turretAnglePID).setPIDF(kP, kI, kD, 0);
+            ((PIDFController) turretAnglePID).setPIDF(kP, kI, kD, 0);
         }
 
         // update the queued mode

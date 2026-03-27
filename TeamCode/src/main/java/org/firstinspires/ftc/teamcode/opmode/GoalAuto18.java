@@ -9,6 +9,7 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shoot;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_GATE;
+import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_GATE_RED;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.END_INTAKE_START_SCORE2;
 import static org.firstinspires.ftc.teamcode.opmode.helpers.GlobalAutonomousPoses.GoalSidePoses.INTAKE_CONTROL_POINT2;
@@ -47,18 +48,18 @@ public class GoalAuto18 extends OpMode {
     public static double PRELOAD_MAX_SPEED = 0.7;
 
     // Gate
-    public static long GATE_DURATION = 700;
+    public static long GATE_DURATION = 650;
     public static double GATE_HEADING = 160;
     public static double GATE_CYCLE_TM = 4000;
     public static double GATE_CYCLE_PWSCALE_START = 0.55;
 
     // paths
-    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.15;
+    public static double PW_SCALE_GATE_CYCLE_SPEED = 0.3;
     public static double ROW2_INTAKE_PATH_SPEED = 0.8;
 
     // global path stuff
-    public static double PW_SCALE_BRAKE_THRESHOLD = 0.7;
-    public static double PW_SCALE_PATH_SPEED = 0.15;
+    public static double PW_SCALE_BRAKE_THRESHOLD = 0.8;
+    public static double PW_SCALE_PATH_SPEED = 0.3;
     public static double PRELOAD_SLOWDOWN_THRESH = 0.9;
     public static double SCHEDULE_SHOT_PRE = 0.3;
     public static double BRAKE_THRESHOLD_SHOTS = 0.67;
@@ -78,7 +79,7 @@ public class GoalAuto18 extends OpMode {
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
         robot.eyes.setEnabled(false);
-        Turret.offset_angle = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? 1.5 : -1.5;
+        Turret.offset_angle = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? 2 : 0;
         Follower follower = robot.drive.follower;
         buildPathChains(follower);
 
@@ -127,18 +128,9 @@ public class GoalAuto18 extends OpMode {
                 new FollowPathCommand(robot.drive.follower, gateCycle, 1.0)
                         .raceWith(waitFor((long)GATE_CYCLE_TM)),
                 waitFor(GATE_DURATION),
-
-                // let the intake regen
-                fork (
-                        new SequentialCommandGroup(
-                                waitFor((long) INTAKE_RECOLLECTION_TIMEOUT),
-                                intakeSet(Intake.Mode.OFF)
-                        ),
-                        new SequentialCommandGroup(
-                                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
-                                new FollowPathCommand(robot.drive.follower, shootGate, true, 1.0)
-                        )
-                ),
+                intakeSet(Intake.Mode.OFF),
+                run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                new FollowPathCommand(robot.drive.follower, shootGate, true, 1.0),
 
                 // go home and score
                 shoot((long) SHOOTER_TRANSFER_DELAY)
@@ -303,7 +295,7 @@ public class GoalAuto18 extends OpMode {
                         new BezierCurve(
                                 mPBA(UNIVERSAL_SCORE_TARGET),
                                 mPBA(new Pose(45, 56)),
-                                mPBA(END_GATE)
+                                mPBA(DuneStrider.alliance == DuneStrider.Alliance.RED ? END_GATE_RED :  END_GATE)
                         )
                 )
                 .addParametricCallback(GATE_CYCLE_PWSCALE_START, () -> follower.setMaxPowerScaling(PW_SCALE_GATE_CYCLE_SPEED))

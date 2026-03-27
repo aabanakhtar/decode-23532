@@ -53,7 +53,7 @@ public class ArduCam extends SubsystemBase {
 
     public static boolean tuning = false;
     public static int EXPOSURE_MS = 2;
-    public static int BRIGHTNESS = 100;
+    public static int BRIGHTNESS = 43;
 
     private boolean initializedControls = false;
 

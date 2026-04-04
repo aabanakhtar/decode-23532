@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.00;
+    public static double PREDICT_FACTOR = 0.012;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -51,7 +51,7 @@ public class Turret extends SubsystemBase {
 
     // limits the turret's use of abs encoder beyond this area
     public static final double TURRET_MAX_ANGLE = 85; // deg
-    public static final double TURRET_PID_TOLERANCE = 0.0; //deg
+    public static final double TURRET_PID_TOLERANCE = 0.7; //deg
     public static final double TURRET_SAFE_ZONE = 165;
 
     // for relocalizing turret
@@ -129,7 +129,7 @@ public class Turret extends SubsystemBase {
                 double error = constrainedAngleDeg - quadratureAngle;
                 double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg) + kS;
 
-                if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE)) {
+                if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE) || turretAnglePID.atSetPoint()) {
                     robot.shooterTurret.set(0.0);
                     break;
                 }

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.geometry.Pose;
@@ -14,7 +13,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.device.SwyftRanger;
 import org.firstinspires.ftc.teamcode.subsystem.ArduCam;
@@ -35,7 +34,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 200.57;
+    public static double TURRET_ENCODER_OFFSET = 317;
 
     public enum Mode {
         AUTO,
@@ -59,6 +58,7 @@ public class DuneStrider {
     public Limelight3A limelight;
     public VoltageSensor batterySensor;
     private final BasicFilter batteryFilter = new RunningAverageFilter(3);
+    private final BasicFilter intakeFilter = new RunningAverageFilter(4);
     public AbsoluteAnalogEncoder analogEncoder;
 
     public SwyftRanger ranger0;
@@ -160,6 +160,14 @@ public class DuneStrider {
         return lastMeasuredVoltage;
     }
 
+    public double getIntakeVoltage() {
+        return intakeFilter.getFilteredOutput();
+    }
+
+    public boolean has3Balls() {
+        return intakeFilter.getFilteredOutput() > Intake.INTAKE_3_BALLS;
+    }
+
     public double getVoltageFeedforwardConstant() {
         return batteryFilter.getFilteredOutput();
     }
@@ -168,10 +176,14 @@ public class DuneStrider {
         flightRecorder.addData(">>>>ALLIANCE", alliance.toString());
         // sensor update
         flightRecorder.addData(">>>>BATTERY STATE", lastMeasuredVoltage);
+        flightRecorder.addData(">>>>INTAKE VOLTAGE", getIntakeVoltage());
+        flightRecorder.addData("Has 3 balls?", has3Balls());
 
         lastMeasuredVoltage = batterySensor.getVoltage();
         double safeVoltage = Math.max(lastMeasuredVoltage, 9.0);
+        double intakeVoltage = intakeTubing.getCurrent(CurrentUnit.AMPS);
         batteryFilter.updateValue(IDEAL_VOLTAGE / safeVoltage);
+        intakeFilter.updateValue(intakeVoltage);
 
         CommandScheduler.getInstance().run();
         flightRecorder.update();

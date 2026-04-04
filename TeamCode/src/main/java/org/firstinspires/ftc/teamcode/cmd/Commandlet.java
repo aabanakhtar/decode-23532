@@ -41,8 +41,7 @@ public class Commandlet {
 
     public static Command shoot(long transfer_delay) {
         return new SequentialCommandGroup(
-                waitFor(100),
-                run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 1.0),
                 new ParallelCommandGroup(
                     // open the latch
                     waitFor((long)Intake.INTAKE_LATCH_DELAY),

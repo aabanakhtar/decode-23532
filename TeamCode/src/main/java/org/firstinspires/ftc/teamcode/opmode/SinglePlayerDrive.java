@@ -35,7 +35,7 @@ public class SinglePlayerDrive extends OpMode {
     private GamepadEx gamepad1Ex;
     private double teleOpMultiplier = 1.0;
     private double speedMultiplier = 1.0;
-    public static double MX_SPEED_SHOT = 0.4;
+    public static double MX_SPEED_SHOT = 1;
 
     @Override
     public void init() {
@@ -46,8 +46,7 @@ public class SinglePlayerDrive extends OpMode {
         robot.drive.follower.startTeleopDrive();
         gamepad1Ex = new GamepadEx(gamepad1);
 
-        //robot.eyes.setEnabled(true);
-        robot.turret.setMode(Turret.Mode.DEBUG);
+        robot.turret.setMode(Turret.Mode.PINPOINT);
 
         teleOpMultiplier = 1.0;
         if (DuneStrider.alliance == DuneStrider.Alliance.RED) {
@@ -77,13 +76,11 @@ public class SinglePlayerDrive extends OpMode {
         // gate
         bind(GamepadKeys.Button.RIGHT_BUMPER,
                 run(() -> {
-                    robot.turret.setMode(Turret.Mode.PINPOINT);
                     robot.intake.openLatch();
                     robot.shooter.setMode(Shooter.Mode.DYNAMIC); // auto on
                     speedMultiplier = MX_SPEED_SHOT;
                 }),
                 run(() -> {
-                    robot.turret.setMode(Turret.Mode.DEBUG);
                     robot.intake.closeLatch();
                     robot.shooter.setIdle(); // auto off
                     speedMultiplier = 1.0;

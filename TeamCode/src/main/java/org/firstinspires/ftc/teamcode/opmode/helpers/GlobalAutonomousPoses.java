@@ -23,14 +23,14 @@ public class GlobalAutonomousPoses {
         // The global scoring location
         public static Pose UNIVERSAL_SCORE_TARGET = new Pose(51, 83);
         // preload points
-        public static Pose START_PRELOAD = new Pose(30, 134);
+        public static Pose START_PRELOAD = new Pose(29, 132);
 
         // ROW 1
         public static Pose INTAKE_CONTROL_POINT = new Pose(55, 85);
         public static Pose END_INTAKE_START_SCORE = new Pose(17, 88);
 
         // ROW 2
-        public static Pose END_INTAKE_START_SCORE2 = new Pose(11, 56);
+        public static Pose END_INTAKE_START_SCORE2 = new Pose(13, 56);
         public static Pose INTAKE_CONTROL_POINT2 = new Pose(62, 56);
 
         public static Pose INTAKE_GATE = new Pose(30, 64);

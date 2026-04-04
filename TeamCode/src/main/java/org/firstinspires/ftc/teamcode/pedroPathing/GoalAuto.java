@@ -40,7 +40,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 Artifact Gate Cycling Configurable", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto extends OpMode {
     // Mechanical
-    public static double SHOOTER_TRANSFER_DELAY = 765.0;
+    public static double SHOOTER_TRANSFER_DELAY = 500.0;
     public static double INTAKE_RECOLLECTION_TIMEOUT = 300.0;
     public static long INTAKE_STOP_DELAY = 0;
     public static double PRELOAD_MAX_SPEED = 0.85;
@@ -74,7 +74,6 @@ public class GoalAuto extends OpMode {
         Pose startPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? START_PRELOAD.setHeading(heading(90)) : START_PRELOAD.mirror().setHeading(heading(90));
 
         robot = DuneStrider.get().init(DuneStrider.Mode.AUTO, startPose, hardwareMap, telemetry);
-        robot.eyes.setEnabled(false);
 
         Follower follower = robot.drive.follower;
         buildPathChains(follower);

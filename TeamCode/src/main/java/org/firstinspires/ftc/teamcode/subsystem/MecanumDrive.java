@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @Config
 public class MecanumDrive extends SubsystemBase {
-    public static double TURRET_OFFSET = -2.06;
+    public static double TURRET_OFFSET = -3.26;
     private SubsystemLooptimeAverager averager = new SubsystemLooptimeAverager();
     private DuneStrider robot = DuneStrider.get();
 

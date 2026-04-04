@@ -18,10 +18,15 @@ public class Intake extends SubsystemBase {
     public static double INGEST_MOTOR_SPEED = 1.0;
     public static double DISCARD_MOTOR_SPEED = -1.0;
 
+    public static double INTAKE_NO_BALLS = 3.5;
+    public static double INTAKE_1_BALLS = 3.8;
+    public static double INTAKE_2_BALLS = 5.0;
+    public static double INTAKE_3_BALLS = 5.5;
+
     public static double INTAKE_LATCH_OPEN_POSITION = 0.3;
     public static double INTAKE_LATCH_CLOSE_POSITON = 1;
     public static double intakeLatchTargetPos = INTAKE_LATCH_OPEN_POSITION;
-    public static double INTAKE_LATCH_DELAY = 50.0;
+    public static double INTAKE_LATCH_DELAY = 150.0;
 
     public Intake() {
     }

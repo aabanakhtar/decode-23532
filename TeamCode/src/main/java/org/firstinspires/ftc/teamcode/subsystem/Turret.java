@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.012;
+    public static double PREDICT_FACTOR = 0.015;
     public static double offset_angle = 0;
 
     public enum Mode {

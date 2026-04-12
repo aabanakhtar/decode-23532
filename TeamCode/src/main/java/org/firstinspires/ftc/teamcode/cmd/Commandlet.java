@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.cmd;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -41,7 +42,6 @@ public class Commandlet {
 
     public static Command shoot(long transfer_delay) {
         return new SequentialCommandGroup(
-                run(() -> Intake.INGEST_MOTOR_SPEED = 1.0),
                 new ParallelCommandGroup(
                     // open the latch
                     waitFor((long)Intake.INTAKE_LATCH_DELAY),
@@ -55,16 +55,14 @@ public class Commandlet {
                 // turn off after doing everything
                 run(() -> DuneStrider.get().shooter.setIdle()),
                 intakeSet(Intake.Mode.OFF),
-                run(() -> dunestrider.intake.closeLatch()),
-                run(() -> Intake.INGEST_MOTOR_SPEED = 1)
+                run(() -> dunestrider.intake.closeLatch())
         );
     }
 
     public static Command shootFar(long transfer_delay) {
         // TODO: use distance sensors to gauge success
         return new SequentialCommandGroup(
-                waitFor(300),
-                run(() -> Intake.INGEST_MOTOR_SPEED = 0.7),
+                run(() -> Intake.INGEST_MOTOR_SPEED = 0.8),
                 new ParallelCommandGroup(
                         // open the latch
                         waitFor((long) Intake.INTAKE_LATCH_DELAY),

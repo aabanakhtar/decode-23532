@@ -46,9 +46,10 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 18 CLOSE", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto18 extends OpMode {
-    public static Pose ROW2_INTAKE_POSE = new Pose(5, 60);
-    public static  Pose ROW1_INTAKE_POSE = new Pose(13, 83);
-    public static Pose GATE_INTAKE_POSE = new Pose(7.7, 61);
+    public static Pose ROW2_INTAKE_POSE = new Pose(4.5, 59);
+    public static  Pose ROW1_INTAKE_POSE = new Pose(12, 83);
+    public static Pose GATE_INTAKE_POSE = new Pose(7, 61);
+    public static Pose GATE_OFFSET_POSE = new Pose(6, 54);
     public static Pose END_INTAKE_START_SCORE3 = new Pose(6, 36);
 
     // Mechanical
@@ -57,13 +58,14 @@ public class GoalAuto18 extends OpMode {
     public static long INTAKE_STOP_DELAY = 0;
 
     // Gate
-    public static long GATE_DURATION = 1400;
-    public static double GATE_HEADING = 163;
+    public static long GATE_DURATION = 550;
+    public static double GATE_HEADING = 169;
+    public static double OFFSET_HEADING = 130;
     public static double GATE_CYCLE_TM = 4000;
 
     private DuneStrider robot;
     private PathChain shootPreload;
-    private PathChain intakeRow1, intakeRow2, intakeGate, intakeRow3;
+    private PathChain intakeRow1, intakeRow2, intakeGate, intakeRow3, offsetGate;
     private PathChain scoreRow1, scoreRow2, scoreGate, scoreRow3;
     private PathChain gateCycle, shootGate;
     private PathChain parkRP;
@@ -85,7 +87,6 @@ public class GoalAuto18 extends OpMode {
                 new SequentialCommandGroup(
                         execPreloadAndR1(),
                         execRow2(),
-                        execRowGate(),
                         execRowGate(),
                         execRow1(),
                         execRowGate(),
@@ -112,6 +113,7 @@ public class GoalAuto18 extends OpMode {
         return new SequentialCommandGroup(
                 run(() -> robot.shooter.setMode(Shooter.Mode.DYNAMIC)),
                 new FollowPathCommand(robot.drive.follower, shootPreload, true),
+                waitFor(300),
                 shoot((long)SHOOTER_TRANSFER_DELAY)
         );
     }
@@ -122,7 +124,6 @@ public class GoalAuto18 extends OpMode {
                 run(() -> robot.intake.setMode(Intake.Mode.INGEST)),
 
                 new FollowPathCommand(robot.drive.follower, intakeRow2, 1),
-
                 new FollowPathCommand(robot.drive.follower, scoreRow2, 1),
 
                 shoot((long)SHOOTER_TRANSFER_DELAY)
@@ -161,6 +162,8 @@ public class GoalAuto18 extends OpMode {
                 run(() -> robot.intake.setMode(Intake.Mode.INGEST)),
 
                 new FollowPathCommand(robot.drive.follower, intakeGate, 1),
+                waitFor(100),
+                new FollowPathCommand(robot.drive.follower, offsetGate, 1),
                 waitFor(GATE_DURATION),
                 new FollowPathCommand(robot.drive.follower, scoreGate, 1),
 
@@ -221,7 +224,7 @@ public class GoalAuto18 extends OpMode {
         scoreGate = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                mPBA(ROW2_INTAKE_POSE),
+                                mPBA(GATE_OFFSET_POSE),
                                 mPBA(new Pose(53, 62)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
@@ -253,6 +256,17 @@ public class GoalAuto18 extends OpMode {
                 )
                 .setTValueConstraint(1)
                 .setConstantHeadingInterpolation(mHBA(heading(GATE_HEADING)))
+                .build();
+
+       offsetGate = follower.pathBuilder()
+               .addPath(
+                    new BezierLine(
+                            mPBA(GATE_INTAKE_POSE),
+                            mPBA(GATE_OFFSET_POSE)
+                    )
+                )
+                .setConstantHeadingInterpolation(mHBA(heading(OFFSET_HEADING)))
+               .setTValueConstraint(0.8)
                 .build();
 
         parkRP = follower.pathBuilder()

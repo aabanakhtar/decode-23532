@@ -13,6 +13,7 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.device.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.device.SwyftRanger;
@@ -34,7 +35,7 @@ import java.util.List;
 public class DuneStrider {
     private static final DuneStrider inst = new DuneStrider();
     public final static double IDEAL_VOLTAGE = 12.5;
-    public static double TURRET_ENCODER_OFFSET = 204.19;
+    public static double TURRET_ENCODER_OFFSET = 21.5;
 
     public enum Mode {
         AUTO,
@@ -150,8 +151,8 @@ public class DuneStrider {
         shooter = new Shooter();
         turret = new Turret();
         sensors = new SensorStack();
-        //eyes = new MegaTagRelocalizer();
-        //cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
+        eyes = new MegaTagRelocalizer();
+        cam = new ArduCam(hardwareMap.get(WebcamName.class, "cam"));
         reset();
         return inst;
     }

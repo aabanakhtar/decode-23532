@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utilities.SubsystemLooptimeAverager;
 public class Turret extends SubsystemBase {
     private final DuneStrider robot = DuneStrider.get();
 
-    public static double PREDICT_FACTOR = 0.015;
+    public static double PREDICT_FACTOR = 0.01;
     public static double offset_angle = 0;
 
     public enum Mode {
@@ -33,9 +33,9 @@ public class Turret extends SubsystemBase {
 
     public static double TURRET_APPROACH_kP = 0.0;
     public static double TURRET_PID_SWITCH = 3.0;
-    public static double kS = 0.00;
+    public static double kS = 0.02;
     // turret gains
-    public static double kP = 0.03;
+    public static double kP = 0.025;
     public static double kI = 0.0;
     // was 0.001
     public static double kD = 0.0001;
@@ -81,7 +81,7 @@ public class Turret extends SubsystemBase {
         boolean isOutOfSafeRange = Math.abs(absAngle) > TURRET_SAFE_ZONE;
 
         // ensure that we're safe, not moving, etc.
-        if (!isOutOfSafeRange && Math.abs(robot.shooterTurret.getCorrectedVelocity()) < TURRET_ENCODER_CPR / 360.0) {
+        if (!isOutOfSafeRange) {
             double rawQuadAngle =
                     (rawQuad / TURRET_ENCODER_CPR) * 360.0;
             TURRET_HOME_OFFSET = absAngle - rawQuadAngle;
@@ -127,7 +127,8 @@ public class Turret extends SubsystemBase {
                 // constrain our angles
                 double constrainedAngleDeg = Math.max(-TURRET_MAX_ANGLE, Math.min(TURRET_MAX_ANGLE, compensatedTarget)) + offset_angle;
                 double error = constrainedAngleDeg - quadratureAngle;
-                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg) + kS;
+                double power = turretAnglePID.calculate(quadratureAngle, constrainedAngleDeg);
+                power += Math.signum(power) * kS;
 
                 if ((power > 0 && quadratureAngle > TURRET_MAX_ANGLE) || (power < 0 && quadratureAngle < -TURRET_MAX_ANGLE) || turretAnglePID.atSetPoint()) {
                     robot.shooterTurret.set(0.0);

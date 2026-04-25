@@ -49,10 +49,10 @@ public class Shooter extends SubsystemBase {
         distToVeloLUT.add(4.6, 1270);
         distToVeloLUT.add(5, 1310);
         distToVeloLUT.add(5.5, 1350);
-        distToVeloLUT.add(5.9, 1400);
-        distToVeloLUT.add(6.72, 1460);
-        distToVeloLUT.add(8.14, 1540);
-        distToVeloLUT.add(100, 1540);
+        distToVeloLUT.add(5.9, 1420);
+        distToVeloLUT.add(6.72, 1440);
+        distToVeloLUT.add(8.14, 1500);
+        distToVeloLUT.add(100, 1530);
         distToVeloLUT.createLUT();
     }
 
@@ -138,8 +138,8 @@ public class Shooter extends SubsystemBase {
         double output = flywheelVelocityPID.calculate(currentVelocity, optimalVelocityForDist) * robot.getVoltageFeedforwardConstant()
                 + kV * optimalVelocityForDist * robot.getVoltageFeedforwardConstant();
 
-        robot.shooterLeft.set(-output * 20.5 / 20);
-        robot.shooterRight.set(-output * 20.5 / 20);
+        robot.shooterLeft.set(-output);
+        robot.shooterRight.set(-output);
 
         robot.flightRecorder.addData("distance to goal", distanceToGoal);
         logData(currentVelocity, output);

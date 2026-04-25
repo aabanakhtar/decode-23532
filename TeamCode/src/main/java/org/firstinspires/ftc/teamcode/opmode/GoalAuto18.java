@@ -44,13 +44,14 @@ import org.firstinspires.ftc.teamcode.subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.subsystem.Turret;
 
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 18 CLOSE", group = "auto", preselectTeleOp = "TeleOp")
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 CLOSE", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto18 extends OpMode {
     public static Pose ROW2_INTAKE_POSE = new Pose(4.5, 59);
     public static  Pose ROW1_INTAKE_POSE = new Pose(12, 83);
     public static Pose GATE_INTAKE_POSE = new Pose(7, 61);
     public static Pose GATE_OFFSET_POSE = new Pose(6, 54);
     public static Pose END_INTAKE_START_SCORE3 = new Pose(6, 36);
+    public static Pose BOOM_GATE = new Pose(11, 64);
 
     // Mechanical
     public static double SHOOTER_TRANSFER_DELAY = 750;
@@ -58,7 +59,7 @@ public class GoalAuto18 extends OpMode {
     public static long INTAKE_STOP_DELAY = 0;
 
     // Gate
-    public static long GATE_DURATION = 550;
+    public static long GATE_DURATION = 700;
     public static double GATE_HEADING = 169;
     public static double OFFSET_HEADING = 130;
     public static double GATE_CYCLE_TM = 4000;
@@ -66,7 +67,7 @@ public class GoalAuto18 extends OpMode {
     private DuneStrider robot;
     private PathChain shootPreload;
     private PathChain intakeRow1, intakeRow2, intakeGate, intakeRow3, offsetGate;
-    private PathChain scoreRow1, scoreRow2, scoreGate, scoreRow3;
+    private PathChain scoreRow1, scoreRow2, scoreGate, scoreRow3, gateSmash;
     private PathChain gateCycle, shootGate;
     private PathChain parkRP;
 
@@ -124,8 +125,10 @@ public class GoalAuto18 extends OpMode {
                 run(() -> robot.intake.setMode(Intake.Mode.INGEST)),
 
                 new FollowPathCommand(robot.drive.follower, intakeRow2, 1),
+                new FollowPathCommand(robot.drive.follower, gateSmash, 1),
+                waitFor(500),
                 new FollowPathCommand(robot.drive.follower, scoreRow2, 1),
-
+                waitFor(100),
                 shoot((long)SHOOTER_TRANSFER_DELAY)
         );
     }
@@ -151,7 +154,7 @@ public class GoalAuto18 extends OpMode {
                 new FollowPathCommand(robot.drive.follower, intakeRow1, 1),
 
                 new FollowPathCommand(robot.drive.follower, scoreRow1, 1),
-
+                waitFor(100),
                 shoot((long)SHOOTER_TRANSFER_DELAY)
         );
     }
@@ -166,7 +169,7 @@ public class GoalAuto18 extends OpMode {
                 new FollowPathCommand(robot.drive.follower, offsetGate, 1),
                 waitFor(GATE_DURATION),
                 new FollowPathCommand(robot.drive.follower, scoreGate, 1),
-
+                waitFor(100),
                 shoot((long)SHOOTER_TRANSFER_DELAY)
         );
     }
@@ -198,6 +201,19 @@ public class GoalAuto18 extends OpMode {
                 .addParametricCallback(0.9, () -> follower.setMaxPowerScaling(1))
                 .build();
 
+        gateSmash = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                mPBA(ROW2_INTAKE_POSE),
+                                mPBA(new Pose(36, 58)),
+                                mPBA(BOOM_GATE)
+                        )
+                )
+                .addParametricCallback(0, () -> follower.setMaxPowerScaling(0.7))
+                .addParametricCallback(1, () -> follower.setMaxPowerScaling(1))
+                .setConstantHeadingInterpolation(mHBA(heading(180)))
+                .build();
+
         intakeRow1 = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
@@ -211,7 +227,7 @@ public class GoalAuto18 extends OpMode {
         scoreRow2 = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                mPBA(ROW2_INTAKE_POSE),
+                                mPBA(BOOM_GATE),
                                 mPBA(new Pose(53, 68)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )
@@ -230,7 +246,7 @@ public class GoalAuto18 extends OpMode {
                         )
                 )
                 .setConstantHeadingInterpolation(mHBA(heading(180)))
-                .addParametricCallback(0.15, () -> robot.intake.setMode(OFF))
+                .addParametricCallback(0.05, () -> robot.intake.setMode(OFF))
                 .addParametricCallback(0.5, () -> robot.shooter.setMode(Shooter.Mode.DYNAMIC))
                 .build();
 

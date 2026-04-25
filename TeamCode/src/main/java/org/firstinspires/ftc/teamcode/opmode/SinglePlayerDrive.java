@@ -45,7 +45,7 @@ public class SinglePlayerDrive extends OpMode {
     public static double MX_SPEED_SHOT = 1;
 
     // ── Heading lock ──────────────────────────────────────────────
-    public static double headingLockTarget = Math.toRadians(mHBA(GATE_HEADING)); // configurable via dashboard
+    public static double headingLockTarget = Math.toRadians(mHBA(165)); // configurable via dashboard
     private PIDFController headingController;
     public static PIDFCoefficients coefficients = new PIDFCoefficients(0.7, 0, 0.07, 0);
     private boolean headingLock = false;

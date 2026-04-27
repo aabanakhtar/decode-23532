@@ -46,12 +46,12 @@ import org.firstinspires.ftc.teamcode.subsystem.Turret;
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous: 15 CLOSE", group = "auto", preselectTeleOp = "TeleOp")
 public class GoalAuto18 extends OpMode {
-    public static Pose ROW2_INTAKE_POSE = new Pose(4.5, 59);
-    public static  Pose ROW1_INTAKE_POSE = new Pose(12, 83);
+    public static Pose ROW2_INTAKE_POSE = new Pose(5, 59);
+    public static  Pose ROW1_INTAKE_POSE = new Pose(13, 83);
     public static Pose GATE_INTAKE_POSE = new Pose(7, 61);
-    public static Pose GATE_OFFSET_POSE = new Pose(6, 54);
-    public static Pose END_INTAKE_START_SCORE3 = new Pose(6, 36);
-    public static Pose BOOM_GATE = new Pose(11, 64);
+    public static Pose GATE_OFFSET_POSE = new Pose(7, 54);
+    public static Pose END_INTAKE_START_SCORE3 = new Pose(7, 36);
+    public static Pose BOOM_GATE = new Pose(12, 64);
 
     // Mechanical
     public static double SHOOTER_TRANSFER_DELAY = 750;
@@ -59,7 +59,7 @@ public class GoalAuto18 extends OpMode {
     public static long INTAKE_STOP_DELAY = 0;
 
     // Gate
-    public static long GATE_DURATION = 700;
+    public static long GATE_DURATION = 900;
     public static double GATE_HEADING = 169;
     public static double OFFSET_HEADING = 130;
     public static double GATE_CYCLE_TM = 4000;
@@ -125,8 +125,8 @@ public class GoalAuto18 extends OpMode {
                 run(() -> robot.intake.setMode(Intake.Mode.INGEST)),
 
                 new FollowPathCommand(robot.drive.follower, intakeRow2, 1),
-                new FollowPathCommand(robot.drive.follower, gateSmash, 1),
-                waitFor(500),
+                //new FollowPathCommand(robot.drive.follower, gateSmash, 1),
+                //waitFor(500),
                 new FollowPathCommand(robot.drive.follower, scoreRow2, 1),
                 waitFor(100),
                 shoot((long)SHOOTER_TRANSFER_DELAY)
@@ -165,7 +165,7 @@ public class GoalAuto18 extends OpMode {
                 run(() -> robot.intake.setMode(Intake.Mode.INGEST)),
 
                 new FollowPathCommand(robot.drive.follower, intakeGate, 1),
-                waitFor(100),
+                waitFor(200),
                 new FollowPathCommand(robot.drive.follower, offsetGate, 1),
                 waitFor(GATE_DURATION),
                 new FollowPathCommand(robot.drive.follower, scoreGate, 1),
@@ -227,7 +227,8 @@ public class GoalAuto18 extends OpMode {
         scoreRow2 = follower.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                mPBA(BOOM_GATE),
+                                //mPBA(BOOM_GATE),
+                                mPBA(END_INTAKE_START_SCORE2),
                                 mPBA(new Pose(53, 68)),
                                 mPBA(UNIVERSAL_SCORE_TARGET)
                         )

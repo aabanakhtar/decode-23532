@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.cmd;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
@@ -21,8 +22,10 @@ import java.util.function.BooleanSupplier;
 /*
 Static class containing commonly used commands
  */
+@Config
 public class Commandlet {
     private static final DuneStrider dunestrider = DuneStrider.get();
+    public static long TRANSFER_DELAY = (long) 900.0;
 
     public static Command If(Command toRunTrue, Command toRunFalse, BooleanSupplier b) {
         return new ConditionalCommand(toRunTrue, toRunFalse, b);
@@ -39,6 +42,30 @@ public class Commandlet {
     public static Command intakeSet(Intake.Mode mode) {
         return run(() -> dunestrider.intake.setMode(mode));
     }
+
+    public static Command shootTeleOp() {
+        return new SequentialCommandGroup(
+                run(() -> dunestrider.shooter.setMode(Shooter.Mode.DYNAMIC)),
+                run(() -> dunestrider.intake.openLatch()),
+                new ConditionalCommand(
+                        waitFor(900),
+                        waitFor(1000),
+                        () -> dunestrider.drive.follower.getPose().getY() > 80
+                ),
+                // run the intake
+                new ParallelCommandGroup(
+                        intakeSet(Intake.Mode.INGEST),
+                        waitFor(TRANSFER_DELAY)
+                ),
+                intakeSet(Intake.Mode.OFF),
+                // turn off after doing everything
+                run(() -> DuneStrider.get().shooter.setIdle()),
+
+                waitFor(200),
+                run(() -> dunestrider.intake.closeLatch())
+        );
+    }
+
 
     public static Command shoot(long transfer_delay) {
         return new SequentialCommandGroup(

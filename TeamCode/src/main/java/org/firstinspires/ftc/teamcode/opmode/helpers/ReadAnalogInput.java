@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.helpers;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -12,15 +13,20 @@ import org.firstinspires.ftc.teamcode.robot.DuneStrider;
 @TeleOp(name = "Analog Encoder Utility")
 public class ReadAnalogInput extends OpMode {
     AbsoluteAnalogEncoder enc;
+    GoBildaPinpointDriver driver;
     MultipleTelemetry t = new MultipleTelemetry(FtcDashboard.getInstance().getTelemetry(), telemetry);
     public void init() {
         enc = new AbsoluteAnalogEncoder(hardwareMap, "abs", 0);
+        driver = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        driver.recalibrateIMU();
     }
 
     public void loop() {
         t.addData("pos", enc.getCurrentPositionNoOffset());
         t.addData("voltage", enc.getVoltage());
+        t.addData("scalar", driver.getYawScalar());
         DuneStrider.TURRET_ENCODER_OFFSET = -enc.getCurrentPositionNoOffset();
+
         t.update();
     }
 }

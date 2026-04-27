@@ -29,13 +29,14 @@ public class Shooter extends SubsystemBase {
     public static double targetRawPower = 0.0;
     public static double currentVelo = 0;
 
-    public static double IDLE_VELOCITY = 800;
-    public static double kV = 5.0e-4;
-    public static double kP = 0.003;
+    public static double IDLE_VELOCITY = 1300;
+    public static double kV = 0.00042;
+    public static double kP = 0.005;
     public static double kI = 0.0;
-    public static double kD = 1.0e-6;
+    public static double kD = 0;
+
     public static double VELOCITY_TOLERANCE = 30.0;
-    public static double PREDICT_FACTOR = -0.5; // TODO: fix
+    public static double PREDICT_FACTOR = -0.0; // TODO: fix
 
     private final PIDFController flywheelVelocityPID = new PIDFController(kP, kI, kD, 0);
     private final DuneStrider robot = DuneStrider.get();
@@ -46,13 +47,16 @@ public class Shooter extends SubsystemBase {
     static {
         distToVeloLUT = new InterpLUT();
         distToVeloLUT.add(-1000, 1100);
-        distToVeloLUT.add(4.6, 1270);
-        distToVeloLUT.add(5, 1310);
-        distToVeloLUT.add(5.5, 1350);
-        distToVeloLUT.add(5.9, 1420);
-        distToVeloLUT.add(6.72, 1440);
-        distToVeloLUT.add(8.14, 1500);
-        distToVeloLUT.add(100, 1530);
+        distToVeloLUT.add(4.7, 1290);
+        distToVeloLUT.add(5.4, 1340);
+        distToVeloLUT.add(6.4, 1365);
+        distToVeloLUT.add(6.9, 1450);
+        distToVeloLUT.add(8.08, 1520);
+        distToVeloLUT.add(10.7, 1740);
+        distToVeloLUT.add(11.3, 1800);
+        distToVeloLUT.add(11.7, 1850);
+        distToVeloLUT.add(12.3, 1940);
+        distToVeloLUT.add(1000, 2000);
         distToVeloLUT.createLUT();
     }
 

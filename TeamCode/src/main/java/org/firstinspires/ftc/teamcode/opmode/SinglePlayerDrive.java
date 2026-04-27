@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.cmd.Commandlet.If;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.intakeSet;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.nothing;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.run;
+import static org.firstinspires.ftc.teamcode.cmd.Commandlet.shootTeleOp;
 import static org.firstinspires.ftc.teamcode.cmd.Commandlet.waitFor;
 import static org.firstinspires.ftc.teamcode.opmode.GoalAuto18.GATE_HEADING;
 import static org.firstinspires.ftc.teamcode.opmode.GoalAuto18.mHBA;
@@ -16,6 +17,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -88,7 +90,7 @@ public class SinglePlayerDrive extends OpMode {
         );
 
         bind(GamepadKeys.Button.X, intakeSet(Intake.Mode.DISCARD), intakeSet(Intake.Mode.OFF));
-
+        /*
         bind(GamepadKeys.Button.RIGHT_BUMPER,
                 run(() -> {
                     robot.intake.openLatch();
@@ -107,6 +109,10 @@ public class SinglePlayerDrive extends OpMode {
                         speedMultiplier = 1.0;
                     })
                 )
+        ); */
+
+        gamepad1Ex.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+                shootTeleOp()
         );
 
         // toggle heading lock on OPTIONS button
@@ -156,7 +162,7 @@ public class SinglePlayerDrive extends OpMode {
             headingController.setCoefficients(coefficients);
             turn = headingController.run();
         } else {
-            turn = -gamepad1Ex.getRightX() * speedMultiplier;
+            turn = -gamepad1Ex.getRightX() * speedMultiplier * 0.7;
         }
 
         robot.drive.setTeleOpDrive(

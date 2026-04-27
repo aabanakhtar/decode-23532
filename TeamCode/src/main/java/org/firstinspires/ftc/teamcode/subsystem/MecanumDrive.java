@@ -145,9 +145,6 @@ public class MecanumDrive extends SubsystemBase {
         final Pose currPose = getPose();
         Pose aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(0, 0, 0)) : chosenPose.minus(new Pose(0, 0, 0));
         // aim to the left (or right) on far zone
-        if (currPose.getY() < 72) {
-            aimAtPose = DuneStrider.alliance == DuneStrider.Alliance.BLUE ? chosenPose.plus(new Pose(4, 0)) : chosenPose.minus(new Pose(4, 0));
-        }
         double distance = chosenPose.distanceFrom(currPose) / 12.0;
         // Math.PI makes it face the other direction.
         double turretXOffset = TURRET_OFFSET * Math.cos(currPose.getHeading());
